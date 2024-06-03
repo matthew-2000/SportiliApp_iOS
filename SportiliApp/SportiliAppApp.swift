@@ -15,3 +15,18 @@ struct SportiliAppApp: App {
         }
     }
 }
+
+struct MontserratFontModifier: ViewModifier {
+    let size: CGFloat
+    
+    func body(content: Content) -> some View {
+        content
+            .font(.custom("Montserrat-Regular", size: size))
+    }
+}
+
+extension View {
+    func montserrat(size: CGFloat) -> some View {
+        self.modifier(MontserratFontModifier(size: size))
+    }
+}
