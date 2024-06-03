@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3B08CDC82C0DADF3001980B2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B08CDC72C0DADF3001980B2 /* GoogleService-Info.plist */; };
+		3B08CDCB2C0DAEE8001980B2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 3B08CDCA2C0DAEE8001980B2 /* FirebaseAuth */; };
+		3B08CDCD2C0DAEE8001980B2 /* FirebaseAuthCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 3B08CDCC2C0DAEE8001980B2 /* FirebaseAuthCombine-Community */; };
+		3B08CDCF2C0DAEE8001980B2 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 3B08CDCE2C0DAEE8001980B2 /* FirebaseDatabase */; };
+		3B08CDD12C0DAEE8001980B2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 3B08CDD02C0DAEE8001980B2 /* FirebaseStorage */; };
+		3B08CDD42C0DAF89001980B2 /* Esercizio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDD32C0DAF89001980B2 /* Esercizio.swift */; };
+		3B08CDD62C0DAFEE001980B2 /* GruppoMuscolare.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDD52C0DAFEE001980B2 /* GruppoMuscolare.swift */; };
+		3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDD72C0DB03C001980B2 /* Giorno.swift */; };
+		3B08CDDA2C0DB087001980B2 /* Scheda.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDD92C0DB087001980B2 /* Scheda.swift */; };
 		3B1BD3642C0CE60700BA9A3D /* DayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3632C0CE60700BA9A3D /* DayView.swift */; };
 		3B1BD3662C0CE77100BA9A3D /* GruppoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3652C0CE77100BA9A3D /* GruppoView.swift */; };
 		3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */; };
@@ -37,6 +46,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3B08CDC72C0DADF3001980B2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		3B08CDD32C0DAF89001980B2 /* Esercizio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Esercizio.swift; sourceTree = "<group>"; };
+		3B08CDD52C0DAFEE001980B2 /* GruppoMuscolare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoMuscolare.swift; sourceTree = "<group>"; };
+		3B08CDD72C0DB03C001980B2 /* Giorno.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Giorno.swift; sourceTree = "<group>"; };
+		3B08CDD92C0DB087001980B2 /* Scheda.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scheda.swift; sourceTree = "<group>"; };
 		3B1BD3632C0CE60700BA9A3D /* DayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayView.swift; sourceTree = "<group>"; };
 		3B1BD3652C0CE77100BA9A3D /* GruppoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoView.swift; sourceTree = "<group>"; };
 		3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsercizioView.swift; sourceTree = "<group>"; };
@@ -73,12 +87,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3B08CDCF2C0DAEE8001980B2 /* FirebaseDatabase in Frameworks */,
+				3B08CDD12C0DAEE8001980B2 /* FirebaseStorage in Frameworks */,
+				3B08CDCB2C0DAEE8001980B2 /* FirebaseAuth in Frameworks */,
+				3B08CDCD2C0DAEE8001980B2 /* FirebaseAuthCombine-Community in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3B08CDD22C0DAF77001980B2 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				3B08CDD32C0DAF89001980B2 /* Esercizio.swift */,
+				3B08CDD52C0DAFEE001980B2 /* GruppoMuscolare.swift */,
+				3B08CDD72C0DB03C001980B2 /* Giorno.swift */,
+				3B08CDD92C0DB087001980B2 /* Scheda.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		3B23C2A92C09FF870043D41E /* Montserrat */ = {
 			isa = PBXGroup;
 			children = (
@@ -123,7 +152,9 @@
 		3B93375F2C09CC8500057838 /* SportiliApp */ = {
 			isa = PBXGroup;
 			children = (
+				3B08CDD22C0DAF77001980B2 /* Model */,
 				3B23C2A92C09FF870043D41E /* Montserrat */,
+				3B08CDC72C0DADF3001980B2 /* GoogleService-Info.plist */,
 				3B23C27A2C09FE1A0043D41E /* Info.plist */,
 				3B9337602C09CC8500057838 /* SportiliAppApp.swift */,
 				3B9337622C09CC8500057838 /* ContentView.swift */,
@@ -162,6 +193,12 @@
 			dependencies = (
 			);
 			name = SportiliApp;
+			packageProductDependencies = (
+				3B08CDCA2C0DAEE8001980B2 /* FirebaseAuth */,
+				3B08CDCC2C0DAEE8001980B2 /* FirebaseAuthCombine-Community */,
+				3B08CDCE2C0DAEE8001980B2 /* FirebaseDatabase */,
+				3B08CDD02C0DAEE8001980B2 /* FirebaseStorage */,
+			);
 			productName = SportiliApp;
 			productReference = 3B93375D2C09CC8500057838 /* SportiliApp.app */;
 			productType = "com.apple.product-type.application";
@@ -190,6 +227,9 @@
 				Base,
 			);
 			mainGroup = 3B9337542C09CC8500057838;
+			packageReferences = (
+				3B08CDC92C0DAE58001980B2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			productRefGroup = 3B93375E2C09CC8500057838 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -224,6 +264,7 @@
 				3B23C2CE2C0A07030043D41E /* Montserrat-Medium.ttf in Resources */,
 				3B23C2CF2C0A07030043D41E /* Montserrat-ExtraLight.ttf in Resources */,
 				3B9337652C09CC8600057838 /* Assets.xcassets in Resources */,
+				3B08CDC82C0DADF3001980B2 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,12 +276,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				3B23C24B2C09E3A70043D41E /* HomeView.swift in Sources */,
+				3B08CDDA2C0DB087001980B2 /* Scheda.swift in Sources */,
 				3B1BD3642C0CE60700BA9A3D /* DayView.swift in Sources */,
 				3B23C2BD2C0A05830043D41E /* SettingsView.swift in Sources */,
 				3B1BD3662C0CE77100BA9A3D /* GruppoView.swift in Sources */,
 				3B9337632C09CC8500057838 /* ContentView.swift in Sources */,
+				3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */,
 				3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */,
 				3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */,
+				3B08CDD62C0DAFEE001980B2 /* GruppoMuscolare.swift in Sources */,
+				3B08CDD42C0DAF89001980B2 /* Esercizio.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,6 +505,40 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3B08CDC92C0DAE58001980B2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.27.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3B08CDCA2C0DAEE8001980B2 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B08CDC92C0DAE58001980B2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		3B08CDCC2C0DAEE8001980B2 /* FirebaseAuthCombine-Community */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B08CDC92C0DAE58001980B2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = "FirebaseAuthCombine-Community";
+		};
+		3B08CDCE2C0DAEE8001980B2 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B08CDC92C0DAE58001980B2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		3B08CDD02C0DAEE8001980B2 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B08CDC92C0DAE58001980B2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3B9337552C09CC8500057838 /* Project object */;
 }
