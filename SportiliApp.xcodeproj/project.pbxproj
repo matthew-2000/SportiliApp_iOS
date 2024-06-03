@@ -16,6 +16,8 @@
 		3B08CDD62C0DAFEE001980B2 /* GruppoMuscolare.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDD52C0DAFEE001980B2 /* GruppoMuscolare.swift */; };
 		3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDD72C0DB03C001980B2 /* Giorno.swift */; };
 		3B08CDDA2C0DB087001980B2 /* Scheda.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDD92C0DB087001980B2 /* Scheda.swift */; };
+		3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDDB2C0DF338001980B2 /* LoginView.swift */; };
+		3B08CDDE2C0E040C001980B2 /* SchedaViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDDD2C0E040C001980B2 /* SchedaViewModel.swift */; };
 		3B1BD3642C0CE60700BA9A3D /* DayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3632C0CE60700BA9A3D /* DayView.swift */; };
 		3B1BD3662C0CE77100BA9A3D /* GruppoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3652C0CE77100BA9A3D /* GruppoView.swift */; };
 		3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */; };
@@ -51,6 +53,8 @@
 		3B08CDD52C0DAFEE001980B2 /* GruppoMuscolare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoMuscolare.swift; sourceTree = "<group>"; };
 		3B08CDD72C0DB03C001980B2 /* Giorno.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Giorno.swift; sourceTree = "<group>"; };
 		3B08CDD92C0DB087001980B2 /* Scheda.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scheda.swift; sourceTree = "<group>"; };
+		3B08CDDB2C0DF338001980B2 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		3B08CDDD2C0E040C001980B2 /* SchedaViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedaViewModel.swift; sourceTree = "<group>"; };
 		3B1BD3632C0CE60700BA9A3D /* DayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayView.swift; sourceTree = "<group>"; };
 		3B1BD3652C0CE77100BA9A3D /* GruppoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoView.swift; sourceTree = "<group>"; };
 		3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsercizioView.swift; sourceTree = "<group>"; };
@@ -104,6 +108,7 @@
 				3B08CDD52C0DAFEE001980B2 /* GruppoMuscolare.swift */,
 				3B08CDD72C0DB03C001980B2 /* Giorno.swift */,
 				3B08CDD92C0DB087001980B2 /* Scheda.swift */,
+				3B08CDDD2C0E040C001980B2 /* SchedaViewModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -158,6 +163,7 @@
 				3B23C27A2C09FE1A0043D41E /* Info.plist */,
 				3B9337602C09CC8500057838 /* SportiliAppApp.swift */,
 				3B9337622C09CC8500057838 /* ContentView.swift */,
+				3B08CDDB2C0DF338001980B2 /* LoginView.swift */,
 				3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */,
 				3B23C24A2C09E3A70043D41E /* HomeView.swift */,
 				3B1BD3632C0CE60700BA9A3D /* DayView.swift */,
@@ -281,7 +287,9 @@
 				3B23C2BD2C0A05830043D41E /* SettingsView.swift in Sources */,
 				3B1BD3662C0CE77100BA9A3D /* GruppoView.swift in Sources */,
 				3B9337632C09CC8500057838 /* ContentView.swift in Sources */,
+				3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */,
 				3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */,
+				3B08CDDE2C0E040C001980B2 /* SchedaViewModel.swift in Sources */,
 				3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */,
 				3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */,
 				3B08CDD62C0DAFEE001980B2 /* GruppoMuscolare.swift in Sources */,

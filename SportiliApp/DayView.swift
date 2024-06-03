@@ -8,19 +8,17 @@
 import SwiftUI
 
 struct DayView: View {
-    var day: String
+    var day: Giorno
     
     var body: some View {
         VStack(spacing: 0) {
             
             List {
                 
-                NavigationLink(destination: GruppoView(gruppo: "Pettorali")) {
-                    GruppoRow(gruppo: "Pettorali")
-                }
-                NavigationLink(destination: GruppoView(gruppo: "Pettorali")) {                    GruppoRow(gruppo: "Bicipiti")
-                }
-                NavigationLink(destination: GruppoView(gruppo: "Pettorali")) {                    GruppoRow(gruppo: "Addominali")
+                ForEach(day.gruppiMuscolari, id: \.id) { gruppo in
+                    NavigationLink(destination: GruppoView(gruppo: gruppo)) {
+                        GruppoRow(gruppo: gruppo)
+                    }
                 }
 
             }
@@ -32,13 +30,13 @@ struct DayView: View {
             Spacer()
             
         }
-        .navigationTitle("Giorno \(day)")
+        .navigationTitle("Giorno \(day.name)")
         .navigationBarTitleDisplayMode(.large)
     }
 }
 
 struct GruppoRow: View {
-    var gruppo: String
+    var gruppo: GruppoMuscolare
     
     var body: some View {
         HStack {
@@ -46,7 +44,7 @@ struct GruppoRow: View {
                 .frame(width: 40, height: 40)
                 .foregroundColor(.gray)
             
-            Text(gruppo)
+            Text(gruppo.nome)
                 .montserrat(size: 18)
                 .fontWeight(.semibold)
             
@@ -55,8 +53,4 @@ struct GruppoRow: View {
         }
         .padding()
     }
-}
-
-#Preview {
-    DayView(day: "A")
 }

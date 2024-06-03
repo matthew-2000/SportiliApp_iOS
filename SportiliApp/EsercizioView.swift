@@ -9,6 +9,8 @@ import SwiftUI
 
 struct EsercizioView: View {
     
+    var esercizio: Esercizio
+    
     var body: some View {
         VStack(alignment: .leading) {
             
@@ -24,19 +26,23 @@ struct EsercizioView: View {
                         .foregroundColor(.white)
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("3x12")
+                        Text("\(esercizio.serie)x\(esercizio.rep)")
                             .montserrat(size: 30)
                             .fontWeight(.bold)
                             .foregroundColor(.accentColor)
-                        Text("1'30'' riposo")
-                            .montserrat(size: 18)
-                            .fontWeight(.semibold)
-                        VStack(alignment: .leading) {
-                            Text("Note:")
-                                .montserrat(size: 20)
-                                .fontWeight(.bold)
-                            Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas laoreet lorem a justo consequat, ac fermentum sapien sodales. Quisque malesuada dolor ac dui congue egestas.")
-                                .montserrat(size: 15)
+                        if let riposo = esercizio.riposo {
+                            Text("\(riposo) riposo")
+                                .montserrat(size: 18)
+                                .fontWeight(.semibold)
+                        }
+                        if let notePT = esercizio.notePT {
+                            VStack(alignment: .leading) {
+                                Text("Note:")
+                                    .montserrat(size: 20)
+                                    .fontWeight(.bold)
+                                Text(notePT)
+                                    .montserrat(size: 15)
+                            }
                         }
                     }
 
@@ -48,22 +54,30 @@ struct EsercizioView: View {
                 Text("Note utente:")
                     .montserrat(size: 20)
                     .fontWeight(.bold)
-                Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas laoreet lorem a justo consequat, ac fermentum sapien sodales. Quisque malesuada dolor ac dui congue egestas.")
-                    .montserrat(size: 15)
-                Button("Aggiungi nota", action: {
+                if let noteUtente = esercizio.noteUtente {
+                    Text(noteUtente)
+                        .montserrat(size: 15)
+                } else {
+                    Text("Nessuna nota.")
+                        .montserrat(size: 15)
+                }
+                Spacer()
+                Button(action: {
                     
+                }, label: {
+                    Text("Entra")
+                        .frame(maxWidth: .infinity)
                 })
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(BorderedProminentButtonStyle())
+                .controlSize(.large)
             }
+            
+            Spacer()
             
         }
         .padding()
-        .navigationTitle("Panca piana")
+        .navigationTitle(esercizio.name)
         .navigationBarTitleDisplayMode(.large)
     }
     
-}
-
-#Preview {
-    EsercizioView()
 }

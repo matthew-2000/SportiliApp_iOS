@@ -6,8 +6,13 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct HomeView: View {
+    
+    @State private var nomeUtente: String?
+    @StateObject private var schedaViewModel = SchedaViewModel()
+
     
     init() {
         // Set the appearance of the navigation bar title
@@ -24,50 +29,71 @@ struct HomeView: View {
         NavigationView {
             VStack(spacing: 0) {
                 
-                List {
-                    
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("Inizio: 30/02/2024")
-                            .montserrat(size: 20)
-                            .fontWeight(.semibold)
-                        Text("x7 sett.")
-                            .montserrat(size: 25)
-                            .foregroundColor(.accentColor)
-                            .bold()
-                    }
-                    .padding(.top, 20)
-                    .padding(.bottom, 20)
-                    
-                    NavigationLink(destination: DayView(day: "A")) {
-                        DayRow(day: "A")
-                    }
-                    
-                    NavigationLink(destination: DayView(day: "B")) {
-                        DayRow(day: "B")
-                    }
-                    
-                    NavigationLink(destination: DayView(day: "C")) {
-                        DayRow(day: "C")
-                    }
-                    
+                Spacer()
+                
+                if let scheda = schedaViewModel.scheda {
+                    List {
+                        
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("Inizio: \(getDateString())")
+                                .montserrat(size: 20)
+                                .fontWeight(.semibold)
+                            Text("x\(scheda.durata) sett.")
+                                .montserrat(size: 25)
+                                .foregroundColor(.accentColor)
+                                .bold()
+                        }
+                        .padding(.top, 20)
+                        .padding(.bottom, 20)
+                        
+                        ForEach(scheda.giorni, id: \.id) { giorno in
+                            NavigationLink(destination: DayView(day: giorno)) {
+                                DayRow(day: giorno)
+                            }
+                        }
+                        
 
-                }
-                .listStyle(PlainListStyle())
-                .onAppear {
-                    UITableView.appearance().separatorStyle = .none
+                    }
+                    .listStyle(PlainListStyle())
+                    .onAppear {
+                        UITableView.appearance().separatorStyle = .none
+                    }
+                } else {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
                 }
                 
                 Spacer()
                 
             }
-            .navigationTitle("Home")
+            .onAppear {
+                // Aggiorna il nome utente quando la vista appare per la prima volta
+                if let currentUser = Auth.auth().currentUser {
+                    nomeUtente = currentUser.displayName
+                }
+            }
+            .navigationTitle(getTitle())
             .navigationBarTitleDisplayMode(.large)
         }
+    }
+    
+    func getTitle() -> String {
+        if let nomeUtente = nomeUtente {
+            return "Ciao \(nomeUtente)"
+        } else {
+            return "Home"
+        }
+    }
+    
+    func getDateString() -> String {
+        let formatter1 = DateFormatter()
+        formatter1.dateStyle = .short
+        return formatter1.string(from: schedaViewModel.scheda?.dataInizio ?? Date())
     }
 }
 
 struct DayRow: View {
-    var day: String
+    var day: Giorno
     
     var body: some View {
         HStack {
@@ -76,10 +102,10 @@ struct DayRow: View {
                 .foregroundColor(.gray)
             
             VStack(alignment: .leading) {
-                Text("Giorno \(day)")
+                Text("Giorno \(day.name)")
                     .montserrat(size: 18)
                     .fontWeight(.semibold)
-                Text("Pettorali, addominali, bicipiti")
+                Text(getGruppiString())
                     .montserrat(size: 15)
                     .fontWeight(.semibold)
                     .foregroundColor(.gray)
@@ -89,6 +115,14 @@ struct DayRow: View {
             
         }
         .padding()
+    }
+    
+    func getGruppiString() -> String {
+        var s = ""
+        for g in day.gruppiMuscolari {
+            s += "\(g.nome), "
+        }
+        return s
     }
 }
 

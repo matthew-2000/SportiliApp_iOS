@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import FirebaseAuth
 
 class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
@@ -22,7 +23,11 @@ struct SportiliAppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if let currentUser = Auth.auth().currentUser {
+                ContentView()
+            } else {
+                LoginView()
+            }
         }
     }
 }
