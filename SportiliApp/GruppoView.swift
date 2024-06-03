@@ -9,21 +9,17 @@ import SwiftUI
 
 struct GruppoView: View {
     
-    var gruppo: String
+    var gruppo: GruppoMuscolare
     
     var body: some View {
         VStack(spacing: 0) {
             
             List {
                 
-                NavigationLink(destination: EsercizioView()) {
-                    EsercizioRow()
-                }
-                NavigationLink(destination: EsercizioView()) {
-                    EsercizioRow()
-                }
-                NavigationLink(destination: EsercizioView()) {
-                    EsercizioRow()
+                ForEach(gruppo.esericizi, id: \.id) { esericizio in
+                    NavigationLink(destination: EsercizioView(esercizio: esericizio)) {
+                        EsercizioRow(esercizio: esericizio)
+                    }
                 }
 
             }
@@ -35,13 +31,15 @@ struct GruppoView: View {
             Spacer()
             
         }
-        .navigationTitle(gruppo)
+        .navigationTitle(gruppo.nome)
         .navigationBarTitleDisplayMode(.large)
     }
     
 }
 
 struct EsercizioRow: View {
+    
+    var esercizio: Esercizio
     
     var body: some View {
         HStack {
@@ -50,15 +48,17 @@ struct EsercizioRow: View {
                 .foregroundColor(.gray)
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("Panca Piana")
+                Text(esercizio.name)
                     .montserrat(size: 18)
                     .fontWeight(.semibold)
-                Text("3x12")
+                Text("\(esercizio.serie)x\(esercizio.rep)")
                     .montserrat(size: 25)
                     .fontWeight(.bold)
                     .foregroundColor(.accentColor)
-                Text("1'30'' riposo")
-                    .montserrat(size: 18)
+                if let riposo = esercizio.riposo {
+                    Text("\(riposo) riposo")
+                        .montserrat(size: 18)
+                }
             }
             
             Spacer()
@@ -67,8 +67,4 @@ struct EsercizioRow: View {
         .padding()
     }
     
-}
-
-#Preview {
-    GruppoView(gruppo: "Petto")
 }

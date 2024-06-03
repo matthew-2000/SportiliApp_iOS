@@ -9,6 +9,7 @@ import Foundation
 
 class Esercizio {
     
+    let id = UUID()
     var name: String
     var rep: String
     var serie: String

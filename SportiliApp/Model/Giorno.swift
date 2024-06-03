@@ -9,6 +9,7 @@ import Foundation
 
 class Giorno {
     
+    let id = UUID()
     var name: String
     var gruppiMuscolari: [GruppoMuscolare]
     

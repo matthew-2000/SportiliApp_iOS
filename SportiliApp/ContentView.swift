@@ -26,19 +26,6 @@ struct ContentView: View {
     }
 }
 
-struct PrimaryButtonStyle: ButtonStyle {
-    
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(.callout, weight: .bold))
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity, maxHeight: 48)
-            .background(.accent)
-            .cornerRadius(8)
-    }
-}
-
-
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()

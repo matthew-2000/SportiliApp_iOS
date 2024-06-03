@@ -9,6 +9,7 @@ import Foundation
 
 class GruppoMuscolare {
     
+    let id = UUID()
     var nome: String
     var esericizi: [Esercizio]
     
