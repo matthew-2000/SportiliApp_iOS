@@ -12,7 +12,6 @@ struct HomeView: View {
     
     @State private var nomeUtente: String?
     @StateObject private var schedaViewModel = SchedaViewModel()
-
     
     init() {
         // Set the appearance of the navigation bar title
@@ -109,7 +108,7 @@ struct DayRow: View {
                 .foregroundColor(.gray)
             
             VStack(alignment: .leading) {
-                Text("Giorno \(day.name)")
+                Text("\(day.name)")
                     .montserrat(size: 18)
                     .fontWeight(.semibold)
                 Text(getGruppiString())

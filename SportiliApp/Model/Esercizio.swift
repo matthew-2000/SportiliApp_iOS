@@ -11,21 +11,21 @@ class Esercizio {
     
     let id = UUID()
     var name: String
-    var rep: String
     var serie: String
     var priorità: Int?
     var riposo: String?
     var notePT: String?
     var noteUtente: String?
+    var ordine: Int?
     
-    init(name: String, rep: String, serie: String, priorità: Int? = nil, riposo: String? = nil, notePT: String? = nil, noteUtente: String? = nil) {
+    init(name: String, serie: String, priorità: Int? = nil, riposo: String? = nil, notePT: String? = nil, noteUtente: String? = nil, ordine: Int? = nil) {
         self.name = name
-        self.rep = rep
         self.serie = serie
         self.priorità = priorità
         self.riposo = riposo
         self.notePT = notePT
         self.noteUtente = noteUtente
+        self.ordine = ordine
     }
     
 }
