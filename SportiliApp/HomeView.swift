@@ -38,10 +38,17 @@ struct HomeView: View {
                             Text("Inizio: \(getDateString())")
                                 .montserrat(size: 20)
                                 .fontWeight(.semibold)
-                            Text("x\(scheda.durata) sett.")
-                                .montserrat(size: 25)
-                                .foregroundColor(.accentColor)
-                                .bold()
+                            if let durata = scheda.getDurataScheda() {
+                                Text("x\(durata) sett.")
+                                    .montserrat(size: 25)
+                                    .foregroundColor(.accentColor)
+                                    .bold()
+                            } else {
+                                Text("x0 sett.")
+                                    .montserrat(size: 25)
+                                    .foregroundColor(.red)
+                                    .bold()
+                            }
                         }
                         .padding(.top, 20)
                         .padding(.bottom, 20)

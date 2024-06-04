@@ -41,6 +41,7 @@
 		3B23C2CD2C0A07030043D41E /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2B82C09FFCF0043D41E /* Montserrat-Regular.ttf */; };
 		3B23C2CE2C0A07030043D41E /* Montserrat-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2BA2C09FFCF0043D41E /* Montserrat-Medium.ttf */; };
 		3B23C2CF2C0A07030043D41E /* Montserrat-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2B42C09FFCF0043D41E /* Montserrat-ExtraLight.ttf */; };
+		3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */; };
 		3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337602C09CC8500057838 /* SportiliAppApp.swift */; };
 		3B9337632C09CC8500057838 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337622C09CC8500057838 /* ContentView.swift */; };
 		3B9337652C09CC8600057838 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B9337642C09CC8600057838 /* Assets.xcassets */; };
@@ -79,6 +80,7 @@
 		3B23C2BA2C09FFCF0043D41E /* Montserrat-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Medium.ttf"; sourceTree = "<group>"; };
 		3B23C2BB2C09FFCF0043D41E /* Montserrat-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		3B23C2BC2C0A05830043D41E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminHomeView.swift; sourceTree = "<group>"; };
 		3B93375D2C09CC8500057838 /* SportiliApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SportiliApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B9337602C09CC8500057838 /* SportiliAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportiliAppApp.swift; sourceTree = "<group>"; };
 		3B9337622C09CC8500057838 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -138,6 +140,14 @@
 			path = Montserrat;
 			sourceTree = "<group>";
 		};
+		3B5CF6A72C0F4D070068F17E /* Fausto */ = {
+			isa = PBXGroup;
+			children = (
+				3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */,
+			);
+			path = Fausto;
+			sourceTree = "<group>";
+		};
 		3B9337542C09CC8500057838 = {
 			isa = PBXGroup;
 			children = (
@@ -157,6 +167,7 @@
 		3B93375F2C09CC8500057838 /* SportiliApp */ = {
 			isa = PBXGroup;
 			children = (
+				3B5CF6A72C0F4D070068F17E /* Fausto */,
 				3B08CDD22C0DAF77001980B2 /* Model */,
 				3B23C2A92C09FF870043D41E /* Montserrat */,
 				3B08CDC72C0DADF3001980B2 /* GoogleService-Info.plist */,
@@ -286,6 +297,7 @@
 				3B1BD3642C0CE60700BA9A3D /* DayView.swift in Sources */,
 				3B23C2BD2C0A05830043D41E /* SettingsView.swift in Sources */,
 				3B1BD3662C0CE77100BA9A3D /* GruppoView.swift in Sources */,
+				3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */,
 				3B9337632C09CC8500057838 /* ContentView.swift in Sources */,
 				3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */,
 				3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */,

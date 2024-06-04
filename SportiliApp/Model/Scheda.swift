@@ -20,6 +20,23 @@ class Scheda {
         self.giorni = giorni
     }
     
+    func getDurataScheda() -> Int? {
+        // Calcola la data finale aggiungendo il numero di settimane alla data di inizio
+        let calendar = Calendar.current
+        guard let endDate = calendar.date(byAdding: .weekOfYear, value: durata, to: dataInizio) else {
+            return nil
+        }
+        
+        // Calcola la differenza tra la data corrente e la data finale
+        let currentDate = Date()
+        guard currentDate < endDate else {
+            return nil
+        }
+        
+        let components = calendar.dateComponents([.weekOfYear], from: currentDate, to: endDate)
+        return components.weekOfYear
+    }
+    
 }
 
 
@@ -51,29 +68,29 @@ class SchedaManager {
                     return
                 }
                 
-                // Esempio di come gestire i giorni
                 var giorni: [Giorno] = []
                 for (_, giornoData) in giorniData {
                     if let giornoData = giornoData as? [String: Any] {
                         let nome = giornoData["name"] as? String ?? ""
                         let gruppiMuscolariData = giornoData["gruppiMuscolari"] as? [String: Any] ?? [:]
                         
-                        // Esempio di come gestire i gruppi muscolari
                         var gruppiMuscolari: [GruppoMuscolare] = []
                         for (_, gruppoData) in gruppiMuscolariData {
                             if let gruppoData = gruppoData as? [String: Any] {
                                 let nomeGruppo = gruppoData["nome"] as? String ?? ""
                                 let eserciziData = gruppoData["esercizi"] as? [String: Any] ?? [:]
                                 
-                                // Esempio di come gestire gli esercizi
                                 var esercizi: [Esercizio] = []
                                 for (_, esercizioData) in eserciziData {
                                     if let esercizioData = esercizioData as? [String: Any] {
                                         let nomeEsercizio = esercizioData["name"] as? String ?? ""
                                         let rep = esercizioData["rep"] as? String ?? ""
                                         let serie = esercizioData["serie"] as? String ?? ""
+                                        let nota = esercizioData["nota"] as? String
+                                        let notaUtente = esercizioData["notaUtente"] as? String
+                                        let riposo = esercizioData["riposo"] as? String
                                         
-                                        let esercizio = Esercizio(name: nomeEsercizio, rep: rep, serie: serie)
+                                        let esercizio = Esercizio(name: nomeEsercizio, rep: rep, serie: serie, riposo: riposo, notePT: nota, noteUtente: notaUtente)
                                         esercizi.append(esercizio)
                                     }
                                 }
