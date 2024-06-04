@@ -16,11 +16,17 @@ class SchedaViewModel: ObservableObject {
     }
 
     func fetchScheda() {
-        schedaManager.getSchedaFromFirebase(completion: { scheda in
+        
+        guard let code = UserDefaults.standard.string(forKey: "code") else {
+            return
+        }
+        
+        schedaManager.getSchedaFromFirebase(code: code, completion: { scheda in
             DispatchQueue.main.async {
                 self.scheda = scheda
             }
         })
+
     }
     
 }
