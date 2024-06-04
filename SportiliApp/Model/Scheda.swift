@@ -25,10 +25,9 @@ class Scheda {
 
 class SchedaManager {
 
-    func getSchedaFromFirebase(completion: @escaping (Scheda?) -> Void) {
-        if let currentUser = Auth.auth().currentUser {
-            let userId = currentUser.uid
-            let ref = Database.database().reference().child("users").child(userId).child("schede").child("scheda1")
+    func getSchedaFromFirebase(code: String, completion: @escaping (Scheda?) -> Void) {
+        if Auth.auth().currentUser != nil {
+            let ref = Database.database().reference().child("users").child(code).child("scheda")
             
             ref.observeSingleEvent(of: .value) { (snapshot) in
                 guard let schedaData = snapshot.value as? [String: Any] else {

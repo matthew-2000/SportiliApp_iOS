@@ -11,8 +11,7 @@ import FirebaseDatabase
 
 struct LoginView: View {
     
-    @State private var nome: String = ""
-    @State private var cognome: String = ""
+    @State private var code: String = ""
     @State private var isLoggedIn: Bool = false
     @State private var showAlert = false
     @State private var alertMessage = ""
@@ -26,23 +25,15 @@ struct LoginView: View {
             Spacer()
             
             VStack {
-                TextField("Nome", text: $nome)
-                    .textFieldStyle(.roundedBorder)
-                    .montserrat(size: 16)
-                TextField("Cognome", text: $cognome)
+                TextField("Codice", text: $code)
                     .textFieldStyle(.roundedBorder)
                     .montserrat(size: 16)
                     .padding(.bottom)
                 
                 Button(action: {
                     // Logica per controllare il codice e fare il login
-                    if nome.isEmpty {
+                    if code.isEmpty {
                         self.alertMessage = "Inserisci il nome!"
-                        self.showAlert.toggle()
-                        return
-                    }
-                    if cognome.isEmpty {
-                        self.alertMessage = "Inserisci il cognome!"
                         self.showAlert.toggle()
                         return
                     }
@@ -78,40 +69,33 @@ struct LoginView: View {
     
     func register() {
         // Recupera i dati dall'elenco degli utenti autorizzati
-        let db = Database.database().reference().child("authUsers")
+        let db = Database.database().reference().child("users")
         db.observeSingleEvent(of: .value) { snapshot in
-            // Controlla se il nome e il cognome inseriti corrispondono a quelli presenti nell'elenco degli utenti autorizzati
-            if let authUsers = snapshot.value as? [String: [String: String]] {
-                if authUsers.values.first(where: { $0["nome"] == nome && $0["cognome"] == cognome }) != nil {
-                    // Effettua il login solo se il nome e il cognome corrispondono a quelli presenti nell'elenco degli utenti autorizzati
+            if let authUsers = snapshot.value as? [String: [String: Any]] {
+                if let authorizedUser = authUsers[code] {
                     Auth.auth().signInAnonymously { (authResult, error) in
                         if error != nil {
-                            // Gestisci l'errore
                             self.alertMessage = "Errore durante l'accesso. Riprova più tardi."
                             self.showAlert.toggle()
                         } else {
                             // Utente registrato con successo
-                            if let uid = authResult?.user.uid {
-                                let userData = ["nome": nome, "cognome": cognome] // Puoi aggiungere altri campi dati se necessario
-                                Database.database().reference().child("users").child(uid).setValue(userData)
-                            }
                             let changeRequest = authResult?.user.createProfileChangeRequest()
-                            changeRequest?.displayName = nome
+                            changeRequest?.displayName = authorizedUser["nome"] as? String
                             changeRequest?.commitChanges(completion: { (error) in
                                 if let error = error {
                                     print("Errore durante l'associazione del nome utente:", error.localizedDescription)
                                     // Gestisci l'errore
                                 } else {
-                                    print("Nome utente associato con successo:", nome)
-                                    // Naviga verso la tua schermata principale o fai altre operazioni dopo il login
+                                    print("Nome utente associato con successo:", code)
                                 }
                             })
+                            UserDefaults.standard.set(code, forKey: "code")
                             self.isLoggedIn = true
                         }
                     }
                 } else {
                     // Nome e/o cognome non autorizzati
-                    self.alertMessage = "Nome e/o cognome non autorizzati."
+                    self.alertMessage = "Codice non autorizzato."
                     self.showAlert.toggle()
                 }
             } else {
@@ -121,6 +105,7 @@ struct LoginView: View {
             }
         }
     }
+
     
 }
 
