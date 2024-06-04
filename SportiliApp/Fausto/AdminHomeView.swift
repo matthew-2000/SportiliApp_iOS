@@ -8,8 +8,22 @@
 import SwiftUI
 
 struct AdminHomeView: View {
+    
+    @StateObject private var utentiViewModel = UtentiViewModel()
+    
     var body: some View {
-        Text("Hello, Fausto!")
+        if let utenti = utentiViewModel.utenti {
+            Text("\(utenti.utenti.first?.nome ?? "Peppe")")
+            Button(action: {
+                for utente in utenti.utenti {
+                    
+                }
+            }, label: {
+                /*@START_MENU_TOKEN@*/Text("Button")/*@END_MENU_TOKEN@*/
+            })
+        } else {
+            Text("No")
+        }
     }
 }
 

@@ -7,16 +7,20 @@
 
 import Foundation
 
-class UtentiViewModel {
+class UtentiViewModel: ObservableObject {
     
     @Published var utenti: ListaUtenti?
-    private var utentiManager: UtentiManager = UtentiManager()
+    private var utentiManager: ListaUtentiManager = ListaUtentiManager()
     
     init() {
         fetchUtenti()
     }
 
     func fetchUtenti() {
-        
+        utentiManager.fetchAllUsers(completion: { utenti in
+            DispatchQueue.main.async {
+                self.utenti = utenti
+            }
+        })
     }
 }

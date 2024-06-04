@@ -23,7 +23,6 @@ class SchedaViewModel: ObservableObject {
         
         schedaManager.getSchedaFromFirebase(code: code, completion: { scheda in
             DispatchQueue.main.async {
-                scheda?.sortAll()
                 self.scheda = scheda
             }
         })
