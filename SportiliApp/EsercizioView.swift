@@ -6,10 +6,19 @@
 //
 
 import SwiftUI
+import FirebaseDatabase
 
 struct EsercizioView: View {
     
     var esercizio: Esercizio
+    @State private var showingAlert = false
+    @State private var nota: String
+    
+    init(esercizio: Esercizio, showingAlert: Bool = false, nota: String = "") {
+        self.esercizio = esercizio
+        self.showingAlert = showingAlert
+        self.nota = esercizio.noteUtente ?? ""
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -32,12 +41,11 @@ struct EsercizioView: View {
                             .foregroundColor(.accentColor)
                         if let riposo = esercizio.riposo {
                             Text("\(riposo) riposo")
-                                .montserrat(size: 18)
-                                .fontWeight(.semibold)
+                                .montserrat(size: 20)
                         }
                         VStack(alignment: .leading, content: {
                             Text("Note:")
-                                .montserrat(size: 20)
+                                .montserrat(size: 15)
                                 .fontWeight(.bold)
                             if let notePT = esercizio.notePT {
                                 Text(notePT)
@@ -55,7 +63,7 @@ struct EsercizioView: View {
             
             VStack(alignment: .leading) {
                 Text("Note utente:")
-                    .montserrat(size: 20)
+                    .montserrat(size: 15)
                     .fontWeight(.bold)
                 if let noteUtente = esercizio.noteUtente {
                     Text(noteUtente)
@@ -66,13 +74,26 @@ struct EsercizioView: View {
                 }
                 Spacer()
                 Button(action: {
-                    
+                    showingAlert.toggle()
                 }, label: {
                     Text("Aggiungi Nota")
                         .frame(maxWidth: .infinity)
                 })
+                .montserrat(size: 18)
                 .buttonStyle(BorderedProminentButtonStyle())
                 .controlSize(.large)
+                .alert("Inserisci nota:", isPresented: $showingAlert) {
+                    TextField("Inserisci nota", text: $nota)
+                        .montserrat(size: 15)
+                    Button(action: addNota, label: {
+                        Text("Inserisci")
+                    })
+                    .montserrat(size: 15)
+                        
+                } message: {
+                    Text("Inserisci una nota per questo esercizio")
+                        .montserrat(size: 15)
+                }
             }
             
             Spacer()
@@ -81,6 +102,14 @@ struct EsercizioView: View {
         .padding()
         .navigationTitle(esercizio.name)
         .navigationBarTitleDisplayMode(.large)
+    }
+    
+    func addNota() {
+        
+        guard let code = UserDefaults.standard.string(forKey: "code") else {
+            return
+        }
+                
     }
     
 }

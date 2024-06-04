@@ -101,8 +101,9 @@ class SchedaManager {
                                         let nota = esercizioData["nota"] as? String
                                         let notaUtente = esercizioData["notaUtente"] as? String
                                         let riposo = esercizioData["riposo"] as? String
+                                        let ordine = esercizioData["ordine"] as? Int
                                         
-                                        let esercizio = Esercizio(name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: notaUtente)
+                                        let esercizio = Esercizio(name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: notaUtente, ordine: ordine)
                                         esercizi.append(esercizio)
                                     }
                                 }
@@ -118,8 +119,8 @@ class SchedaManager {
                 }
                 
                 let scheda = Scheda(dataInizio: dataInizio, durata: durata, giorni: giorni)
+                scheda.sortAll()
                 
-                // Ora hai la scheda completa pronta per essere utilizzata
                 completion(scheda)
             }
         } else {

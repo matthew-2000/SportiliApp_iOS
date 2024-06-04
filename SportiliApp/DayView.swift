@@ -61,9 +61,21 @@ struct EsercizioRow: View {
                 .foregroundColor(.gray)
             
             VStack(alignment: .leading, spacing: 8) {
-                Text(esercizio.name)
-                    .montserrat(size: 18)
-                    .fontWeight(.semibold)
+                if let ordine = esercizio.ordine {
+                    HStack {
+                        Text(esercizio.name)
+                            .montserrat(size: 18)
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Text("\(ordine)°")
+                            .montserrat(size: 15)
+                            .fontWeight(.bold)
+                    }
+                } else {
+                    Text(esercizio.name)
+                        .montserrat(size: 18)
+                        .fontWeight(.semibold)
+                }
                 Text("\(esercizio.serie)")
                     .montserrat(size: 25)
                     .fontWeight(.bold)
@@ -77,7 +89,6 @@ struct EsercizioRow: View {
             Spacer()
             
         }
-        .padding()
     }
     
 }
