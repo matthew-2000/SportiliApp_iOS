@@ -19,7 +19,6 @@
 		3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDDB2C0DF338001980B2 /* LoginView.swift */; };
 		3B08CDDE2C0E040C001980B2 /* SchedaViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B08CDDD2C0E040C001980B2 /* SchedaViewModel.swift */; };
 		3B1BD3642C0CE60700BA9A3D /* DayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3632C0CE60700BA9A3D /* DayView.swift */; };
-		3B1BD3662C0CE77100BA9A3D /* GruppoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3652C0CE77100BA9A3D /* GruppoView.swift */; };
 		3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */; };
 		3B23C24B2C09E3A70043D41E /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B23C24A2C09E3A70043D41E /* HomeView.swift */; };
 		3B23C2BD2C0A05830043D41E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B23C2BC2C0A05830043D41E /* SettingsView.swift */; };
@@ -42,6 +41,8 @@
 		3B23C2CE2C0A07030043D41E /* Montserrat-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2BA2C09FFCF0043D41E /* Montserrat-Medium.ttf */; };
 		3B23C2CF2C0A07030043D41E /* Montserrat-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2B42C09FFCF0043D41E /* Montserrat-ExtraLight.ttf */; };
 		3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */; };
+		3B5CF6AB2C0F59EE0068F17E /* Utente.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6AA2C0F59EE0068F17E /* Utente.swift */; };
+		3B5CF6AD2C0F5A880068F17E /* UtentiViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6AC2C0F5A880068F17E /* UtentiViewModel.swift */; };
 		3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337602C09CC8500057838 /* SportiliAppApp.swift */; };
 		3B9337632C09CC8500057838 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337622C09CC8500057838 /* ContentView.swift */; };
 		3B9337652C09CC8600057838 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B9337642C09CC8600057838 /* Assets.xcassets */; };
@@ -57,7 +58,6 @@
 		3B08CDDB2C0DF338001980B2 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		3B08CDDD2C0E040C001980B2 /* SchedaViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedaViewModel.swift; sourceTree = "<group>"; };
 		3B1BD3632C0CE60700BA9A3D /* DayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayView.swift; sourceTree = "<group>"; };
-		3B1BD3652C0CE77100BA9A3D /* GruppoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoView.swift; sourceTree = "<group>"; };
 		3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsercizioView.swift; sourceTree = "<group>"; };
 		3B23C24A2C09E3A70043D41E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		3B23C27A2C09FE1A0043D41E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -81,6 +81,8 @@
 		3B23C2BB2C09FFCF0043D41E /* Montserrat-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		3B23C2BC2C0A05830043D41E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminHomeView.swift; sourceTree = "<group>"; };
+		3B5CF6AA2C0F59EE0068F17E /* Utente.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utente.swift; sourceTree = "<group>"; };
+		3B5CF6AC2C0F5A880068F17E /* UtentiViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtentiViewModel.swift; sourceTree = "<group>"; };
 		3B93375D2C09CC8500057838 /* SportiliApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SportiliApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B9337602C09CC8500057838 /* SportiliAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportiliAppApp.swift; sourceTree = "<group>"; };
 		3B9337622C09CC8500057838 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -144,6 +146,8 @@
 			isa = PBXGroup;
 			children = (
 				3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */,
+				3B5CF6AA2C0F59EE0068F17E /* Utente.swift */,
+				3B5CF6AC2C0F5A880068F17E /* UtentiViewModel.swift */,
 			);
 			path = Fausto;
 			sourceTree = "<group>";
@@ -178,7 +182,6 @@
 				3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */,
 				3B23C24A2C09E3A70043D41E /* HomeView.swift */,
 				3B1BD3632C0CE60700BA9A3D /* DayView.swift */,
-				3B1BD3652C0CE77100BA9A3D /* GruppoView.swift */,
 				3B23C2BC2C0A05830043D41E /* SettingsView.swift */,
 				3B9337642C09CC8600057838 /* Assets.xcassets */,
 				3B9337662C09CC8600057838 /* Preview Content */,
@@ -294,11 +297,12 @@
 			files = (
 				3B23C24B2C09E3A70043D41E /* HomeView.swift in Sources */,
 				3B08CDDA2C0DB087001980B2 /* Scheda.swift in Sources */,
+				3B5CF6AB2C0F59EE0068F17E /* Utente.swift in Sources */,
 				3B1BD3642C0CE60700BA9A3D /* DayView.swift in Sources */,
 				3B23C2BD2C0A05830043D41E /* SettingsView.swift in Sources */,
-				3B1BD3662C0CE77100BA9A3D /* GruppoView.swift in Sources */,
 				3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */,
 				3B9337632C09CC8500057838 /* ContentView.swift in Sources */,
+				3B5CF6AD2C0F5A880068F17E /* UtentiViewModel.swift in Sources */,
 				3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */,
 				3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */,
 				3B08CDDE2C0E040C001980B2 /* SchedaViewModel.swift in Sources */,

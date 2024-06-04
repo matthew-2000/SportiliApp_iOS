@@ -26,7 +26,7 @@ struct EsercizioView: View {
                         .foregroundColor(.white)
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("\(esercizio.serie)x\(esercizio.rep)")
+                        Text("\(esercizio.serie)")
                             .montserrat(size: 30)
                             .fontWeight(.bold)
                             .foregroundColor(.accentColor)
@@ -68,7 +68,7 @@ struct EsercizioView: View {
                 Button(action: {
                     
                 }, label: {
-                    Text("Entra")
+                    Text("Aggiungi Nota")
                         .frame(maxWidth: .infinity)
                 })
                 .buttonStyle(BorderedProminentButtonStyle())

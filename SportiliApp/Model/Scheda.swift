@@ -20,6 +20,19 @@ class Scheda {
         self.giorni = giorni
     }
     
+    func sortAll() {
+        self.giorni.sort(by: {
+            $0.name < $1.name
+        })
+        for giorno in giorni {
+            for gruppo in giorno.gruppiMuscolari {
+                gruppo.esericizi.sort(by: {
+                    $0.ordine ?? 0 < $1.ordine ?? 0
+                })
+            }
+        }
+    }
+    
     func getDurataScheda() -> Int? {
         // Calcola la data finale aggiungendo il numero di settimane alla data di inizio
         let calendar = Calendar.current
@@ -45,8 +58,8 @@ class SchedaManager {
     func getSchedaFromFirebase(code: String, completion: @escaping (Scheda?) -> Void) {
         if Auth.auth().currentUser != nil {
             let ref = Database.database().reference().child("users").child(code).child("scheda")
-            
-            ref.observeSingleEvent(of: .value) { (snapshot) in
+                        
+            ref.observe(.value) { (snapshot) in
                 guard let schedaData = snapshot.value as? [String: Any] else {
                     print("Errore nel recupero dei dati della scheda")
                     completion(nil)
@@ -84,13 +97,12 @@ class SchedaManager {
                                 for (_, esercizioData) in eserciziData {
                                     if let esercizioData = esercizioData as? [String: Any] {
                                         let nomeEsercizio = esercizioData["name"] as? String ?? ""
-                                        let rep = esercizioData["rep"] as? String ?? ""
                                         let serie = esercizioData["serie"] as? String ?? ""
                                         let nota = esercizioData["nota"] as? String
                                         let notaUtente = esercizioData["notaUtente"] as? String
                                         let riposo = esercizioData["riposo"] as? String
                                         
-                                        let esercizio = Esercizio(name: nomeEsercizio, rep: rep, serie: serie, riposo: riposo, notePT: nota, noteUtente: notaUtente)
+                                        let esercizio = Esercizio(name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: notaUtente)
                                         esercizi.append(esercizio)
                                     }
                                 }
