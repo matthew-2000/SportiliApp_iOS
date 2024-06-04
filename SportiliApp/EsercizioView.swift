@@ -35,15 +35,18 @@ struct EsercizioView: View {
                                 .montserrat(size: 18)
                                 .fontWeight(.semibold)
                         }
-                        if let notePT = esercizio.notePT {
-                            VStack(alignment: .leading) {
-                                Text("Note:")
-                                    .montserrat(size: 20)
-                                    .fontWeight(.bold)
+                        VStack(alignment: .leading, content: {
+                            Text("Note:")
+                                .montserrat(size: 20)
+                                .fontWeight(.bold)
+                            if let notePT = esercizio.notePT {
                                 Text(notePT)
                                     .montserrat(size: 15)
+                            } else {
+                                Text("Nessuna nota.")
+                                    .montserrat(size: 15)
                             }
-                        }
+                        })
                     }
 
                 }

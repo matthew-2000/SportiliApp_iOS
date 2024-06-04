@@ -13,6 +13,7 @@ struct LoginView: View {
     
     @State private var code: String = ""
     @State private var isLoggedIn: Bool = false
+    @State private var isFaustoLoggedIn: Bool = false
     @State private var showAlert = false
     @State private var alertMessage = ""
     
@@ -27,24 +28,31 @@ struct LoginView: View {
             VStack {
                 TextField("Codice", text: $code)
                     .textFieldStyle(.roundedBorder)
-                    .montserrat(size: 16)
-                    .padding(.bottom)
+                    .montserrat(size: 20)
+                    .fontWeight(.semibold)
+                    .padding(.bottom, 30)
                 
                 Button(action: {
                     // Logica per controllare il codice e fare il login
                     if code.isEmpty {
-                        self.alertMessage = "Inserisci il nome!"
+                        self.alertMessage = "Inserisci il codice!"
                         self.showAlert.toggle()
                         return
                     }
-                    register()
+                    isAdmin(codice: code, completion: { isAdmin in
+                        if !isAdmin {
+                            register()
+                        } else {
+                            isFaustoLoggedIn = true
+                        }
+                    })
                     
                 }, label: {
                     Text("Entra")
                         .frame(maxWidth: .infinity)
                 })
                 .alert(isPresented: $showAlert) {
-                    Alert(title: Text("Messaggio"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                    Alert(title: Text("Attenzione"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
                 }
                 .montserrat(size: 20)
                 .bold()
@@ -65,10 +73,12 @@ struct LoginView: View {
         .fullScreenCover(isPresented: $isLoggedIn) {
             ContentView()
         }
+        .fullScreenCover(isPresented: $isFaustoLoggedIn) {
+            AdminHomeView()
+        }
     }
     
     func register() {
-        // Recupera i dati dall'elenco degli utenti autorizzati
         let db = Database.database().reference().child("users")
         db.observeSingleEvent(of: .value) { snapshot in
             if let authUsers = snapshot.value as? [String: [String: Any]] {
@@ -105,7 +115,17 @@ struct LoginView: View {
             }
         }
     }
-
+    
+    func isAdmin(codice: String, completion: @escaping (Bool) -> Void) {
+        let ref = Database.database().reference().child("fausto")
+        ref.observeSingleEvent(of: .value) { snapshot in
+            if let valore = snapshot.value as? String {
+                completion(codice == valore)
+            } else {
+                completion(false)
+            }
+        }
+    }
     
 }
 
