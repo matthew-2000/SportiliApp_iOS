@@ -23,7 +23,7 @@ struct SportiliAppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if let currentUser = Auth.auth().currentUser {
+            if Auth.auth().currentUser != nil {
                 ContentView()
             } else {
                 LoginView()

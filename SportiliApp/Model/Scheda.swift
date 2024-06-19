@@ -8,16 +8,86 @@
 import Foundation
 import Firebase
 
-class Scheda {
-    
+let dateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+    return formatter
+}()
+
+class Scheda: Codable {
     var dataInizio: Date
     var durata: Int
     var giorni: [Giorno]
-    
+
     init(dataInizio: Date, durata: Int, giorni: [Giorno]) {
         self.dataInizio = dataInizio
         self.durata = durata
         self.giorni = giorni
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case dataInizio
+        case durata
+        case giorni
+    }
+    
+    var description: String {
+        var giorniDesc = ""
+        for giorno in giorni {
+            giorniDesc += "\n    \(giorno.description)"
+        }
+        
+        return """
+        Scheda {
+            dataInizio: \(dataInizio)
+            durata: \(durata)
+            giorni: \(giorniDesc)
+        }
+        """
+    }
+    
+    func toDictionary() -> [String: Any] {
+        var giorniDict = [String: Any]()
+        
+        for (index, giorno) in giorni.enumerated() {
+            var gruppiMuscolariDict = [String: Any]()
+            
+            for gruppo in giorno.gruppiMuscolari {
+                var eserciziDict = [String: Any]()
+                
+                for esercizio in gruppo.esercizi {
+                    let esercizioDict: [String: Any] = [
+                        "name": esercizio.name,
+                        "ordine": esercizio.ordine ?? 0,
+                        "riposo": esercizio.riposo ?? "",
+                        "serie": esercizio.serie,
+                        "notePT" : esercizio.notePT ?? ""
+                        // Include other properties as needed
+                    ]
+                    eserciziDict["esercizio\(esercizio.ordine ?? 0)"] = esercizioDict
+                }
+                
+                let gruppoDict: [String: Any] = [
+                    "nome": gruppo.nome,
+                    "esercizi": eserciziDict
+                ]
+                gruppiMuscolariDict["gruppo\(index + 1)"] = gruppoDict
+            }
+            
+            let giornoDict: [String: Any] = [
+                "name": giorno.name,
+                "gruppiMuscolari": gruppiMuscolariDict
+            ]
+            giorniDict["giorno\(index + 1)"] = giornoDict
+        }
+        
+        let schedaDict: [String: Any] = [
+            "dataInizio": dateFormatter.string(from: dataInizio),
+            "durata": durata,
+            "giorni": giorniDict
+        ]
+        
+        return schedaDict
     }
     
     func sortAll() {
@@ -26,7 +96,7 @@ class Scheda {
         })
         for giorno in giorni {
             for gruppo in giorno.gruppiMuscolari {
-                gruppo.esericizi.sort(by: {
+                gruppo.esercizi.sort(by: {
                     $0.ordine ?? 0 < $1.ordine ?? 0
                 })
             }
@@ -108,7 +178,7 @@ class SchedaManager {
                                     }
                                 }
                                 
-                                let gruppoMuscolare = GruppoMuscolare(nome: nomeGruppo, esericizi: esercizi)
+                                let gruppoMuscolare = GruppoMuscolare(nome: nomeGruppo, esercizi: esercizi)
                                 gruppiMuscolari.append(gruppoMuscolare)
                             }
                         }
