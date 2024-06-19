@@ -18,7 +18,7 @@ struct DayView: View {
                 ForEach(day.gruppiMuscolari, id: \.id) { gruppo in
                                         
                     Section(header: GruppoRow(gruppo: gruppo)) {
-                        ForEach(gruppo.esericizi, id: \.id) { esercizio in
+                        ForEach(gruppo.esercizi, id: \.id) { esercizio in
                             NavigationLink(destination: EsercizioView(esercizio: esercizio)) {
                                 EsercizioRow(esercizio: esercizio)
                             }
