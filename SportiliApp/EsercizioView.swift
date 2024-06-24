@@ -106,9 +106,9 @@ struct EsercizioView: View {
     
     func addNota() {
         
-        guard UserDefaults.standard.string(forKey: "code") != nil else {
-            return
-        }
+//        guard UserDefaults.standard.string(forKey: "code") != nil else {
+//            return
+//        }
                 
     }
     

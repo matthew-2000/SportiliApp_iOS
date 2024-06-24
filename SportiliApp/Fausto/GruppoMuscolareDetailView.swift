@@ -9,7 +9,8 @@ import SwiftUI
 
 struct GruppoMuscolareDetailView: View {
     @Binding var gruppo: GruppoMuscolare
-    
+    @State private var showingAddSheet = false
+
     var body: some View {
         Form {
             Section(header: Text("Nome Gruppo Muscolare")) {
@@ -17,21 +18,43 @@ struct GruppoMuscolareDetailView: View {
             }
             
             Section(header: Text("Esercizi")) {
-                ForEach($gruppo.esercizi) { $esercizio in
-                    NavigationLink(destination: EsercizioDetailView(esercizio: $esercizio)) {
-                        Text(esercizio.name.isEmpty ? "Nuovo Esercizio" : esercizio.name)
+                List {
+                    ForEach(gruppo.esercizi.indices, id: \.self) { index in
+                        NavigationLink(destination: EsercizioDetailView(esercizio: $gruppo.esercizi[index])) {
+                            VStack(alignment: .leading, content: {
+                                Text(gruppo.esercizi[index].name.isEmpty ? "Nuovo Esercizio" : gruppo.esercizi[index].name)
+                                Text(gruppo.esercizi[index].serie)
+                            })
+                            
+                        }
+                    }
+                    .onDelete { indices in
+                        gruppo.esercizi.remove(atOffsets: indices)
+                        aggiornaOrdineEsercizi()
+                    }
+                    .onMove { source, destination in
+                        gruppo.esercizi.move(fromOffsets: source, toOffset: destination)
+                        aggiornaOrdineEsercizi()
                     }
                 }
                 
                 Button(action: {
-                    let nuovoEsercizio = Esercizio(name: "", serie: "", riposo: "", notePT: "", noteUtente: "", ordine: 1)
-                    gruppo.esercizi.append(nuovoEsercizio)
+                    showingAddSheet = true
                 }) {
                     Text("Aggiungi Esercizio")
                 }
+                .sheet(isPresented: $showingAddSheet) {
+                    AddEsercizioView(gruppo: $gruppo)
+                }
             }
         }
-        .navigationTitle("Dettagli Gruppo Muscolare")
+        .navigationTitle("\(gruppo.nome)")
+    }
+    
+    private func aggiornaOrdineEsercizi() {
+        for index in gruppo.esercizi.indices {
+            gruppo.esercizi[index].ordine = index + 1
+        }
     }
 }
 

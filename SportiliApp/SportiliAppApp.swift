@@ -24,7 +24,11 @@ struct SportiliAppApp: App {
     var body: some Scene {
         WindowGroup {
             if Auth.auth().currentUser != nil {
-                ContentView()
+                if UserDefaults.standard.bool(forKey: "isAdmin") {
+                    AdminHomeView()
+                } else {
+                    ContentView()
+                }
             } else {
                 LoginView()
             }
@@ -36,8 +40,7 @@ struct MontserratFontModifier: ViewModifier {
     let size: CGFloat
     
     func body(content: Content) -> some View {
-        content
-            .font(.custom("Montserrat-Regular", size: size))
+        content.font(.custom("Montserrat-Regular", size: size))
     }
 }
 

@@ -46,6 +46,7 @@
 		3B70B88B2C298808000DC6EB /* GiornoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */; };
 		3B70B88D2C298824000DC6EB /* GruppoMuscolareDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */; };
 		3B70B88F2C298842000DC6EB /* EsercizioDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */; };
+		3B70B8912C29AA65000DC6EB /* AddEsercizioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */; };
 		3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337602C09CC8500057838 /* SportiliAppApp.swift */; };
 		3B9337632C09CC8500057838 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337622C09CC8500057838 /* ContentView.swift */; };
 		3B9337652C09CC8600057838 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B9337642C09CC8600057838 /* Assets.xcassets */; };
@@ -91,6 +92,7 @@
 		3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiornoDetailView.swift; sourceTree = "<group>"; };
 		3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoMuscolareDetailView.swift; sourceTree = "<group>"; };
 		3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsercizioDetailView.swift; sourceTree = "<group>"; };
+		3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEsercizioView.swift; sourceTree = "<group>"; };
 		3B93375D2C09CC8500057838 /* SportiliApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SportiliApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B9337602C09CC8500057838 /* SportiliAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportiliAppApp.swift; sourceTree = "<group>"; };
 		3B9337622C09CC8500057838 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -163,6 +165,7 @@
 				3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */,
 				3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */,
 				3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */,
+				3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */,
 			);
 			path = Fausto;
 			sourceTree = "<group>";
@@ -255,11 +258,12 @@
 			};
 			buildConfigurationList = 3B9337582C09CC8500057838 /* Build configuration list for PBXProject "SportiliApp" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
+			developmentRegion = it;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				it,
 			);
 			mainGroup = 3B9337542C09CC8500057838;
 			packageReferences = (
@@ -322,6 +326,7 @@
 				3BF2C8EF2C20451000179D37 /* GymViewModel.swift in Sources */,
 				3B9337632C09CC8500057838 /* ContentView.swift in Sources */,
 				3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */,
+				3B70B8912C29AA65000DC6EB /* AddEsercizioView.swift in Sources */,
 				3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */,
 				3B08CDDE2C0E040C001980B2 /* SchedaViewModel.swift in Sources */,
 				3BF2C8F32C23207600179D37 /* UtenteView.swift in Sources */,

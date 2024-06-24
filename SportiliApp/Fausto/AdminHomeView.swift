@@ -13,17 +13,6 @@ struct AdminHomeView: View {
     @State private var searchText = ""
     @State private var showAddUserView = false
     
-    init() {
-        // Set the appearance of the navigation bar title
-        let appearance = UINavigationBarAppearance()
-        appearance.titleTextAttributes = [.font : UIFont(name: "Montserrat-SemiBold", size: 18)!]
-        appearance.largeTitleTextAttributes = [.font : UIFont(name: "Montserrat-Bold", size: 35)!]
-        
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        UINavigationBar.appearance().compactAppearance = appearance
-    }
-    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -76,11 +65,8 @@ struct UtenteRow: View {
         HStack {
             VStack(alignment: .leading) {
                 Text("\(utente.nome) \(utente.cognome)")
-                    .montserrat(size: 18)
-                    .fontWeight(.semibold)
                 if utente.scheda == nil {
                     Text("Scheda mancante")
-                        .montserrat(size: 18)
                         .underline()
                         .foregroundColor(.red)
                         .fontWeight(.semibold)

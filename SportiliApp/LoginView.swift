@@ -43,7 +43,7 @@ struct LoginView: View {
                         if !isAdmin {
                             register()
                         } else {
-                            isFaustoLoggedIn = true
+                            loginFausto()
                         }
                     })
                     
@@ -75,6 +75,18 @@ struct LoginView: View {
         }
         .fullScreenCover(isPresented: $isFaustoLoggedIn) {
             AdminHomeView()
+        }
+    }
+    
+    func loginFausto() {
+        Auth.auth().signInAnonymously { (authResult, error) in
+            if error != nil {
+                self.alertMessage = "Errore durante l'accesso. Riprova più tardi."
+                self.showAlert.toggle()
+            } else {
+                UserDefaults.standard.set(true, forKey: "isAdmin")
+                isFaustoLoggedIn = true
+            }
         }
     }
     
