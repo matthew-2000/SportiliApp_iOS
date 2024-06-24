@@ -39,6 +39,16 @@ struct UtenteView: View {
                     Text("Salva modifiche")
                 }
                 
+                Button(action: {
+                    showEliminaAlert = true
+                }) {
+                    Text("Elimina")
+                }
+                .foregroundColor(.red)
+                .buttonStyle(PlainButtonStyle())
+            }
+            
+            Section(header: Text("Scheda")) {
                 if let scheda = utente.scheda {
                     NavigationLink(destination: AddSchedaView(userCode: utente.code, gymViewModel: gymViewModel, scheda: scheda)) {
                         Text("Modifica scheda")
@@ -48,14 +58,6 @@ struct UtenteView: View {
                         Text("Aggiungi scheda")
                     }
                 }
-                
-                Button(action: {
-                    showEliminaAlert = true
-                }) {
-                    Text("Elimina")
-                }
-                .foregroundColor(.red)
-                .buttonStyle(PlainButtonStyle())
             }
         }
         .alert(isPresented: $showEliminaAlert) {
