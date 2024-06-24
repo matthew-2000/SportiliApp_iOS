@@ -15,15 +15,18 @@ struct EsercizioDetailView: View {
             Section(header: Text("Dettagli Esercizio")) {
                 TextField("Nome Esercizio", text: $esercizio.name)
                 TextField("Serie", text: $esercizio.serie)
-//                TextField("Riposo", text: $esercizio.riposo ?? "")
-//                TextField("Note PT", text: $esercizio.notePT ?? "")
-//                TextField("Note Utente", text: $esercizio.noteUtente ?? "")
-//                Stepper(value: $esercizio.ordine ?? 0, in: 1...100) {
-//                    Text("Ordine: \(esercizio.ordine ?? 0)")
-//                }
+                TextField("Riposo", text: Binding(
+                    get: { esercizio.riposo ?? "" },
+                    set: { esercizio.riposo = $0 }
+                ))
+                
+                TextField("Note PT", text: Binding(
+                    get: { esercizio.notePT ?? "" },
+                    set: { esercizio.notePT = $0 }
+                ))
             }
         }
-        .navigationTitle("Dettagli Esercizio")
+        .navigationTitle("\(esercizio.name)")
     }
 }
 

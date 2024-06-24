@@ -25,90 +25,48 @@ struct UtenteView: View {
     }
     
     var body: some View {
-        VStack {
-            VStack(alignment: .leading) {
-                Group {
-                    
-                    Text("Nome")
-                        .foregroundColor(.gray)
-                        .montserrat(size: 18)
-                    TextField("Nome", text: $editedNome)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .montserrat(size: 18)
-                        .padding(.bottom)
-                    
-                    Text("Cognome")
-                        .foregroundColor(.gray)
-                        .montserrat(size: 18)
-                    TextField("Cognome", text: $editedCognome)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .montserrat(size: 18)
-                        .padding(.bottom)
-                    
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            let updatedUtente = Utente(code: editedCode, cognome: editedCognome, nome: editedNome, scheda: utente.scheda)
-                            gymViewModel.updateUser(utente: updatedUtente)
-                        }) {
-                            Text("Salva modifiche")
-                        }
-                        .montserrat(size: 20)
-                        .bold()
-                        .buttonStyle(BorderedProminentButtonStyle())
-                        Spacer()
-                    }
-                }
+        Form {
+            Section(header: Text("Modifica Utente")) {
+                TextField("Nome", text: $editedNome)
+                TextField("Cognome", text: $editedCognome)
             }
-            .padding()
             
-            Spacer()
-            
-            VStack {
+            Section(header: Text("Azioni")) {
+                Button(action: {
+                    let updatedUtente = Utente(code: editedCode, cognome: editedCognome, nome: editedNome, scheda: utente.scheda)
+                    gymViewModel.updateUser(utente: updatedUtente)
+                }) {
+                    Text("Salva modifiche")
+                }
                 
-                HStack {
-                    Button(action: {
-                        showEliminaAlert = true
-                    }) {
-                        Text("Elimina")
+                if let scheda = utente.scheda {
+                    NavigationLink(destination: AddSchedaView(userCode: utente.code, gymViewModel: gymViewModel, scheda: scheda)) {
+                        Text("Modifica scheda")
                     }
-                    .montserrat(size: 20)
-                    .bold()
-                    .buttonStyle(BorderedProminentButtonStyle())
-                    .alert(isPresented: $showEliminaAlert) {
-                        Alert(
-                            title: Text("Conferma Eliminazione"),
-                            message: Text("Sei sicuro di voler eliminare questo utente?"),
-                            primaryButton: .destructive(Text("Elimina")) {
-                                gymViewModel.removeUser(code: utente.code)
-                            },
-                            secondaryButton: .cancel(Text("Annulla"))
-                        )
-                    }
-                    
-                    Spacer()
-                    
-                    if utente.scheda == nil {
-                        NavigationLink(destination: AddSchedaView(userCode: utente.code, gymViewModel: gymViewModel)) {
-                            Text("Aggiungi scheda")
-                                .montserrat(size: 20)
-                                .bold()
-                                .buttonStyle(BorderedProminentButtonStyle())
-                        }
-                    } else {
-                        Button(action: {
-                            // TODO:
-                        }) {
-                            Text("Modifica scheda")
-                        }
-                        .montserrat(size: 20)
-                        .bold()
-                        .buttonStyle(BorderedProminentButtonStyle())
+                } else {
+                    NavigationLink(destination: AddSchedaView(userCode: utente.code, gymViewModel: gymViewModel, scheda: nil)) {
+                        Text("Aggiungi scheda")
                     }
                 }
                 
+                Button(action: {
+                    showEliminaAlert = true
+                }) {
+                    Text("Elimina")
+                }
+                .foregroundColor(.red)
+                .buttonStyle(PlainButtonStyle())
             }
-            .padding()
+        }
+        .alert(isPresented: $showEliminaAlert) {
+            Alert(
+                title: Text("Conferma Eliminazione"),
+                message: Text("Sei sicuro di voler eliminare questo utente?"),
+                primaryButton: .destructive(Text("Elimina")) {
+                    gymViewModel.removeUser(code: utente.code)
+                },
+                secondaryButton: .cancel(Text("Annulla"))
+            )
         }
         .onAppear {
             editedNome = utente.nome

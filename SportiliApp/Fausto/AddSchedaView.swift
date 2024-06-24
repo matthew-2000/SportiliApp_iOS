@@ -12,8 +12,21 @@ struct AddSchedaView: View {
     var userCode: String
     @ObservedObject var gymViewModel: GymViewModel
     @State private var dataInizio = Date()
-    @State private var durata = 4
-    @State private var giorni: [Giorno] = []
+    @State private var durata = 7
+    @State private var scheda: Scheda?
+    @State private var giorni: [Giorno]
+    
+    init(userCode: String, gymViewModel: GymViewModel, dataInizio: Date = Date(), durata: Int = 7, scheda: Scheda?) {
+        self.userCode = userCode
+        self.gymViewModel = gymViewModel
+        self.dataInizio = dataInizio
+        self.durata = durata
+        if let scheda = scheda {
+            self.giorni = scheda.giorni
+        } else {
+            self.giorni = []
+        }
+    }
     
     var body: some View {
         Form {
@@ -23,12 +36,15 @@ struct AddSchedaView: View {
                     Text("Durata: \(durata) settimane")
                 }
             }
-            
+                        
             Section(header: Text("Giorni")) {
                 ForEach(giorni.indices, id: \.self) { giornoIndex in
                     NavigationLink(destination: GiornoDetailView(giorno: $giorni[giornoIndex])) {
                         Text(giorni[giornoIndex].name.isEmpty ? "Nuovo Giorno" : giorni[giornoIndex].name)
                     }
+                }
+                .onDelete { indices in
+                    giorni.remove(atOffsets: indices)
                 }
                 
                 Button(action: {
@@ -57,5 +73,5 @@ struct AddSchedaView: View {
 
 
 #Preview {
-    AddSchedaView(userCode: "Pepo", gymViewModel: GymViewModel())
+    AddSchedaView(userCode: "Pepo", gymViewModel: GymViewModel(), scheda: nil)
 }
