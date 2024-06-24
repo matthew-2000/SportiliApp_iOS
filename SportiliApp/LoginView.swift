@@ -20,9 +20,14 @@ struct LoginView: View {
     var body: some View {
         VStack {
             Spacer()
-            RoundedRectangle(cornerRadius: 10)
-                .frame(height: 200)
-                .foregroundColor(.cardGray)
+            VStack {
+                Image("icon")
+                    .resizable()
+                    .frame(width: 200, height: 200)
+                Text("SportiliApp")
+                    .montserrat(size: 30)
+                    .bold()
+            }
             Spacer()
             
             VStack {
