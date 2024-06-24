@@ -35,6 +35,15 @@ class GymViewModel: ObservableObject {
                         if let user = user {
                             newUsers.append(user)
                             print(user.description)
+                            newUsers.sort { (user1, user2) -> Bool in
+                                if user1.scheda != nil && user2.scheda == nil {
+                                    return false // user1 con scheda viene prima
+                                } else if user1.scheda == nil && user2.scheda != nil {
+                                    return true // user2 con scheda viene prima
+                                } else {
+                                    return user1.nome < user2.nome
+                                }
+                            }
                             self.users = newUsers
                         }
                     }

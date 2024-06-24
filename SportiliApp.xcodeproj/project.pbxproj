@@ -170,6 +170,17 @@
 			path = Fausto;
 			sourceTree = "<group>";
 		};
+		3B70B8922C29B33F000DC6EB /* User */ = {
+			isa = PBXGroup;
+			children = (
+				3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */,
+				3B23C24A2C09E3A70043D41E /* HomeView.swift */,
+				3B1BD3632C0CE60700BA9A3D /* DayView.swift */,
+				3B23C2BC2C0A05830043D41E /* SettingsView.swift */,
+			);
+			path = User;
+			sourceTree = "<group>";
+		};
 		3B9337542C09CC8500057838 = {
 			isa = PBXGroup;
 			children = (
@@ -189,18 +200,15 @@
 		3B93375F2C09CC8500057838 /* SportiliApp */ = {
 			isa = PBXGroup;
 			children = (
-				3B5CF6A72C0F4D070068F17E /* Fausto */,
 				3B08CDD22C0DAF77001980B2 /* Model */,
 				3B23C2A92C09FF870043D41E /* Montserrat */,
 				3B08CDC72C0DADF3001980B2 /* GoogleService-Info.plist */,
 				3B23C27A2C09FE1A0043D41E /* Info.plist */,
+				3B5CF6A72C0F4D070068F17E /* Fausto */,
+				3B70B8922C29B33F000DC6EB /* User */,
 				3B9337602C09CC8500057838 /* SportiliAppApp.swift */,
 				3B9337622C09CC8500057838 /* ContentView.swift */,
 				3B08CDDB2C0DF338001980B2 /* LoginView.swift */,
-				3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */,
-				3B23C24A2C09E3A70043D41E /* HomeView.swift */,
-				3B1BD3632C0CE60700BA9A3D /* DayView.swift */,
-				3B23C2BC2C0A05830043D41E /* SettingsView.swift */,
 				3B9337642C09CC8600057838 /* Assets.xcassets */,
 				3B9337662C09CC8600057838 /* Preview Content */,
 			);
