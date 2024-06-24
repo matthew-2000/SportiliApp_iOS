@@ -78,6 +78,13 @@ struct UtenteRow: View {
                 Text("\(utente.nome) \(utente.cognome)")
                     .montserrat(size: 18)
                     .fontWeight(.semibold)
+                if utente.scheda == nil {
+                    Text("Scheda mancante")
+                        .montserrat(size: 18)
+                        .underline()
+                        .foregroundColor(.red)
+                        .fontWeight(.semibold)
+                }
             }
             Spacer()
         }
@@ -91,29 +98,22 @@ struct AddUserView: View {
     @State private var code = ""
     @State private var cognome = ""
     @State private var nome = ""
-    @State private var scheda = Scheda(dataInizio: Date(), durata: 4, giorni: [])
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Dati utente")) {
                     TextField("Codice", text: $code)
-                    TextField("Cognome", text: $cognome)
                     TextField("Nome", text: $nome)
+                    TextField("Cognome", text: $cognome)
                 }
                 
-                Section(header: Text("Scheda")) {
-                    DatePicker("Data Inizio", selection: $scheda.dataInizio, displayedComponents: .date)
-                    Stepper(value: $scheda.durata, in: 1...52) {
-                        Text("Durata (settimane): \(scheda.durata)")
-                    }
-                }
             }
-            .navigationTitle("Aggiungi Utente")
+            .navigationTitle("Aggiungi utente")
             .navigationBarItems(leading: Button("Annulla") {
                 presentationMode.wrappedValue.dismiss()
             }, trailing: Button("Salva") {
-                gymViewModel.addUser(code: code, cognome: cognome, nome: nome, scheda: scheda)
+                gymViewModel.addUser(code: code, cognome: cognome, nome: nome)
                 presentationMode.wrappedValue.dismiss()
             })
         }

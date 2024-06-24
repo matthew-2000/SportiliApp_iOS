@@ -43,14 +43,43 @@ class GymViewModel: ObservableObject {
         }
     }
 
-    func addUser(code: String, cognome: String, nome: String, scheda: Scheda) {
+    func addUser(code: String, cognome: String, nome: String) {
+        ref.child("users").child(code).observe(.value, with: { snapshot in
+            if !snapshot.exists() {
+                let userDict: [String: Any] = [
+                    "cognome": cognome,
+                    "nome": nome,
+                ]
+                
+                self.ref.child("users").child(code).setValue(userDict) { error, _ in
+                    if let error = error {
+                        print("Error adding user: \(error.localizedDescription)")
+                    } else {
+                        print("User added successfully")
+                    }
+                }
+            }
+        })
+    }
+    
+    func removeUser(code: String) {
+        ref.child("users").child(code).removeValue { error, _ in
+            if let error = error {
+                print("Error removing user: \(error.localizedDescription)")
+            } else {
+                print("User removed successfully")
+            }
+        }
+    }
+
+    func updateUser(utente: Utente) {
         let userDict: [String: Any] = [
-            "cognome": cognome,
-            "nome": nome,
-            "scheda": scheda.toDictionary()
+            "cognome": utente.cognome,
+            "nome": utente.nome,
+            "scheda": utente.scheda?.toDictionary() ?? [:]
         ]
         
-        ref.child("users").child(code).setValue(userDict) { error, _ in
+        ref.child("users").child(utente.code).setValue(userDict) { error, _ in
             if let error = error {
                 print("Error adding user: \(error.localizedDescription)")
             } else {
@@ -58,24 +87,18 @@ class GymViewModel: ObservableObject {
             }
         }
     }
-
-    func updateUser(utente: Utente) {
-        do {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .formatted(dateFormatter)
-            let data = try encoder.encode(utente)
-            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                ref.child("users").child(utente.code).setValue(json)
+    
+    func saveScheda(scheda: Scheda, userCode: String) {
+        let schedaDict = scheda.toDictionary()
+        
+        let ref = Database.database().reference().child("users").child(userCode).child("scheda")
+        
+        ref.setValue(schedaDict) { error, _ in
+            if let error = error {
+                print("Errore nel salvataggio della scheda: \(error.localizedDescription)")
+            } else {
+                print("Scheda salvata con successo")
             }
-        } catch {
-            print("Error updating user: \(error)")
         }
-    }
-}
-
-extension Encodable {
-    func toDictionary() -> [String: Any]? {
-        guard let data = try? JSONEncoder().encode(self) else { return nil }
-        return (try? JSONSerialization.jsonObject(with: data, options: .allowFragments)).flatMap { $0 as? [String: Any] }
     }
 }
