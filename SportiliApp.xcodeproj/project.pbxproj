@@ -48,6 +48,8 @@
 		3B70B88F2C298842000DC6EB /* EsercizioDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */; };
 		3B70B8912C29AA65000DC6EB /* AddEsercizioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */; };
 		3B78AE902C2B02DC006E1173 /* AdminContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */; };
+		3B78AE922C2B0D71006E1173 /* EserciziPredefinitiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B78AE912C2B0D71006E1173 /* EserciziPredefinitiManager.swift */; };
+		3B78AE942C2B0F5E006E1173 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B78AE932C2B0F5E006E1173 /* ImageLoader.swift */; };
 		3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337602C09CC8500057838 /* SportiliAppApp.swift */; };
 		3B9337632C09CC8500057838 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337622C09CC8500057838 /* ContentView.swift */; };
 		3B9337652C09CC8600057838 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B9337642C09CC8600057838 /* Assets.xcassets */; };
@@ -95,6 +97,8 @@
 		3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsercizioDetailView.swift; sourceTree = "<group>"; };
 		3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEsercizioView.swift; sourceTree = "<group>"; };
 		3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminContentView.swift; sourceTree = "<group>"; };
+		3B78AE912C2B0D71006E1173 /* EserciziPredefinitiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EserciziPredefinitiManager.swift; sourceTree = "<group>"; };
+		3B78AE932C2B0F5E006E1173 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
 		3B93375D2C09CC8500057838 /* SportiliApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SportiliApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B9337602C09CC8500057838 /* SportiliAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportiliAppApp.swift; sourceTree = "<group>"; };
 		3B9337622C09CC8500057838 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -169,6 +173,7 @@
 				3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */,
 				3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */,
 				3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */,
+				3B78AE912C2B0D71006E1173 /* EserciziPredefinitiManager.swift */,
 			);
 			path = Fausto;
 			sourceTree = "<group>";
@@ -212,6 +217,7 @@
 				3B70B8922C29B33F000DC6EB /* User */,
 				3B08CDDB2C0DF338001980B2 /* LoginView.swift */,
 				3B9337602C09CC8500057838 /* SportiliAppApp.swift */,
+				3B78AE932C2B0F5E006E1173 /* ImageLoader.swift */,
 				3B9337642C09CC8600057838 /* Assets.xcassets */,
 				3B9337662C09CC8600057838 /* Preview Content */,
 			);
@@ -339,8 +345,10 @@
 				3B9337632C09CC8500057838 /* ContentView.swift in Sources */,
 				3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */,
 				3B70B8912C29AA65000DC6EB /* AddEsercizioView.swift in Sources */,
+				3B78AE942C2B0F5E006E1173 /* ImageLoader.swift in Sources */,
 				3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */,
 				3B08CDDE2C0E040C001980B2 /* SchedaViewModel.swift in Sources */,
+				3B78AE922C2B0D71006E1173 /* EserciziPredefinitiManager.swift in Sources */,
 				3BF2C8F32C23207600179D37 /* UtenteView.swift in Sources */,
 				3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */,
 				3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */,
