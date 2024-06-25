@@ -25,7 +25,7 @@ struct SportiliAppApp: App {
         WindowGroup {
             if Auth.auth().currentUser != nil {
                 if UserDefaults.standard.bool(forKey: "isAdmin") {
-                    AdminHomeView()
+                    AdminContentView()
                 } else {
                     ContentView()
                 }

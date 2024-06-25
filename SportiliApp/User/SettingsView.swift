@@ -20,6 +20,7 @@ struct SettingsView: View {
                     let firebaseAuth = Auth.auth()
                     do {
                         try firebaseAuth.signOut()
+                        resetDefaults()
                         isLoggedOut.toggle()
                     } catch let signOutError as NSError {
                       print("Error signing out: %@", signOutError)
@@ -38,6 +39,14 @@ struct SettingsView: View {
         }
         .fullScreenCover(isPresented: $isLoggedOut) {
             LoginView()
+        }
+    }
+    
+    func resetDefaults() {
+        let defaults = UserDefaults.standard
+        let dictionary = defaults.dictionaryRepresentation()
+        dictionary.keys.forEach { key in
+            defaults.removeObject(forKey: key)
         }
     }
 }

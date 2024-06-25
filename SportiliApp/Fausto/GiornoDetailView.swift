@@ -9,10 +9,8 @@ import SwiftUI
 
 struct GiornoDetailView: View {
     @Binding var giorno: Giorno
-    @State private var showingAddSheet = false
-    @State private var selectedGruppoMuscolare = "Petto"
-    let gruppiMuscolariPredefiniti = ["Petto", "Dorso", "Gambe", "Spalle", "Bicipiti", "Tricipiti", "Addominali", "Cardio", "Defaticamento"]
-
+    @State private var showingAddGruppoMuscolareView = false
+    
     var body: some View {
         Form {
             Section(header: Text("Nome Giorno")) {
@@ -33,37 +31,41 @@ struct GiornoDetailView: View {
                 }
                 
                 Button(action: {
-                    showingAddSheet = true
+                    showingAddGruppoMuscolareView.toggle()
                 }) {
                     Text("Aggiungi Gruppo Muscolare")
+                }
+                .sheet(isPresented: $showingAddGruppoMuscolareView) {
+                    AddGruppoMuscolareView(giorno: $giorno)
                 }
             }
         }
         .navigationTitle("\(giorno.name)")
-        .sheet(isPresented: $showingAddSheet) {
-            AddGruppoMuscolareView(giorno: $giorno)
-        }
     }
 }
 
 struct AddGruppoMuscolareView: View {
     @Binding var giorno: Giorno
     @Environment(\.presentationMode) var presentationMode
-    
-    @State private var nomeGruppo = ""
+    @State private var selectedGruppoMuscolare = "Petto"
+    let gruppiMuscolariPredefiniti = ["Petto", "Dorso", "Gambe", "Spalle", "Bicipiti", "Tricipiti", "Addominali", "Cardio", "Defaticamento"]
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Dettagli Gruppo Muscolare")) {
-                    TextField("Nome Gruppo Muscolare", text: $nomeGruppo)
+                    Picker("Seleziona Gruppo Muscolare", selection: $selectedGruppoMuscolare) {
+                        ForEach(gruppiMuscolariPredefiniti, id: \.self) { gruppo in
+                            Text(gruppo)
+                        }
+                    }
                 }
                 
                 Section {
                     Button(action: aggiungiGruppoMuscolare) {
                         Text("Aggiungi")
                     }
-                    .disabled(nomeGruppo.isEmpty)
+                    .disabled(selectedGruppoMuscolare.isEmpty)
                 }
             }
             .navigationTitle("Nuovo Gruppo Muscolare")
@@ -71,10 +73,11 @@ struct AddGruppoMuscolareView: View {
                 presentationMode.wrappedValue.dismiss()
             })
         }
+        .interactiveDismissDisabled(true)
     }
     
     private func aggiungiGruppoMuscolare() {
-        let nuovoGruppo = GruppoMuscolare(nome: nomeGruppo, esercizi: [])
+        let nuovoGruppo = GruppoMuscolare(nome: selectedGruppoMuscolare, esercizi: [])
         giorno.gruppiMuscolari.append(nuovoGruppo)
         presentationMode.wrappedValue.dismiss()
     }

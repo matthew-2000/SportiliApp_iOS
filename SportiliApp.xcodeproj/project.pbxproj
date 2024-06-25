@@ -47,6 +47,7 @@
 		3B70B88D2C298824000DC6EB /* GruppoMuscolareDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */; };
 		3B70B88F2C298842000DC6EB /* EsercizioDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */; };
 		3B70B8912C29AA65000DC6EB /* AddEsercizioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */; };
+		3B78AE902C2B02DC006E1173 /* AdminContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */; };
 		3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337602C09CC8500057838 /* SportiliAppApp.swift */; };
 		3B9337632C09CC8500057838 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337622C09CC8500057838 /* ContentView.swift */; };
 		3B9337652C09CC8600057838 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B9337642C09CC8600057838 /* Assets.xcassets */; };
@@ -93,6 +94,7 @@
 		3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoMuscolareDetailView.swift; sourceTree = "<group>"; };
 		3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsercizioDetailView.swift; sourceTree = "<group>"; };
 		3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEsercizioView.swift; sourceTree = "<group>"; };
+		3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminContentView.swift; sourceTree = "<group>"; };
 		3B93375D2C09CC8500057838 /* SportiliApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SportiliApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B9337602C09CC8500057838 /* SportiliAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportiliAppApp.swift; sourceTree = "<group>"; };
 		3B9337622C09CC8500057838 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -166,6 +168,7 @@
 				3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */,
 				3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */,
 				3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */,
+				3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */,
 			);
 			path = Fausto;
 			sourceTree = "<group>";
@@ -173,6 +176,7 @@
 		3B70B8922C29B33F000DC6EB /* User */ = {
 			isa = PBXGroup;
 			children = (
+				3B9337622C09CC8500057838 /* ContentView.swift */,
 				3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */,
 				3B23C24A2C09E3A70043D41E /* HomeView.swift */,
 				3B1BD3632C0CE60700BA9A3D /* DayView.swift */,
@@ -206,9 +210,8 @@
 				3B23C27A2C09FE1A0043D41E /* Info.plist */,
 				3B5CF6A72C0F4D070068F17E /* Fausto */,
 				3B70B8922C29B33F000DC6EB /* User */,
-				3B9337602C09CC8500057838 /* SportiliAppApp.swift */,
-				3B9337622C09CC8500057838 /* ContentView.swift */,
 				3B08CDDB2C0DF338001980B2 /* LoginView.swift */,
+				3B9337602C09CC8500057838 /* SportiliAppApp.swift */,
 				3B9337642C09CC8600057838 /* Assets.xcassets */,
 				3B9337662C09CC8600057838 /* Preview Content */,
 			);
@@ -326,6 +329,7 @@
 				3B08CDDA2C0DB087001980B2 /* Scheda.swift in Sources */,
 				3B70B88D2C298824000DC6EB /* GruppoMuscolareDetailView.swift in Sources */,
 				3B70B8892C298258000DC6EB /* AddSchedaView.swift in Sources */,
+				3B78AE902C2B02DC006E1173 /* AdminContentView.swift in Sources */,
 				3B5CF6AB2C0F59EE0068F17E /* Utente.swift in Sources */,
 				3B1BD3642C0CE60700BA9A3D /* DayView.swift in Sources */,
 				3B23C2BD2C0A05830043D41E /* SettingsView.swift in Sources */,
@@ -476,7 +480,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SportiliApp/Preview Content\"";
-				DEVELOPMENT_TEAM = W5F66P2G2K;
+				DEVELOPMENT_TEAM = UC7KL3VPTH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SportiliApp/Info.plist;
@@ -512,7 +516,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SportiliApp/Preview Content\"";
-				DEVELOPMENT_TEAM = W5F66P2G2K;
+				DEVELOPMENT_TEAM = UC7KL3VPTH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SportiliApp/Info.plist;
