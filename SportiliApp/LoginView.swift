@@ -79,7 +79,7 @@ struct LoginView: View {
             ContentView()
         }
         .fullScreenCover(isPresented: $isFaustoLoggedIn) {
-            AdminHomeView()
+            AdminContentView()
         }
     }
     

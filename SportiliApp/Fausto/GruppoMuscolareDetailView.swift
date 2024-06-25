@@ -10,6 +10,7 @@ import SwiftUI
 struct GruppoMuscolareDetailView: View {
     @Binding var gruppo: GruppoMuscolare
     @State private var showingAddSheet = false
+    @ObservedObject var eserciziPredViewModel = EserciziPredefinitiViewModel()
 
     var body: some View {
         Form {
@@ -46,7 +47,15 @@ struct GruppoMuscolareDetailView: View {
                 .sheet(isPresented: $showingAddSheet) {
                     AddEsercizioView(gruppo: $gruppo)
                 }
+                
             }
+            
+            Section(header: Text("Esercizi Predefiniti")) {
+                List(eserciziPredViewModel.getGruppoMuscolare(named: gruppo.nome)?.esercizi ?? []) { esercizio in
+                    EserciziPredefinitiRow(esercizio: esercizio)
+                }
+            }
+            
         }
         .navigationTitle("\(gruppo.nome)")
     }
@@ -54,6 +63,42 @@ struct GruppoMuscolareDetailView: View {
     private func aggiornaOrdineEsercizi() {
         for index in gruppo.esercizi.indices {
             gruppo.esercizi[index].ordine = index + 1
+        }
+    }
+}
+
+struct EserciziPredefinitiRow: View {
+    
+    var esercizio: EsercizioPredefinito
+    @StateObject var imageLoader = ImageLoader()
+    
+    var body: some View {
+        HStack {
+            Text(esercizio.nome)
+            Spacer()
+            if let image = imageLoader.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 50, height: 50)
+                    .cornerRadius(5)
+            } else {
+                if imageLoader.error != nil {
+                    // Mostra un'immagine fittizia quando si verifica un errore
+                    RoundedRectangle(cornerRadius: 5)
+                        .frame(width: 50, height: 50)
+                        .foregroundColor(.gray)
+                } else {
+                    // Visualizza uno spinner o un messaggio di caricamento
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .accent))
+                        .frame(width: 50, height: 50)
+                }
+            }
+        }
+        .onAppear {
+            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(esercizio.nome).png"
+            imageLoader.loadImage(from: storagePath)
         }
     }
 }
