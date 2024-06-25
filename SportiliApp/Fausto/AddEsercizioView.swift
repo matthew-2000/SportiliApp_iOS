@@ -15,7 +15,6 @@ struct AddEsercizioView: View {
     @State private var serie = ""
     @State private var riposo = ""
     @State private var notePT = ""
-    @State private var noteUtente = ""
     
     var body: some View {
         NavigationView {
@@ -25,7 +24,6 @@ struct AddEsercizioView: View {
                     TextField("Serie", text: $serie)
                     TextField("Riposo", text: $riposo)
                     TextField("Note PT", text: $notePT)
-                    TextField("Note Utente", text: $noteUtente)
                 }
                 
                 Section {
@@ -43,7 +41,7 @@ struct AddEsercizioView: View {
     }
     
     private func aggiungiEsercizio() {
-        let nuovoEsercizio = Esercizio(name: nomeEsercizio, serie: serie, riposo: riposo, notePT: notePT, noteUtente: noteUtente, ordine: gruppo.esercizi.count + 1)
+        let nuovoEsercizio = Esercizio(name: nomeEsercizio, serie: serie, riposo: riposo, notePT: notePT, ordine: gruppo.esercizi.count + 1)
         gruppo.esercizi.append(nuovoEsercizio)
         presentationMode.wrappedValue.dismiss()
     }

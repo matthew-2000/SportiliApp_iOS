@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct AdminHomeView: View {
-    
     @StateObject private var gymViewModel = GymViewModel()
     @State private var searchText = ""
     @State private var showAddUserView = false
+    @State private var selectedUser: Utente? = nil
     
     var body: some View {
         NavigationView {
@@ -25,7 +25,9 @@ struct AdminHomeView: View {
                             user.cognome.lowercased().contains(searchText.lowercased()) ||
                             user.code.lowercased().contains(searchText.lowercased())
                         }, id: \.id) { utente in
-                            NavigationLink(destination: UtenteView(utente: utente, gymViewModel: gymViewModel)) {
+                            Button(action: {
+                                selectedUser = utente
+                            }) {
                                 UtenteRow(utente: utente)
                             }
                         }
@@ -54,6 +56,9 @@ struct AdminHomeView: View {
                 }
             })
             .navigationBarTitleDisplayMode(.large)
+        }
+        .sheet(item: $selectedUser) { utente in
+            UtenteView(utente: utente, gymViewModel: gymViewModel)
         }
     }
 }

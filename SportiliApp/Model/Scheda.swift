@@ -49,13 +49,13 @@ class Scheda: Codable {
     func toDictionary() -> [String: Any] {
         var giorniDict = [String: Any]()
         
-        for (index, giorno) in giorni.enumerated() {
+        for (giornoIndex, giorno) in giorni.enumerated() {
             var gruppiMuscolariDict = [String: Any]()
             
-            for gruppo in giorno.gruppiMuscolari {
+            for (gruppoIndex, gruppo) in giorno.gruppiMuscolari.enumerated() {
                 var eserciziDict = [String: Any]()
                 
-                for esercizio in gruppo.esercizi {
+                for (esercizioIndex, esercizio) in gruppo.esercizi.enumerated() {
                     let esercizioDict: [String: Any] = [
                         "name": esercizio.name,
                         "ordine": esercizio.ordine ?? 0,
@@ -64,21 +64,21 @@ class Scheda: Codable {
                         "notePT" : esercizio.notePT ?? ""
                         // Include other properties as needed
                     ]
-                    eserciziDict["esercizio\(esercizio.ordine ?? 0)"] = esercizioDict
+                    eserciziDict["esercizio\(esercizioIndex + 1)"] = esercizioDict
                 }
                 
                 let gruppoDict: [String: Any] = [
                     "nome": gruppo.nome,
                     "esercizi": eserciziDict
                 ]
-                gruppiMuscolariDict["gruppo\(index + 1)"] = gruppoDict
+                gruppiMuscolariDict["gruppo\(gruppoIndex + 1)"] = gruppoDict
             }
             
             let giornoDict: [String: Any] = [
                 "name": giorno.name,
                 "gruppiMuscolari": gruppiMuscolariDict
             ]
-            giorniDict["giorno\(index + 1)"] = giornoDict
+            giorniDict["giorno\(giornoIndex + 1)"] = giornoDict
         }
         
         let schedaDict: [String: Any] = [
