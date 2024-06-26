@@ -11,19 +11,21 @@ import Firebase
 struct AddSchedaView: View {
     var userCode: String
     @ObservedObject var gymViewModel: GymViewModel
-    @State private var dataInizio = Date()
-    @State private var durata = 7
+    @State private var dataInizio : Date
+    @State private var durata : Int
     @State private var scheda: Scheda?
     @State private var giorni: [Giorno]
     
     init(userCode: String, gymViewModel: GymViewModel, dataInizio: Date = Date(), durata: Int = 7, scheda: Scheda?) {
         self.userCode = userCode
         self.gymViewModel = gymViewModel
-        self.dataInizio = dataInizio
-        self.durata = durata
         if let scheda = scheda {
             self.giorni = scheda.giorni
+            self.durata = scheda.durata
+            self.dataInizio = scheda.dataInizio
         } else {
+            self.durata = durata
+            self.dataInizio = dataInizio
             self.giorni = []
         }
     }

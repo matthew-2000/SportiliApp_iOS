@@ -11,17 +11,33 @@ struct AddEsercizioView: View {
     @Binding var gruppo: GruppoMuscolare
     @Environment(\.presentationMode) var presentationMode
     
-    @State private var nomeEsercizio = ""
+    @State var nomeEsercizio = ""
     @State private var serie = ""
     @State private var riposo = ""
     @State private var notePT = ""
+    @State private var serieInt = 3
+    @State private var ripetizioni = 10
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Dettagli Esercizio")) {
                     TextField("Nome Esercizio", text: $nomeEsercizio)
-                    TextField("Serie", text: $serie)
+                    
+                    Stepper(value: $serieInt, in: 1...30) {
+                        Text("\(serieInt) serie")
+                    }
+                    
+                    Stepper(value: $ripetizioni, in: 1...50) {
+                        Text("\(ripetizioni) ripetizioni")
+                    }
+                }
+                
+                Section(header: Text("Ripetizioni testuali")) {
+                    TextField("Serie o minuti", text: $serie)
+                }
+                
+                Section(header: Text("Altro")) {
                     TextField("Riposo", text: $riposo)
                     TextField("Note PT", text: $notePT)
                 }
@@ -41,9 +57,20 @@ struct AddEsercizioView: View {
     }
     
     private func aggiungiEsercizio() {
+        
+        let serie = getSerie()
+        
         let nuovoEsercizio = Esercizio(name: nomeEsercizio, serie: serie, riposo: riposo, notePT: notePT, ordine: gruppo.esercizi.count + 1)
         gruppo.esercizi.append(nuovoEsercizio)
         presentationMode.wrappedValue.dismiss()
+    }
+    
+    private func getSerie() -> String {
+        if serie.isEmpty {
+            return "\(serieInt)x\(ripetizioni)"
+        } else {
+            return serie
+        }
     }
 }
 

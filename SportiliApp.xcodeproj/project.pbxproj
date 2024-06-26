@@ -133,6 +133,7 @@
 				3B08CDD92C0DB087001980B2 /* Scheda.swift */,
 				3B08CDDD2C0E040C001980B2 /* SchedaViewModel.swift */,
 				3BF2C8EE2C20451000179D37 /* GymViewModel.swift */,
+				3B78AE912C2B0D71006E1173 /* EserciziPredefinitiManager.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -173,7 +174,6 @@
 				3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */,
 				3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */,
 				3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */,
-				3B78AE912C2B0D71006E1173 /* EserciziPredefinitiManager.swift */,
 			);
 			path = Fausto;
 			sourceTree = "<group>";
