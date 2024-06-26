@@ -52,12 +52,29 @@ struct GruppoRow: View {
 struct EsercizioRow: View {
     
     var esercizio: Esercizio
+    @StateObject var imageLoader = ImageLoader()
     
     var body: some View {
         HStack {
-            RoundedRectangle(cornerRadius: 5)
-                .frame(width: 100, height: 100)
-                .foregroundColor(.gray)
+            
+            if let image = imageLoader.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 100, height: 100)
+                    .cornerRadius(5)
+            } else {
+                if imageLoader.error != nil {
+                    RoundedRectangle(cornerRadius: 5)
+                        .frame(width: 100, height: 100)
+                        .foregroundColor(.gray)
+                } else {
+                    // Visualizza uno spinner o un messaggio di caricamento
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .accent))
+                        .frame(width: 100, height: 100)
+                }
+            }
             
             VStack(alignment: .leading, spacing: 8) {
                 if let ordine = esercizio.ordine {
@@ -87,6 +104,10 @@ struct EsercizioRow: View {
             
             Spacer()
             
+        }
+        .onAppear {
+            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(esercizio.name).png"
+            imageLoader.loadImage(from: storagePath)
         }
     }
     

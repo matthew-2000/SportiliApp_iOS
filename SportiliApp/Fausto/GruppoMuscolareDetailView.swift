@@ -11,6 +11,7 @@ struct GruppoMuscolareDetailView: View {
     @Binding var gruppo: GruppoMuscolare
     @State private var showingAddSheet = false
     @ObservedObject var eserciziPredViewModel = EserciziPredefinitiViewModel()
+    @State var selectedEsercizio = ""
 
     var body: some View {
         Form {
@@ -45,14 +46,21 @@ struct GruppoMuscolareDetailView: View {
                     Text("Aggiungi Esercizio")
                 }
                 .sheet(isPresented: $showingAddSheet) {
-                    AddEsercizioView(gruppo: $gruppo)
+                    AddEsercizioView(gruppo: $gruppo, nomeEsercizio: selectedEsercizio)
                 }
                 
             }
             
             Section(header: Text("Esercizi Predefiniti")) {
                 List(eserciziPredViewModel.getGruppoMuscolare(named: gruppo.nome)?.esercizi ?? []) { esercizio in
-                    EserciziPredefinitiRow(esercizio: esercizio)
+                    if !gruppo.esercizi.contains(where: { $0.name == esercizio.nome }) {
+                        Button(action: {
+                            selectedEsercizio = esercizio.nome
+                            showingAddSheet.toggle()
+                        }, label: {
+                            EserciziPredefinitiRow(esercizio: esercizio)
+                        })
+                    }
                 }
             }
             
