@@ -37,20 +37,22 @@ struct HomeView: View {
                             Text("Inizio: \(getDateString())")
                                 .montserrat(size: 20)
                                 .fontWeight(.semibold)
-                            if let durata = scheda.getDurataScheda() {
-                                Text("x\(durata) sett.")
-                                    .montserrat(size: 25)
-                                    .foregroundColor(.accentColor)
-                                    .bold()
-                            } else {
-                                Text("x0 sett.")
-                                    .montserrat(size: 25)
-                                    .foregroundColor(.red)
-                                    .bold()
-                            }
+                            Text("x\(scheda.durata) sett.")
+                                .montserrat(size: 25)
+                                .foregroundColor(.accentColor)
+                                .bold()
                         }
                         .padding(.top, 20)
                         .padding(.bottom, 20)
+                        
+                        if let durata = scheda.getDurataScheda() {
+                            
+                        } else {
+                            Text("Cambio scheda!")
+                                .montserrat(size: 25)
+                                .foregroundColor(.red)
+                                .bold()
+                        }
                         
                         ForEach(scheda.giorni, id: \.id) { giorno in
                             NavigationLink(destination: DayView(day: giorno)) {
@@ -103,13 +105,10 @@ struct DayRow: View {
     
     var body: some View {
         HStack {
-            RoundedRectangle(cornerRadius: 5)
-                .frame(width: 40, height: 40)
-                .foregroundColor(.gray)
             
             VStack(alignment: .leading) {
                 Text("\(day.name)")
-                    .montserrat(size: 18)
+                    .montserrat(size: 20)
                     .fontWeight(.semibold)
                 Text(getGruppiString())
                     .montserrat(size: 15)
@@ -128,7 +127,7 @@ struct DayRow: View {
         for g in day.gruppiMuscolari {
             s += "\(g.nome), "
         }
-        return s
+        return String(s.dropLast(2))
     }
 }
 

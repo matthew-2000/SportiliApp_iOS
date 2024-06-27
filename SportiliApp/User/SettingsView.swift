@@ -16,24 +16,62 @@ struct SettingsView: View {
         NavigationView {
             VStack(spacing: 0) {
                 
-                Button(action: {
-                    let firebaseAuth = Auth.auth()
-                    do {
-                        try firebaseAuth.signOut()
-                        resetDefaults()
-                        isLoggedOut.toggle()
-                    } catch let signOutError as NSError {
-                      print("Error signing out: %@", signOutError)
-                    }
-                }, label: {
-                    Text("Logout")
+                Form {
+                    Section(header: Text("Credits")
+                        .montserrat(size: 13), content: {
+                        HStack {
+                            Spacer()
+                            Text("PALESTRA SPORTILIA \nvia Valle, 22 83024 \nMonteforte Irpino (Avellino) \ncell. 338 7731977")
+                                .montserrat(size: 15)
+                                .multilineTextAlignment(.center)
+                            Spacer()
+                        }
+                        .padding()
+                        
+                        HStack {
+                            Spacer()
+                            Text("Made with ❤️ by Matteo Ercolino")
+                                .montserrat(size: 13)
+                            Spacer()
+                        }
+                        .padding()
+                    })
+                    
+                    Section(header: Text("Social")                                .montserrat(size: 13), content: {
+                        Button("Seguici su Instagram", action: {
+                            
+                        })
                         .montserrat(size: 18)
-                })
-                .buttonStyle(DefaultButtonStyle())
-                .controlSize(.regular)
+                        Button("Seguici su Facebook", action: {
+                            
+                        })
+                        .montserrat(size: 18)
+                        Button("Visita il sito web", action: {
+                            
+                        })
+                        .montserrat(size: 18)
+                    })
+                    
+                    Section(header: Text("Logout")
+                        .montserrat(size: 13), content: {
+                        Button(action: {
+                            let firebaseAuth = Auth.auth()
+                            do {
+                                try firebaseAuth.signOut()
+                                resetDefaults()
+                                isLoggedOut.toggle()
+                            } catch let signOutError as NSError {
+                              print("Error signing out: %@", signOutError)
+                            }
+                        }, label: {
+                            Text("Logout")
+                                .montserrat(size: 18)
+                        })
+                    })
+
+                }
                 
             }
-            .padding()
             .navigationTitle("Impostazioni")
             .navigationBarTitleDisplayMode(.large)
         }

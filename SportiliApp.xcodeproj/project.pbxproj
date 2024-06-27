@@ -166,13 +166,9 @@
 		3B5CF6A72C0F4D070068F17E /* Fausto */ = {
 			isa = PBXGroup;
 			children = (
+				3B78AE952C2D4781006E1173 /* AddScheda */,
 				3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */,
 				3BF2C8F22C23207600179D37 /* UtenteView.swift */,
-				3B70B8882C298258000DC6EB /* AddSchedaView.swift */,
-				3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */,
-				3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */,
-				3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */,
-				3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */,
 				3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */,
 			);
 			path = Fausto;
@@ -188,6 +184,18 @@
 				3B23C2BC2C0A05830043D41E /* SettingsView.swift */,
 			);
 			path = User;
+			sourceTree = "<group>";
+		};
+		3B78AE952C2D4781006E1173 /* AddScheda */ = {
+			isa = PBXGroup;
+			children = (
+				3B70B8882C298258000DC6EB /* AddSchedaView.swift */,
+				3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */,
+				3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */,
+				3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */,
+				3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */,
+			);
+			path = AddScheda;
 			sourceTree = "<group>";
 		};
 		3B9337542C09CC8500057838 = {
@@ -495,7 +503,6 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -531,7 +538,6 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
