@@ -17,7 +17,7 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 
                 Form {
-                    Section(header: Text("Credits")
+                    Section(header: Text("Sportilia")
                         .montserrat(size: 13), content: {
                         HStack {
                             Spacer()
@@ -27,29 +27,26 @@ struct SettingsView: View {
                             Spacer()
                         }
                         .padding()
-                        
-                        HStack {
-                            Spacer()
-                            Text("Made with ❤️ by Matteo Ercolino")
-                                .montserrat(size: 13)
-                            Spacer()
-                        }
-                        .padding()
                     })
                     
                     Section(header: Text("Social")                                .montserrat(size: 13), content: {
                         Button("Seguici su Instagram", action: {
                             
                         })
-                        .montserrat(size: 18)
+                        .montserrat(size: 15)
+                        .fontWeight(.semibold)
+
                         Button("Seguici su Facebook", action: {
                             
                         })
-                        .montserrat(size: 18)
+                        .montserrat(size: 15)
+                        .fontWeight(.semibold)
+
                         Button("Visita il sito web", action: {
                             
                         })
-                        .montserrat(size: 18)
+                        .montserrat(size: 15)
+                        .fontWeight(.semibold)
                     })
                     
                     Section(header: Text("Logout")
@@ -66,7 +63,19 @@ struct SettingsView: View {
                         }, label: {
                             Text("Logout")
                                 .montserrat(size: 18)
+                                .fontWeight(.semibold)
                         })
+                    })
+                    
+                    Section(header: Text("Credits")
+                        .montserrat(size: 13), content: {
+                        HStack {
+                            Spacer()
+                            Text("Made with ❤️ by Matteo Ercolino")
+                                .montserrat(size: 13)
+                                .bold()
+                            Spacer()
+                        }
                     })
 
                 }

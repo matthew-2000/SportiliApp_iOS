@@ -25,11 +25,14 @@ struct AdminHomeView: View {
                             user.cognome.lowercased().contains(searchText.lowercased()) ||
                             user.code.lowercased().contains(searchText.lowercased())
                         }, id: \.id) { utente in
-                            Button(action: {
-                                selectedUser = utente
-                            }) {
+//                            Button(action: {
+//                                selectedUser = utente
+//                            }) {
+//                                UtenteRow(utente: utente)
+//                            }
+                            NavigationLink(destination: UtenteView(utente: utente, gymViewModel: gymViewModel), label: {
                                 UtenteRow(utente: utente)
-                            }
+                            })
                         }
                     }
                     .listStyle(PlainListStyle())
@@ -57,9 +60,9 @@ struct AdminHomeView: View {
             })
             .navigationBarTitleDisplayMode(.large)
         }
-        .sheet(item: $selectedUser) { utente in
-            UtenteView(utente: utente, gymViewModel: gymViewModel)
-        }
+//        .sheet(item: $selectedUser) { utente in
+//            UtenteView(utente: utente, gymViewModel: gymViewModel)
+//        }
     }
 }
 
@@ -71,10 +74,17 @@ struct UtenteRow: View {
             VStack(alignment: .leading) {
                 Text("\(utente.nome) \(utente.cognome)")
                 if utente.scheda == nil {
-                    Text("Scheda mancante")
+                    Text("Scheda mancante!")
                         .underline()
                         .foregroundColor(.red)
                         .fontWeight(.semibold)
+                } else {
+                    if utente.scheda?.getDurataScheda() == nil {
+                        Text("Scheda scaduta!")
+                            .underline()
+                            .foregroundColor(.red)
+                            .fontWeight(.semibold)
+                    }
                 }
             }
             Spacer()

@@ -15,6 +15,7 @@ struct LoginView: View {
     @State private var isLoggedIn: Bool = false
     @State private var isFaustoLoggedIn: Bool = false
     @State private var showAlert = false
+    @State private var isLoading = false
     @State private var alertMessage = ""
     
     var body: some View {
@@ -37,32 +38,39 @@ struct LoginView: View {
                     .fontWeight(.semibold)
                     .padding(.bottom, 30)
                 
-                Button(action: {
-                    // Logica per controllare il codice e fare il login
-                    if code.isEmpty {
-                        self.alertMessage = "Inserisci il codice!"
-                        self.showAlert.toggle()
-                        return
-                    }
-                    isAdmin(codice: code, completion: { isAdmin in
-                        if !isAdmin {
-                            register()
-                        } else {
-                            loginFausto()
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .accent))
+                        .padding()
+                } else {
+                    Button(action: {
+                        
+                        if code.isEmpty {
+                            self.alertMessage = "Inserisci il codice!"
+                            self.showAlert.toggle()
+                            return
                         }
+                        isLoading.toggle()
+                        isAdmin(codice: code, completion: { isAdmin in
+                            if !isAdmin {
+                                register()
+                            } else {
+                                loginFausto()
+                            }
+                        })
+                        
+                    }, label: {
+                        Text("Entra")
+                            .frame(maxWidth: .infinity)
                     })
-                    
-                }, label: {
-                    Text("Entra")
-                        .frame(maxWidth: .infinity)
-                })
-                .alert(isPresented: $showAlert) {
-                    Alert(title: Text("Attenzione"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                    .alert(isPresented: $showAlert) {
+                        Alert(title: Text("Attenzione"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                    }
+                    .montserrat(size: 20)
+                    .bold()
+                    .buttonStyle(BorderedProminentButtonStyle())
+                    .controlSize(.large)
                 }
-                .montserrat(size: 20)
-                .bold()
-                .buttonStyle(BorderedProminentButtonStyle())
-                .controlSize(.large)
                 
                 Button("Hai bisogno di aiuto?", action: {
                     // Azione per gestire il caso in cui l'utente non ha il codice
@@ -104,6 +112,7 @@ struct LoginView: View {
                         if error != nil {
                             self.alertMessage = "Errore durante l'accesso. Riprova più tardi."
                             self.showAlert.toggle()
+                            self.isLoading.toggle()
                         } else {
                             // Utente registrato con successo
                             let changeRequest = authResult?.user.createProfileChangeRequest()
@@ -124,11 +133,13 @@ struct LoginView: View {
                     // Nome e/o cognome non autorizzati
                     self.alertMessage = "Codice non autorizzato."
                     self.showAlert.toggle()
+                    self.isLoading.toggle()
                 }
             } else {
                 // Errore nel recupero degli utenti autorizzati
                 self.alertMessage = "Errore durante il recupero degli utenti. Riprova più tardi."
                 self.showAlert.toggle()
+                self.isLoading.toggle()
             }
         }
     }
