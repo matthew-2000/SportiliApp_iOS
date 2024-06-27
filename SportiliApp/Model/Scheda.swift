@@ -140,7 +140,7 @@ class SchedaManager {
                 // Esempio: creare un oggetto scheda
                 let dataInizioString = schedaData["dataInizio"] as? String ?? ""
                 let durata = schedaData["durata"] as? Int ?? 0
-                let giorniData = schedaData["giorni"] as? [String: Any] ?? [:]
+                var giorniData = schedaData["giorni"] as? [String: Any] ?? [:]
                 
                 // Converti la data di inizio da stringa a oggetto Date
                 let dateFormatter = DateFormatter()
@@ -152,19 +152,31 @@ class SchedaManager {
                 }
                 
                 var giorni: [Giorno] = []
-                for (_, giornoData) in giorniData {
+                
+                // Ordinare giorniData per chiave
+                let giorniOrdinati = giorniData.sorted { $0.key < $1.key }
+                
+                for (_, giornoData) in giorniOrdinati {
                     if let giornoData = giornoData as? [String: Any] {
                         let nome = giornoData["name"] as? String ?? ""
-                        let gruppiMuscolariData = giornoData["gruppiMuscolari"] as? [String: Any] ?? [:]
+                        var gruppiMuscolariData = giornoData["gruppiMuscolari"] as? [String: Any] ?? [:]
                         
                         var gruppiMuscolari: [GruppoMuscolare] = []
-                        for (_, gruppoData) in gruppiMuscolariData {
+                        
+                        // Ordinare gruppiMuscolariData per chiave
+                        let gruppiMuscolariOrdinati = gruppiMuscolariData.sorted { $0.key < $1.key }
+                        
+                        for (_, gruppoData) in gruppiMuscolariOrdinati {
                             if let gruppoData = gruppoData as? [String: Any] {
                                 let nomeGruppo = gruppoData["nome"] as? String ?? ""
                                 let eserciziData = gruppoData["esercizi"] as? [String: Any] ?? [:]
                                 
                                 var esercizi: [Esercizio] = []
-                                for (_, esercizioData) in eserciziData {
+                                
+                                // Ordinare eserciziData per chiave
+                                let eserciziOrdinati = eserciziData.sorted { $0.key < $1.key }
+                                
+                                for (_, esercizioData) in eserciziOrdinati {
                                     if let esercizioData = esercizioData as? [String: Any] {
                                         let nomeEsercizio = esercizioData["name"] as? String ?? ""
                                         let serie = esercizioData["serie"] as? String ?? ""
@@ -196,6 +208,7 @@ class SchedaManager {
         } else {
             completion(nil)
         }
+
     }
 
 }

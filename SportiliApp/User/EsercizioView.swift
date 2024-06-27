@@ -38,16 +38,9 @@ struct EsercizioView: View {
                             .frame(height: 200)
                             .cornerRadius(5)
                     } else {
-                        if imageLoader.error != nil {
-                            RoundedRectangle(cornerRadius: 5)
-                                .frame(height: 200)
-                                .foregroundColor(.white)
-                        } else {
-                            // Visualizza uno spinner o un messaggio di caricamento
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .accent))
-                                .frame(height: 200)
-                        }
+                        RoundedRectangle(cornerRadius: 5)
+                            .frame(height: 200)
+                            .foregroundColor(.white)
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
@@ -73,6 +66,9 @@ struct EsercizioView: View {
                                     Text("Nessuna nota.")
                                         .montserrat(size: 15)
                                 }
+                            } else {
+                                Text("Nessuna nota.")
+                                    .montserrat(size: 15)
                             }
                         })
                     }

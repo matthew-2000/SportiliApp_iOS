@@ -29,6 +29,9 @@ struct GiornoDetailView: View {
                 .onDelete { indices in
                     giorno.gruppiMuscolari.remove(atOffsets: indices)
                 }
+                .onMove { source, destination in
+                    giorno.gruppiMuscolari.move(fromOffsets: source, toOffset: destination)
+                }
                 
                 Button(action: {
                     showingAddGruppoMuscolareView.toggle()
@@ -47,7 +50,7 @@ struct GiornoDetailView: View {
 struct AddGruppoMuscolareView: View {
     @Binding var giorno: Giorno
     @Environment(\.presentationMode) var presentationMode
-    @State private var selectedGruppoMuscolare = "Petto"
+    @State private var selectedGruppoMuscolare = ""
     let gruppiMuscolariPredefiniti = ["Petto", "Dorso", "Gambe", "Spalle", "Bicipiti", "Tricipiti", "Addominali", "Cardio", "Defaticamento"]
     
     var body: some View {
@@ -56,7 +59,9 @@ struct AddGruppoMuscolareView: View {
                 Section(header: Text("Dettagli Gruppo Muscolare")) {
                     Picker("Seleziona Gruppo Muscolare", selection: $selectedGruppoMuscolare) {
                         ForEach(gruppiMuscolariPredefiniti, id: \.self) { gruppo in
-                            Text(gruppo)
+                            if !giorno.gruppiMuscolari.contains(where: { $0.nome == gruppo }) {
+                                Text(gruppo)
+                            }
                         }
                     }
                 }

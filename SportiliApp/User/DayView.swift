@@ -97,8 +97,10 @@ struct EsercizioRow: View {
                     .fontWeight(.bold)
                     .foregroundColor(.accentColor)
                 if let riposo = esercizio.riposo {
-                    Text("\(riposo) riposo")
-                        .montserrat(size: 18)
+                    if !riposo.isEmpty {
+                        Text("\(riposo) riposo")
+                            .montserrat(size: 18)
+                    }
                 }
             }
             
