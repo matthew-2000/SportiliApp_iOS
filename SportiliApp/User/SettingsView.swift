@@ -29,21 +29,28 @@ struct SettingsView: View {
                         .padding()
                     })
                     
-                    Section(header: Text("Social")                                .montserrat(size: 13), content: {
+                    Section(header: Text("Social")                                
+                        .montserrat(size: 13), content: {
                         Button("Seguici su Instagram", action: {
-                            
+                            if let url = URL(string: "https://www.instagram.com/sportiliacentrofitness") {
+                                UIApplication.shared.open(url)
+                            }
                         })
                         .montserrat(size: 15)
                         .fontWeight(.semibold)
 
                         Button("Seguici su Facebook", action: {
-                            
+                            if let url = URL(string: "https://www.facebook.com/centrofitness.sportilia") {
+                                UIApplication.shared.open(url)
+                            }
                         })
                         .montserrat(size: 15)
                         .fontWeight(.semibold)
 
                         Button("Visita il sito web", action: {
-                            
+                            if let url = URL(string: "https://www.palestrasportilia.it") {
+                                UIApplication.shared.open(url)
+                            }
                         })
                         .montserrat(size: 15)
                         .fontWeight(.semibold)

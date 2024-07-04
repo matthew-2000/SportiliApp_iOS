@@ -38,9 +38,28 @@ struct EsercizioView: View {
                             .frame(height: 200)
                             .cornerRadius(5)
                     } else {
-                        RoundedRectangle(cornerRadius: 5)
-                            .frame(height: 200)
-                            .foregroundColor(.white)
+                        if imageLoader.error != nil {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .frame(height: 200)
+                                    .foregroundColor(.no)
+                                
+                                Text("Immagine non disponibile")
+                                    .montserrat(size: 20)
+                                
+                            }
+                        } else {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .frame(height: 200)
+                                    .foregroundColor(.no)
+                                
+                                // Visualizza uno spinner o un messaggio di caricamento
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .accent))
+                                
+                            }
+                        }
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
