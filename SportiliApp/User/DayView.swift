@@ -67,7 +67,7 @@ struct EsercizioRow: View {
                 if imageLoader.error != nil {
                     RoundedRectangle(cornerRadius: 5)
                         .frame(width: 100, height: 100)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.cardGray)
                 } else {
                     // Visualizza uno spinner o un messaggio di caricamento
                     ProgressView()
