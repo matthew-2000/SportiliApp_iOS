@@ -45,11 +45,9 @@ struct HomeView: View {
                         .padding(.top, 20)
                         .padding(.bottom, 20)
                         
-                        if let durata = scheda.getDurataScheda() {
-                            
-                        } else {
+                        if scheda.getDurataScheda() == nil {
                             Text("Cambio scheda!")
-                                .montserrat(size: 25)
+                                .montserrat(size: 20)
                                 .foregroundColor(.red)
                                 .bold()
                         }

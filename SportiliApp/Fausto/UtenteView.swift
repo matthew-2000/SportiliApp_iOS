@@ -26,13 +26,18 @@ struct UtenteView: View {
     
     var body: some View {
         Form {
+            
+            Section("Codice", content: {
+                Text("\(utente.code)")
+            })
+            
             Section(header: Text("Modifica Utente")) {
                 TextField("Nome", text: $editedNome)
                 TextField("Cognome", text: $editedCognome)
             }
             
             Section(header: Text("Scheda")) {
-                if let scheda = utente.scheda {
+                if utente.scheda != nil {
                     Button(action: {
                         showAddSchedaView.toggle()
                     }) {

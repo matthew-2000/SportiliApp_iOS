@@ -30,7 +30,8 @@ struct SettingsView: View {
                     })
                     
                     Section(header: Text("Social")                                
-                        .montserrat(size: 13), content: {
+                        .montserrat(size: 13), 
+                            content: {
                         Button("Seguici su Instagram", action: {
                             if let url = URL(string: "https://www.instagram.com/sportiliacentrofitness") {
                                 UIApplication.shared.open(url)
@@ -46,6 +47,18 @@ struct SettingsView: View {
                         })
                         .montserrat(size: 15)
                         .fontWeight(.semibold)
+                    
+                        Button(action: {
+                            if let url = URL(string: "https://www.tiktok.com/@palestrasportilia") {
+                                UIApplication.shared.open(url)
+                            }
+                        }, label: {
+                            HStack {
+                                Text("Seguici su Tik Tok")
+                                    .montserrat(size: 15)
+                                    .fontWeight(.semibold)
+                            }
+                        })
 
                         Button("Visita il sito web", action: {
                             if let url = URL(string: "https://www.palestrasportilia.it") {
@@ -80,7 +93,6 @@ struct SettingsView: View {
                             Spacer()
                             Text("Made with ❤️ by Matteo Ercolino")
                                 .montserrat(size: 13)
-                                .bold()
                             Spacer()
                         }
                     })

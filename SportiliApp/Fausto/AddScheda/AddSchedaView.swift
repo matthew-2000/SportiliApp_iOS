@@ -55,10 +55,20 @@ struct AddSchedaView: View {
                     }
                     
                     Button(action: {
-                        let nuovoGiorno = Giorno(name: "", gruppiMuscolari: [])
+                        let nuovoGiorno = Giorno(name: "A", gruppiMuscolari: [])
                         giorni.append(nuovoGiorno)
                     }) {
                         Text("Aggiungi Giorno")
+                    }
+                }
+                
+                if scheda == nil && giorni.isEmpty {
+                    Section("Default") {
+                        Button(action: {
+                            giorni = [Giorno(name: "A", gruppiMuscolari: [GruppoMuscolare(nome: "Riscaldamento", esercizi: []), GruppoMuscolare(nome: "Addominali", esercizi: []), GruppoMuscolare(nome: "Petto", esercizi: []), GruppoMuscolare(nome: "Bicipiti", esercizi: []), GruppoMuscolare(nome: "Defaticamento", esercizi: []), ]),Giorno(name: "B", gruppiMuscolari: [GruppoMuscolare(nome: "Riscaldamento", esercizi: []), GruppoMuscolare(nome: "Addominali", esercizi: []), GruppoMuscolare(nome: "Dorso", esercizi: []), GruppoMuscolare(nome: "Tricipiti", esercizi: []), GruppoMuscolare(nome: "Defaticamento", esercizi: []), ]),Giorno(name: "C", gruppiMuscolari: [GruppoMuscolare(nome: "Riscaldamento", esercizi: []), GruppoMuscolare(nome: "Addominali", esercizi: []), GruppoMuscolare(nome: "Gambe", esercizi: []), GruppoMuscolare(nome: "Spalle", esercizi: []), GruppoMuscolare(nome: "Defaticamento", esercizi: []), ])]
+                        }) {
+                            Text("Aggiungi giorni di default")
+                        }
                     }
                 }
                 
