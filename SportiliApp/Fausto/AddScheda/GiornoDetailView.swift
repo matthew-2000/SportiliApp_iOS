@@ -51,8 +51,20 @@ struct AddGruppoMuscolareView: View {
     @Binding var giorno: Giorno
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedGruppoMuscolare = ""
-    let gruppiMuscolariPredefiniti = ["Petto", "Dorso", "Gambe", "Spalle", "Bicipiti", "Tricipiti", "Addominali", "Cardio", "Defaticamento"]
-    
+    let gruppiMuscolariPredefiniti = [
+      "Addominali e Lombari",
+      "Gambe e Glutei",
+      "Polpacci",
+      "Pettorali",
+      "Spalle e Trapezio",
+      "Dorsali",
+      "Tricipiti",
+      "Bicipiti",
+      "Riscaldamento",
+      "Defaticamento",
+      "Cardio"
+    ];
+
     var body: some View {
         NavigationView {
             Form {
