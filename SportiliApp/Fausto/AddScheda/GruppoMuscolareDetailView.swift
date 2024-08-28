@@ -84,29 +84,29 @@ struct EserciziPredefinitiRow: View {
         HStack {
             Text(esercizio.nome)
             Spacer()
-            if let image = imageLoader.image {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 50, height: 50)
-                    .cornerRadius(5)
-            } else {
-                if imageLoader.error != nil {
-                    // Mostra un'immagine fittizia quando si verifica un errore
-                    RoundedRectangle(cornerRadius: 5)
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(.gray)
-                } else {
-                    // Visualizza uno spinner o un messaggio di caricamento
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .accent))
-                        .frame(width: 50, height: 50)
-                }
-            }
+//            if let image = imageLoader.image {
+//                Image(uiImage: image)
+//                    .resizable()
+//                    .aspectRatio(contentMode: .fill)
+//                    .frame(width: 50, height: 50)
+//                    .cornerRadius(5)
+//            } else {
+//                if imageLoader.error != nil {
+//                    // Mostra un'immagine fittizia quando si verifica un errore
+//                    RoundedRectangle(cornerRadius: 5)
+//                        .frame(width: 50, height: 50)
+//                        .foregroundColor(.gray)
+//                } else {
+//                    // Visualizza uno spinner o un messaggio di caricamento
+//                    ProgressView()
+//                        .progressViewStyle(CircularProgressViewStyle(tint: .accent))
+//                        .frame(width: 50, height: 50)
+//                }
+//            }
         }
         .onAppear {
-            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(esercizio.nome).png"
-            imageLoader.loadImage(from: storagePath)
+//            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(esercizio.nome).png"
+//            imageLoader.loadImage(from: storagePath)
         }
     }
 }

@@ -41,8 +41,8 @@ class EserciziPredefinitiViewModel: ObservableObject {
                    let eserciziArray = dataDict["esercizi"] as? [[String: String]] {
                     
                     var esercizi = eserciziArray.compactMap { dict -> EsercizioPredefinito? in
-                        guard let nome = dict["nome"], let imageurl = dict["imageurl"] else { return nil }
-                        return EsercizioPredefinito(id: UUID().uuidString, nome: nome, imageurl: imageurl)
+                        guard let nome = dict["nome"] else { return nil }
+                        return EsercizioPredefinito(id: UUID().uuidString, nome: nome, imageurl: "")
                     }
                     esercizi.sort(by: { (e1, e2) in
                         return e1.nome < e2.nome
