@@ -52,11 +52,11 @@ struct AddGruppoMuscolareView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedGruppoMuscolare = ""
     let gruppiMuscolariPredefiniti = [
-      "Addominali e Lombari",
+      "Addominali",
       "Gambe e Glutei",
       "Polpacci",
       "Pettorali",
-      "Spalle e Trapezio",
+      "Spalle",
       "Dorsali",
       "Tricipiti",
       "Bicipiti",
