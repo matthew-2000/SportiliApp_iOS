@@ -73,7 +73,9 @@ struct LoginView: View {
                 }
                 
                 Button("Hai bisogno di aiuto?", action: {
-                    // Azione per gestire il caso in cui l'utente non ha il codice
+                    if let url = URL(string: "https://www.instagram.com/sportiliacentrofitness") {
+                        UIApplication.shared.open(url)
+                    }
                 })
                 .montserrat(size: 15)
                 
