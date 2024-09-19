@@ -94,15 +94,9 @@ struct AddGruppoMuscolareView: View {
     }
     
     private func aggiungiGruppoMuscolare() {
-        let nuovoGruppo = GruppoMuscolare(nome: selectedGruppoMuscolare, esercizi: [])
+        let nuovoGruppo = GruppoMuscolare(id: UUID().uuidString, nome: selectedGruppoMuscolare, esercizi: [])
         giorno.gruppiMuscolari.append(nuovoGruppo)
         presentationMode.wrappedValue.dismiss()
     }
 }
 
-
-struct GiornoDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        GiornoDetailView(giorno: .constant(Giorno(name: "Lunedì", gruppiMuscolari: [])))
-    }
-}

@@ -15,9 +15,8 @@ class Esercizio: Identifiable, Codable {
     var riposo: String?
     var notePT: String?
     var noteUtente: String?
-    var ordine: Int?
 
-    init(id: String = UUID().uuidString, name: String, serie: String, priorita: Int? = nil, riposo: String? = nil, notePT: String? = nil, noteUtente: String? = nil, ordine: Int? = nil) {
+    init(id: String, name: String, serie: String, priorita: Int? = nil, riposo: String? = nil, notePT: String? = nil, noteUtente: String? = nil) {
         self.id = id
         self.name = name
         self.serie = serie
@@ -25,7 +24,6 @@ class Esercizio: Identifiable, Codable {
         self.riposo = riposo
         self.notePT = notePT
         self.noteUtente = noteUtente
-        self.ordine = ordine
     }
 
     enum CodingKeys: String, CodingKey {
@@ -36,7 +34,6 @@ class Esercizio: Identifiable, Codable {
         case riposo
         case notePT
         case noteUtente
-        case ordine
     }
     
     
@@ -50,7 +47,6 @@ class Esercizio: Identifiable, Codable {
             riposo: \(riposo ?? "")
             notePT: \(notePT ?? "")
             noteUtente: \(noteUtente ?? "")
-            ordine: \(ordine ?? -1)
         }
         """
     }

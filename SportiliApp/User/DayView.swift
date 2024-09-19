@@ -18,7 +18,7 @@ struct DayView: View {
                 ForEach(day.gruppiMuscolari, id: \.id) { gruppo in
                     Section(header: GruppoRow(gruppo: gruppo)) {
                         ForEach(gruppo.esercizi, id: \.id) { esercizio in
-                            NavigationLink(destination: EsercizioView(esercizio: esercizio)) {
+                            NavigationLink(destination: EsercizioView(giornoId: day.id, gruppoId: gruppo.id, esercizioId: esercizio.id, esercizio: esercizio)) {
                                 EsercizioRow(esercizio: esercizio)
                             }
                         }
@@ -77,28 +77,16 @@ struct EsercizioRow: View {
             }
             
             VStack(alignment: .leading, spacing: 8) {
-                if let ordine = esercizio.ordine {
-                    HStack {
-                        Text(esercizio.name)
-                            .montserrat(size: 18)
-                            .fontWeight(.semibold)
-                        Spacer()
-                        Text("\(ordine)°")
-                            .montserrat(size: 15)
-                            .fontWeight(.bold)
-                    }
-                } else {
-                    Text(esercizio.name)
-                        .montserrat(size: 18)
-                        .fontWeight(.semibold)
-                }
+                Text(esercizio.name)
+                    .montserrat(size: 18)
+                    .fontWeight(.semibold)
                 Text("\(esercizio.serie)")
                     .montserrat(size: 25)
                     .fontWeight(.bold)
                     .foregroundColor(.accentColor)
                 if let riposo = esercizio.riposo {
                     if !riposo.isEmpty {
-                        Text("\(riposo) riposo")
+                        Text("\(riposo) recupero")
                             .montserrat(size: 18)
                     }
                 }

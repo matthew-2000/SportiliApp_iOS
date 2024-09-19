@@ -64,8 +64,9 @@ class UserManager {
                     // Decodifica la scheda
                     let dataInizioString = schedaData["dataInizio"] as? String ?? ""
                     let durata = schedaData["durata"] as? Int ?? 0
-                    let giorniData = schedaData["giorni"] as? [String: Any] ?? [:]
+                    var giorniData = schedaData["giorni"] as? [String: Any] ?? [:]
                     
+                    // Converti la data di inizio da stringa a oggetto Date
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
                     guard let dataInizio = dateFormatter.date(from: dataInizioString) else {
@@ -75,44 +76,54 @@ class UserManager {
                     }
                     
                     var giorni: [Giorno] = []
-                    for (_, giornoData) in giorniData {
+                    
+                    // Ordinare giorniData per chiave
+                    let giorniOrdinati = giorniData.sorted { $0.key < $1.key }
+                    
+                    for (keyGiorno, giornoData) in giorniOrdinati {
                         if let giornoData = giornoData as? [String: Any] {
-                            let nomeGiorno = giornoData["name"] as? String ?? ""
-                            let gruppiMuscolariData = giornoData["gruppiMuscolari"] as? [String: Any] ?? [:]
+                            let nome = giornoData["name"] as? String ?? ""
+                            var gruppiMuscolariData = giornoData["gruppiMuscolari"] as? [String: Any] ?? [:]
                             
                             var gruppiMuscolari: [GruppoMuscolare] = []
-                            for (_, gruppoData) in gruppiMuscolariData {
+                            
+                            // Ordinare gruppiMuscolariData per chiave
+                            let gruppiMuscolariOrdinati = gruppiMuscolariData.sorted { $0.key < $1.key }
+                            
+                            for (keyGruppo, gruppoData) in gruppiMuscolariOrdinati {
                                 if let gruppoData = gruppoData as? [String: Any] {
                                     let nomeGruppo = gruppoData["nome"] as? String ?? ""
                                     let eserciziData = gruppoData["esercizi"] as? [String: Any] ?? [:]
                                     
                                     var esercizi: [Esercizio] = []
-                                    for (_, esercizioData) in eserciziData {
+                                    
+                                    // Ordinare eserciziData per chiave
+                                    let eserciziOrdinati = eserciziData.sorted { $0.key < $1.key }
+                                    
+                                    for (keyEse, esercizioData) in eserciziOrdinati {
                                         if let esercizioData = esercizioData as? [String: Any] {
                                             let nomeEsercizio = esercizioData["name"] as? String ?? ""
                                             let serie = esercizioData["serie"] as? String ?? ""
-                                            let nota = esercizioData["nota"] as? String
-                                            let notaUtente = esercizioData["notaUtente"] as? String
+                                            let nota = esercizioData["notePT"] as? String
+                                            let noteUtente = esercizioData["noteUtente"] as? String
                                             let riposo = esercizioData["riposo"] as? String
-                                            let ordine = esercizioData["ordine"] as? Int
                                             
-                                            let esercizio = Esercizio(name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: notaUtente, ordine: ordine)
+                                            let esercizio = Esercizio(id: keyEse, name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: noteUtente)
                                             esercizi.append(esercizio)
                                         }
                                     }
                                     
-                                    let gruppoMuscolare = GruppoMuscolare(nome: nomeGruppo, esercizi: esercizi)
+                                    let gruppoMuscolare = GruppoMuscolare(id: keyGruppo, nome: nomeGruppo, esercizi: esercizi)
                                     gruppiMuscolari.append(gruppoMuscolare)
                                 }
                             }
                             
-                            let giorno = Giorno(name: nomeGiorno, gruppiMuscolari: gruppiMuscolari)
+                            let giorno = Giorno(id: keyGiorno, name: nome, gruppiMuscolari: gruppiMuscolari)
                             giorni.append(giorno)
                         }
                     }
                     
                     let scheda = Scheda(dataInizio: dataInizio, durata: durata, giorni: giorni)
-                    scheda.sortAll()
                     let utente = Utente(code: code, cognome: cognome, nome: nome, scheda: scheda)
                     completion(utente)
                     
