@@ -69,8 +69,8 @@ struct GruppoMuscolareDetailView: View {
     }
     
     private func aggiornaOrdineEsercizi() {
-        for index in gruppo.esercizi.indices {
-            gruppo.esercizi[index].ordine = index + 1
+        for _ in gruppo.esercizi.indices {
+//            gruppo.esercizi[index].ordine = index + 1
         }
     }
 }
@@ -111,8 +111,3 @@ struct EserciziPredefinitiRow: View {
     }
 }
 
-struct GruppoMuscolareDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        GruppoMuscolareDetailView(gruppo: .constant(GruppoMuscolare(nome: "Petto", esercizi: [])))
-    }
-}

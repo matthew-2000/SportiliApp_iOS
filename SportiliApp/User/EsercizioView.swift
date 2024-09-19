@@ -10,12 +10,18 @@ import FirebaseDatabase
 
 struct EsercizioView: View {
     
+    var giornoId: String
+    var gruppoId: String
+    var esercizioId: String
     var esercizio: Esercizio
     @State private var showingAlert = false
     @State private var nota: String
     @StateObject var imageLoader = ImageLoader()
     
-    init(esercizio: Esercizio, showingAlert: Bool = false, nota: String = "") {
+    init(giornoId: String, gruppoId: String, esercizioId: String, esercizio: Esercizio, showingAlert: Bool = false) {
+        self.giornoId = giornoId
+        self.gruppoId = gruppoId
+        self.esercizioId = esercizioId
         self.esercizio = esercizio
         self.showingAlert = showingAlert
         self.nota = esercizio.noteUtente ?? ""
@@ -26,8 +32,8 @@ struct EsercizioView: View {
             
             ZStack {
                 
-                RoundedRectangle(cornerRadius: 10)
-                    .foregroundColor(.cardGray)
+//                RoundedRectangle(cornerRadius: 10)
+//                    .foregroundColor(.cardGray)
                 
                 VStack(alignment: .leading) {
                     
@@ -35,13 +41,13 @@ struct EsercizioView: View {
                         Image(uiImage: image)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(height: 200)
+                            .frame(height: 250)
                             .cornerRadius(5)
                     } else {
                         if imageLoader.error != nil {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 5)
-                                    .frame(height: 200)
+                                    .frame(height: 250)
                                     .foregroundColor(.no)
                                 
                                 Text("Immagine non disponibile")
@@ -51,7 +57,7 @@ struct EsercizioView: View {
                         } else {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 5)
-                                    .frame(height: 200)
+                                    .frame(height: 250)
                                     .foregroundColor(.no)
                                 
                                 // Visualizza uno spinner o un messaggio di caricamento
@@ -69,12 +75,12 @@ struct EsercizioView: View {
                             .foregroundColor(.accentColor)
                         if let riposo = esercizio.riposo {
                             if !riposo.isEmpty {
-                                Text("\(riposo) riposo")
+                                Text("\(riposo) recupero")
                                     .montserrat(size: 20)
                             }
                         }
                         VStack(alignment: .leading, content: {
-                            Text("Note:")
+                            Text("Note PT:")
                                 .montserrat(size: 15)
                                 .fontWeight(.bold)
                             if let notePT = esercizio.notePT {
@@ -95,43 +101,43 @@ struct EsercizioView: View {
                     Spacer()
 
                 }
-                .padding()
+//                .padding()
             }
             
-//            VStack(alignment: .leading) {
-//                Text("Note utente:")
-//                    .montserrat(size: 15)
-//                    .fontWeight(.bold)
-//                if let noteUtente = esercizio.noteUtente {
-//                    Text(noteUtente)
-//                        .montserrat(size: 15)
-//                } else {
-//                    Text("Nessuna nota.")
-//                        .montserrat(size: 15)
-//                }
-//                Spacer()
-//                Button(action: {
-//                    showingAlert.toggle()
-//                }, label: {
-//                    Text("Aggiungi Nota")
-//                        .frame(maxWidth: .infinity)
-//                })
-//                .montserrat(size: 18)
-//                .buttonStyle(BorderedProminentButtonStyle())
-//                .controlSize(.large)
-//                .alert("Inserisci nota:", isPresented: $showingAlert) {
-//                    TextField("Inserisci nota", text: $nota)
-//                        .montserrat(size: 15)
-//                    Button(action: addNota, label: {
-//                        Text("Inserisci")
-//                    })
-//                    .montserrat(size: 15)
-//                        
-//                } message: {
-//                    Text("Inserisci una nota per questo esercizio")
-//                        .montserrat(size: 15)
-//                }
-//            }
+            VStack(alignment: .leading) {
+                Text("Note utente:")
+                    .montserrat(size: 15)
+                    .fontWeight(.bold)
+                if let noteUtente = esercizio.noteUtente {
+                    Text(noteUtente)
+                        .montserrat(size: 15)
+                } else {
+                    Text("Nessuna nota.")
+                        .montserrat(size: 15)
+                }
+                Spacer()
+                Button(action: {
+                    showingAlert.toggle()
+                }, label: {
+                    Text("Aggiungi Nota")
+                        .frame(maxWidth: .infinity)
+                })
+                .montserrat(size: 18)
+                .buttonStyle(BorderedProminentButtonStyle())
+                .controlSize(.large)
+                .alert("Inserisci nota:", isPresented: $showingAlert) {
+                    TextField("Inserisci nota", text: $nota)
+                        .montserrat(size: 15)
+                    Button(action: addNota, label: {
+                        Text("Inserisci")
+                    })
+                    .montserrat(size: 15)
+                        
+                } message: {
+                    Text("Inserisci una nota per questo esercizio")
+                        .montserrat(size: 15)
+                }
+            }
             
             Spacer()
             
@@ -147,10 +153,35 @@ struct EsercizioView: View {
     
     func addNota() {
         
-//        guard UserDefaults.standard.string(forKey: "code") != nil else {
-//            return
-//        }
-                
+        // Recupera il codice utente dal dispositivo
+        guard let code = UserDefaults.standard.string(forKey: "code") else {
+            print("Codice utente non trovato.")
+            return
+        }
+        
+        // Riferimento al percorso Firebase
+        let ref = Database.database().reference()
+            .child("users")
+            .child(code)
+            .child("scheda")
+            .child("giorni")
+            .child(giornoId)
+            .child("gruppiMuscolari")
+            .child(gruppoId)
+            .child("esercizi")
+            .child(esercizioId)
+            .child("noteUtente")
+        
+        // Aggiornamento della nota utente
+        ref.setValue(nota) { error, _ in
+            if let error = error {
+                print("Errore nel salvataggio della nota utente: \(error.localizedDescription)")
+                // Puoi anche aggiungere un alert o altro feedback visivo qui per informare l'utente
+            } else {
+                print("Nota utente salvata con successo")
+                // Puoi mostrare un messaggio di successo all'utente qui
+            }
+        }
     }
     
 }

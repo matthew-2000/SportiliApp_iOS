@@ -12,7 +12,7 @@ class Giorno: Identifiable, Codable {
     var name: String
     var gruppiMuscolari: [GruppoMuscolare]
 
-    init(id: String = UUID().uuidString, name: String, gruppiMuscolari: [GruppoMuscolare]) {
+    init(id: String, name: String, gruppiMuscolari: [GruppoMuscolare]) {
         self.id = id
         self.name = name
         self.gruppiMuscolari = gruppiMuscolari

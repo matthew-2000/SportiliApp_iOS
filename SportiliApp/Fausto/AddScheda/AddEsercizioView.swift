@@ -60,7 +60,7 @@ struct AddEsercizioView: View {
         
         let serie = getSerie()
         
-        let nuovoEsercizio = Esercizio(name: nomeEsercizio, serie: serie, riposo: riposo, notePT: notePT, ordine: gruppo.esercizi.count + 1)
+        let nuovoEsercizio = Esercizio(id: UUID().uuidString, name: nomeEsercizio, serie: serie, riposo: riposo, notePT: notePT)
         gruppo.esercizi.append(nuovoEsercizio)
         presentationMode.wrappedValue.dismiss()
     }
@@ -72,8 +72,4 @@ struct AddEsercizioView: View {
             return serie
         }
     }
-}
-
-#Preview {
-    AddEsercizioView(gruppo: .constant(GruppoMuscolare(nome: "Petto", esercizi: [])))
 }

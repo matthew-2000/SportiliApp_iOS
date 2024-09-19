@@ -85,10 +85,3 @@ struct EsercizioDetailView: View {
         }
     }
 }
-
-
-struct EsercizioDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        EsercizioDetailView(esercizio: .constant(Esercizio(name: "Panca Piana", serie: "3x10", riposo: "60s", notePT: "", noteUtente: "", ordine: 1)))
-    }
-}

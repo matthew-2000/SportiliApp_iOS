@@ -128,7 +128,3 @@ struct DayRow: View {
         return String(s.dropLast(2))
     }
 }
-
-#Preview {
-    HomeView()
-}

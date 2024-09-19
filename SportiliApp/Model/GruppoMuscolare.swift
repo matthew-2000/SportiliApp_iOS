@@ -12,7 +12,7 @@ class GruppoMuscolare: Identifiable, Codable {
     var nome: String
     var esercizi: [Esercizio]
 
-    init(id: String = UUID().uuidString, nome: String, esercizi: [Esercizio]) {
+    init(id: String, nome: String, esercizi: [Esercizio]) {
         self.id = id
         self.nome = nome
         self.esercizi = esercizi
