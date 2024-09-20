@@ -201,7 +201,7 @@ struct TimerSheet: View {
                 Spacer()
 
                 Text("Tempo di recupero")
-                    .font(.largeTitle)
+                    .montserrat(size: 30)
                     .bold()
                     .padding(.bottom, 40)
 
@@ -212,9 +212,10 @@ struct TimerSheet: View {
                         .stroke(Color.accentColor, lineWidth: 10)
                         .frame(width: 200, height: 200)
                         .rotationEffect(.degrees(-90)) // Rotazione per iniziare l'animazione dall'alto
-
+                    
                     Text(formatTime(timeRemaining))
-                        .font(.system(size: 80, weight: .bold, design: .monospaced))
+                        .montserrat(size: 80)
+                        .bold()
                 }
                 .padding()
 
