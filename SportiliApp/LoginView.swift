@@ -72,11 +72,12 @@ struct LoginView: View {
                     .controlSize(.large)
                 }
                 
-                Button("Hai bisogno di aiuto?", action: {
-                    if let url = URL(string: "https://www.instagram.com/sportiliacentrofitness") {
-                        UIApplication.shared.open(url)
-                    }
+                Button("Non hai il codice?", action: {
+                    self.showAlert.toggle()
                 })
+                .alert(isPresented: $showAlert) {
+                    Alert(title: Text("Attenzione!"), message: Text("Per accedere è necessario avere un codice fornito dal personal trainer. Ti preghiamo di contattarlo per assistenza."), dismissButton: .default(Text("OK")))
+                }
                 .montserrat(size: 15)
                 
             }
@@ -157,9 +158,4 @@ struct LoginView: View {
         }
     }
     
-}
-
-
-#Preview {
-    LoginView()
 }
