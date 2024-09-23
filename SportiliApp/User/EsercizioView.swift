@@ -66,6 +66,15 @@ struct EsercizioView: View {
                                 if !riposo.isEmpty {
                                     Text("\(riposo) recupero")
                                         .montserrat(size: 20)
+                                    Button(action: {
+                                        showTimerSheet.toggle()
+                                    }, label: {
+                                        Text("Avvia Timer di Recupero")
+                                            .frame(maxWidth: .infinity)
+                                    })
+                                    .montserrat(size: 18)
+                                    .buttonStyle(BorderedProminentButtonStyle())
+                                    .controlSize(.large)
                                 }
                             }
                             
@@ -119,19 +128,6 @@ struct EsercizioView: View {
                         Text("Inserisci una nota per questo esercizio")
                             .montserrat(size: 15)
                     }
-                    
-                    Spacer()
-                    
-                    // Pulsante per aprire la Sheet con il Timer
-                    Button(action: {
-                        showTimerSheet.toggle()
-                    }, label: {
-                        Text("Avvia Timer di Recupero")
-                            .frame(maxWidth: .infinity)
-                    })
-                    .montserrat(size: 18)
-                    .buttonStyle(BorderedProminentButtonStyle())
-                    .controlSize(.large)
                 }
                 
                 Spacer()
