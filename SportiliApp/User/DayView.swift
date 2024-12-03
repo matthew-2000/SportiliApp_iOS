@@ -53,6 +53,7 @@ struct EsercizioRow: View {
     
     var esercizio: Esercizio
     @StateObject var imageLoader = ImageLoader()
+    @State private var showFullScreenImage = false
     
     var body: some View {
         HStack {
@@ -63,6 +64,12 @@ struct EsercizioRow: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 100, height: 100)
                     .cornerRadius(5)
+                    .onTapGesture {
+                        showFullScreenImage.toggle()
+                    }
+                    .fullScreenCover(isPresented: $showFullScreenImage) {
+                        FullScreenImageView(image: image)
+                    }
             } else {
                 if imageLoader.error != nil {
                     RoundedRectangle(cornerRadius: 5)

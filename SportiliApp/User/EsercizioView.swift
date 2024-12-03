@@ -19,16 +19,16 @@ struct EsercizioView: View {
     @State private var showingAlert = false
     @State private var nota: String
     @StateObject var imageLoader = ImageLoader()
-
     @State private var showTimerSheet = false
-    
+    @State private var showFullScreenImage = false
+
     init(giornoId: String, gruppoId: String, esercizioId: String, esercizio: Esercizio, showingAlert: Bool = false) {
         self.giornoId = giornoId
         self.gruppoId = gruppoId
         self.esercizioId = esercizioId
         self.esercizio = esercizio
         self.showingAlert = showingAlert
-        self.nota = esercizio.noteUtente ?? ""
+        self._nota = State(initialValue: esercizio.noteUtente ?? "")
     }
     
     var body: some View {
@@ -42,6 +42,12 @@ struct EsercizioView: View {
                                 .aspectRatio(contentMode: .fill)
                                 .frame(height: 250)
                                 .cornerRadius(5)
+                                .onTapGesture {
+                                    showFullScreenImage.toggle()
+                                }
+                                .fullScreenCover(isPresented: $showFullScreenImage) {
+                                    FullScreenImageView(image: image)
+                                }
                         } else {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 5)
@@ -52,7 +58,7 @@ struct EsercizioView: View {
                                         .montserrat(size: 20)
                                 } else {
                                     ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .accent))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
                                 }
                             }
                         }
@@ -69,8 +75,11 @@ struct EsercizioView: View {
                                     Button(action: {
                                         showTimerSheet.toggle()
                                     }, label: {
-                                        Text("Avvia Timer di Recupero")
-                                            .frame(maxWidth: .infinity)
+                                        HStack {
+                                            Image(systemName: "timer")
+                                            Text("Avvia Timer di Recupero")
+                                        }
+                                        .frame(maxWidth: .infinity)
                                     })
                                     .montserrat(size: 18)
                                     .buttonStyle(BorderedProminentButtonStyle())
@@ -111,8 +120,11 @@ struct EsercizioView: View {
                     Button(action: {
                         showingAlert.toggle()
                     }, label: {
-                        Text("Aggiungi Nota")
-                            .frame(maxWidth: .infinity)
+                        HStack {
+                            Image(systemName: "square.and.pencil")
+                            Text("Aggiungi Nota")
+                        }
+                        .frame(maxWidth: .infinity)
                     })
                     .montserrat(size: 18)
                     .buttonStyle(BorderedProminentButtonStyle())
@@ -174,6 +186,34 @@ struct EsercizioView: View {
     }
 }
 
+struct FullScreenImageView: View {
+    var image: UIImage
+    @Environment(\.presentationMode) var presentationMode
+
+    var body: some View {
+        ZStack(alignment: .center) {
+            Color.black.edgesIgnoringSafeArea(.all)
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }, label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 30))
+                            .foregroundColor(.white)
+                            .padding()
+                    })
+                }
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .edgesIgnoringSafeArea(.all)
+            }
+        }
+    }
+}
+
 struct TimerSheet: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var timeRemaining: Int
@@ -182,7 +222,6 @@ struct TimerSheet: View {
     @State private var timerPaused = false
     @State private var timer: Timer?
 
-    // Aggiungi una proprietà per gestire l'audio
     @State private var audioPlayer: AVAudioPlayer?
 
     init(riposo: String) {
@@ -192,7 +231,7 @@ struct TimerSheet: View {
     }
 
     var body: some View {
-        NavigationView { // Aggiungi NavigationView qui
+        NavigationView {
             VStack {
                 Spacer()
 
@@ -201,13 +240,12 @@ struct TimerSheet: View {
                     .bold()
                     .padding(.bottom, 40)
 
-                // Animazione circolare che mostra il progresso
                 ZStack {
                     Circle()
                         .trim(from: 0, to: CGFloat(Double(timeRemaining) / Double(totalTime)))
                         .stroke(Color.accentColor, lineWidth: 10)
                         .frame(width: 200, height: 200)
-                        .rotationEffect(.degrees(-90)) // Rotazione per iniziare l'animazione dall'alto
+                        .rotationEffect(.degrees(-90))
                     
                     Text(formatTime(timeRemaining))
                         .montserrat(size: 80)
@@ -217,34 +255,33 @@ struct TimerSheet: View {
 
                 Spacer()
 
-                // Pulsanti per controllare il timer
                 HStack {
                     if timerIsActive {
-                        // Pulsante "Stop"
                         Button(action: stopTimer) {
-                            Text("Stop")
-                                .frame(maxWidth: .infinity)
+                            HStack {
+                                Image(systemName: "stop.circle")
+                                Text("Stop")
+                            }
                         }
-                        .montserrat(size: 18)
-                        .buttonStyle(BorderedProminentButtonStyle())
+                        .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                     } else if timerPaused {
-                        // Pulsante "Riprendi"
                         Button(action: startTimer) {
-                            Text("Riprendi")
-                                .frame(maxWidth: .infinity)
+                            HStack {
+                                Image(systemName: "play.circle")
+                                Text("Riprendi")
+                            }
                         }
-                        .montserrat(size: 18)
-                        .buttonStyle(BorderedProminentButtonStyle())
+                        .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                     } else {
-                        // Pulsante "Inizia"
                         Button(action: startTimer) {
-                            Text("Inizia")
-                                .frame(maxWidth: .infinity)
+                            HStack {
+                                Image(systemName: "play.circle")
+                                Text("Inizia")
+                            }
                         }
-                        .montserrat(size: 18)
-                        .buttonStyle(BorderedProminentButtonStyle())
+                        .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                     }
                 }
@@ -255,7 +292,7 @@ struct TimerSheet: View {
             .navigationBarItems(trailing: Button("Chiudi") {
                 presentationMode.wrappedValue.dismiss()
             })
-            .interactiveDismissDisabled(true) // Disables swipe to dismiss
+            .interactiveDismissDisabled(true)
         }
     }
 
