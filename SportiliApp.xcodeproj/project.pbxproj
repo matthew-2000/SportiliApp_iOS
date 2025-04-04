@@ -54,6 +54,7 @@
 		3B9337632C09CC8500057838 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337622C09CC8500057838 /* ContentView.swift */; };
 		3B9337652C09CC8600057838 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B9337642C09CC8600057838 /* Assets.xcassets */; };
 		3B9337682C09CC8600057838 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B9337672C09CC8600057838 /* Preview Assets.xcassets */; };
+		3BE03C692D8C1C860090918F /* SwiftToast in Frameworks */ = {isa = PBXBuildFile; productRef = 3BE03C682D8C1C860090918F /* SwiftToast */; };
 		3BF2C8EF2C20451000179D37 /* GymViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF2C8EE2C20451000179D37 /* GymViewModel.swift */; };
 		3BF2C8F32C23207600179D37 /* UtenteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF2C8F22C23207600179D37 /* UtenteView.swift */; };
 /* End PBXBuildFile section */
@@ -116,6 +117,7 @@
 				3B08CDCF2C0DAEE8001980B2 /* FirebaseDatabase in Frameworks */,
 				3B08CDD12C0DAEE8001980B2 /* FirebaseStorage in Frameworks */,
 				3B08CDCB2C0DAEE8001980B2 /* FirebaseAuth in Frameworks */,
+				3BE03C692D8C1C860090918F /* SwiftToast in Frameworks */,
 				3B08CDCD2C0DAEE8001980B2 /* FirebaseAuthCombine-Community in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -261,6 +263,7 @@
 				3B08CDCC2C0DAEE8001980B2 /* FirebaseAuthCombine-Community */,
 				3B08CDCE2C0DAEE8001980B2 /* FirebaseDatabase */,
 				3B08CDD02C0DAEE8001980B2 /* FirebaseStorage */,
+				3BE03C682D8C1C860090918F /* SwiftToast */,
 			);
 			productName = SportiliApp;
 			productReference = 3B93375D2C09CC8500057838 /* SportiliApp.app */;
@@ -293,6 +296,7 @@
 			mainGroup = 3B9337542C09CC8500057838;
 			packageReferences = (
 				3B08CDC92C0DAE58001980B2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				3BE03C672D8C1C860090918F /* XCRemoteSwiftPackageReference "SwiftToast" */,
 			);
 			productRefGroup = 3B93375E2C09CC8500057838 /* Products */;
 			projectDirPath = "";
@@ -590,6 +594,14 @@
 				minimumVersion = 10.27.0;
 			};
 		};
+		3BE03C672D8C1C860090918F /* XCRemoteSwiftPackageReference "SwiftToast" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/matthew-2000/SwiftToast";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -612,6 +624,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3B08CDC92C0DAE58001980B2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		3BE03C682D8C1C860090918F /* SwiftToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3BE03C672D8C1C860090918F /* XCRemoteSwiftPackageReference "SwiftToast" */;
+			productName = SwiftToast;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -9,6 +9,7 @@ import SwiftUI
 import FirebaseDatabase
 import AVFoundation
 import UIKit
+import SwiftToast
 
 struct EsercizioView: View {
     
@@ -21,6 +22,7 @@ struct EsercizioView: View {
     @StateObject var imageLoader = ImageLoader()
     @State private var showTimerSheet = false
     @State private var showFullScreenImage = false
+    @State private var isToastPresented = false
 
     init(giornoId: String, gruppoId: String, esercizioId: String, esercizio: Esercizio, showingAlert: Bool = false) {
         self.giornoId = giornoId
@@ -156,6 +158,7 @@ struct EsercizioView: View {
         .sheet(isPresented: $showTimerSheet) {
             TimerSheet(riposo: esercizio.riposo ?? "")
         }
+        .toast(isPresented: $isToastPresented, message: "Nota Salvata!")
     }
     
     func addNota() {
@@ -180,6 +183,7 @@ struct EsercizioView: View {
             if let error = error {
                 print("Errore nel salvataggio della nota utente: \(error.localizedDescription)")
             } else {
+                isToastPresented = true
                 print("Nota utente salvata con successo")
             }
         }
