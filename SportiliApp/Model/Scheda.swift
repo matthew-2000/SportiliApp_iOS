@@ -18,17 +18,20 @@ class Scheda: Codable {
     var dataInizio: Date
     var durata: Int
     var giorni: [Giorno]
-
-    init(dataInizio: Date, durata: Int, giorni: [Giorno]) {
+    var cambioRichiesto: Bool   // 👈 nuovo campo
+    
+    init(dataInizio: Date, durata: Int, giorni: [Giorno], cambioRichiesto: Bool = false) {
         self.dataInizio = dataInizio
         self.durata = durata
         self.giorni = giorni
+        self.cambioRichiesto = cambioRichiesto
     }
 
     enum CodingKeys: String, CodingKey {
         case dataInizio
         case durata
         case giorni
+        case cambioRichiesto
     }
     
     var description: String {
@@ -42,6 +45,7 @@ class Scheda: Codable {
             dataInizio: \(dataInizio)
             durata: \(durata)
             giorni: \(giorniDesc)
+            cambioRichiesto: \(cambioRichiesto)
         }
         """
     }
@@ -62,7 +66,6 @@ class Scheda: Codable {
                         "serie": esercizio.serie,
                         "notePT" : esercizio.notePT ?? "",
                         "noteUtente" : esercizio.noteUtente ?? ""
-                        // Include other properties as needed
                     ]
                     eserciziDict["esercizio\(esercizioIndex + 1)"] = esercizioDict
                 }
@@ -84,7 +87,8 @@ class Scheda: Codable {
         let schedaDict: [String: Any] = [
             "dataInizio": dateFormatter.string(from: dataInizio),
             "durata": durata,
-            "giorni": giorniDict
+            "giorni": giorniDict,
+            "cambioRichiesto": cambioRichiesto   // 👈 includi anche qui
         ]
         
         return schedaDict
@@ -183,8 +187,8 @@ class SchedaManager {
                         giorni.append(giorno)
                     }
                 }
-                
-                let scheda = Scheda(dataInizio: dataInizio, durata: durata, giorni: giorni)
+                let cambioRichiesto = schedaData["cambioRichiesto"] as? Bool ?? false
+                let scheda = Scheda(dataInizio: dataInizio, durata: durata, giorni: giorni, cambioRichiesto: cambioRichiesto)
                 
                 completion(scheda)
             }
@@ -192,6 +196,18 @@ class SchedaManager {
             completion(nil)
         }
 
+    }
+    
+    func richiediCambioScheda(code: String, completion: @escaping (Bool) -> Void) {
+        let ref = Database.database().reference()
+            .child("users")
+            .child(code)
+            .child("scheda")
+            .child("cambioRichiesto")
+        
+        ref.setValue(true) { error, _ in
+            completion(error == nil)
+        }
     }
 
 }

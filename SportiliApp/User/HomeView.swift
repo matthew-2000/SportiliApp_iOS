@@ -7,11 +7,17 @@
 
 import SwiftUI
 import FirebaseAuth
+import SwiftToast
 
 struct HomeView: View {
     
     @State private var nomeUtente: String?
     @StateObject private var schedaViewModel = SchedaViewModel()
+    
+    @State private var showToast = false
+    @State private var toastMessage = ""
+    @State private var toastColor: Color = .green
+    @State private var isRequesting = false
     
     init() {
         // Set the appearance of the navigation bar title
@@ -45,11 +51,138 @@ struct HomeView: View {
                         .padding(.top, 20)
                         .padding(.bottom, 20)
                         
-                        if scheda.getDurataScheda() == nil {
-                            Text("Cambio scheda!")
-                                .montserrat(size: 20)
-                                .foregroundColor(.red)
-                                .bold()
+                        if let settimaneRimanenti = scheda.getDurataScheda() {
+                            if settimaneRimanenti < 1 {
+                                // ⚠️ Avviso: in scadenza
+                                VStack(spacing: 12) {
+                                    Image(systemName: "clock.fill")
+                                        .font(.system(size: 40))
+                                        .foregroundColor(.orange)
+
+                                    Text("⏳ Scheda in scadenza!")
+                                        .font(.title3.weight(.bold))
+                                        .foregroundColor(.orange)
+                                        .multilineTextAlignment(.center)
+
+                                    Text("Mancano solo \(settimaneRimanenti) sett. alla scadenza.\nPuoi già richiedere un aggiornamento.")
+                                        .font(.body)
+                                        .foregroundColor(.gray)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 16)
+
+                                    if scheda.cambioRichiesto {
+                                        // Stato già richiesto
+                                        Label("Richiesta inviata", systemImage: "checkmark.circle.fill")
+                                            .font(.callout.weight(.semibold))
+                                            .foregroundColor(.green)
+                                            .padding(.horizontal, 12).padding(.vertical, 6)
+                                            .background(Color.green.opacity(0.15))
+                                            .clipShape(Capsule())
+                                    } else {
+                                        Button(action: {
+                                            guard !isRequesting else { return }
+                                            isRequesting = true
+                                            if let code = UserDefaults.standard.string(forKey: "code") {
+                                                SchedaManager().richiediCambioScheda(code: code) { success in
+                                                    // Toast
+                                                    toastMessage = success ? "Richiesta inviata ✅" : "Errore durante la richiesta ❌"
+                                                    toastColor = success ? .green : .red
+                                                    showToast = true
+                                                    // Refresh UI per riflettere cambioRichiesto = true
+                                                    if success { schedaViewModel.fetchScheda() }
+                                                    isRequesting = false
+                                                }
+                                            } else {
+                                                toastMessage = "Codice utente mancante ❌"
+                                                toastColor = .red
+                                                showToast = true
+                                                isRequesting = false
+                                            }
+                                        }) {
+                                            if isRequesting {
+                                                ProgressView().progressViewStyle(CircularProgressViewStyle())
+                                                    .padding(.horizontal, 16).padding(.vertical, 8)
+                                            } else {
+                                                Text("Richiedi nuova scheda")
+                                                    .font(.callout.weight(.semibold))
+                                                    .padding(.horizontal, 16)
+                                                    .padding(.vertical, 8)
+                                            }
+                                        }
+                                        .buttonStyle(.borderedProminent)
+                                        .tint(.orange)
+                                        .clipShape(Capsule())
+                                        .disabled(isRequesting)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 20)
+                            }
+                        } else {
+                            // 🚨 Scheda scaduta
+                            VStack(spacing: 12) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.red)
+
+                                Text("⚠️ Scheda scaduta!")
+                                    .font(.title2.weight(.bold))
+                                    .foregroundColor(.red)
+                                    .multilineTextAlignment(.center)
+
+                                Text("Richiedi un aggiornamento al tuo personal trainer.")
+                                    .font(.body)
+                                    .foregroundColor(.gray)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 16)
+
+                                if scheda.cambioRichiesto {
+                                    // Stato già richiesto
+                                    Label("Richiesta inviata", systemImage: "checkmark.circle.fill")
+                                        .font(.callout.weight(.semibold))
+                                        .foregroundColor(.green)
+                                        .padding(.horizontal, 12).padding(.vertical, 6)
+                                        .background(Color.green.opacity(0.15))
+                                        .clipShape(Capsule())
+                                } else {
+                                    Button(action: {
+                                        guard !isRequesting else { return }
+                                        isRequesting = true
+                                        if let code = UserDefaults.standard.string(forKey: "code") {
+                                            SchedaManager().richiediCambioScheda(code: code) { success in
+                                                // Toast
+                                                toastMessage = success ? "Richiesta inviata ✅" : "Errore durante la richiesta ❌"
+                                                toastColor = success ? .green : .red
+                                                showToast = true
+                                                // Refresh UI per riflettere cambioRichiesto = true
+                                                if success { schedaViewModel.fetchScheda() }
+                                                isRequesting = false
+                                            }
+                                        } else {
+                                            toastMessage = "Codice utente mancante ❌"
+                                            toastColor = .red
+                                            showToast = true
+                                            isRequesting = false
+                                        }
+                                    }) {
+                                        if isRequesting {
+                                            ProgressView().progressViewStyle(CircularProgressViewStyle())
+                                                .padding(.horizontal, 16).padding(.vertical, 8)
+                                        } else {
+                                            Text("Richiedi nuova scheda")
+                                                .font(.callout.weight(.semibold))
+                                                .padding(.horizontal, 16)
+                                                .padding(.vertical, 8)
+                                        }
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.red)
+                                    .clipShape(Capsule())
+                                    .disabled(isRequesting)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 24)
                         }
                         
                         ForEach(scheda.giorni, id: \.id) { giorno in
@@ -72,6 +205,16 @@ struct HomeView: View {
                 Spacer()
                 
             }
+            .toast(
+                isPresented: $showToast,
+                message: toastMessage,
+                duration: 2.5,
+                backgroundColor: toastColor,
+                textColor: .white,
+                font: .callout,
+                position: .bottom,
+                animationStyle: .slide
+            )
             .onAppear {
                 // Aggiorna il nome utente quando la vista appare per la prima volta
                 if let currentUser = Auth.auth().currentUser {
