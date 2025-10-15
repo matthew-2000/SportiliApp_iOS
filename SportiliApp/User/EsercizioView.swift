@@ -10,6 +10,7 @@ import FirebaseDatabase
 import AVFoundation
 import UIKit
 import SwiftToast
+import Charts
 
 struct EsercizioView: View {
     
@@ -17,20 +18,70 @@ struct EsercizioView: View {
     var gruppoId: String
     var esercizioId: String
     var esercizio: Esercizio
-    @State private var showingAlert = false
-    @State private var nota: String
+    @State private var showingWeightAlert = false
+    @State private var nuovoPeso: String
+    @State private var weightLogs: [WeightLog]
     @StateObject var imageLoader = ImageLoader()
     @State private var showTimerSheet = false
     @State private var showFullScreenImage = false
     @State private var isToastPresented = false
+
+    private static let logDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "it_IT")
+        return formatter
+    }()
+
+    private static let summaryDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMM yyyy HH:mm"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+
+    private static let weightFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
+        return formatter
+    }()
 
     init(giornoId: String, gruppoId: String, esercizioId: String, esercizio: Esercizio, showingAlert: Bool = false) {
         self.giornoId = giornoId
         self.gruppoId = gruppoId
         self.esercizioId = esercizioId
         self.esercizio = esercizio
-        self.showingAlert = showingAlert
-        self._nota = State(initialValue: esercizio.noteUtente ?? "")
+        self._showingWeightAlert = State(initialValue: showingAlert)
+        self._nuovoPeso = State(initialValue: "")
+        self._weightLogs = State(initialValue: esercizio.weightLogs)
+    }
+
+    private var sortedWeightLogs: [WeightLog] {
+        weightLogs.sorted { $0.timestamp < $1.timestamp }
+    }
+
+    private var lastTenWeightLogs: [WeightLog] {
+        let logs = sortedWeightLogs
+        return logs.count > 10 ? Array(logs.suffix(10)) : logs
+    }
+
+    private var latestWeightLog: WeightLog? {
+        sortedWeightLogs.last
+    }
+
+    private func formattedDate(for log: WeightLog) -> String {
+        Self.logDateFormatter.string(from: log.date)
+    }
+
+    private func formattedWeight(_ value: Double) -> String {
+        Self.weightFormatter.string(from: NSNumber(value: value)) ?? String(format: "%.2f", value)
+    }
+
+    private func summaryText(for log: WeightLog) -> String {
+        let formattedDate = Self.summaryDateFormatter.string(from: log.date)
+        return "Ultimo peso: \(formattedWeight(log.weight)) kg - \(formattedDate)"
     }
     
     var body: some View {
@@ -107,43 +158,79 @@ struct EsercizioView: View {
                     }
                 }
                 
-                VStack(alignment: .leading) {
-                    Text("Note utente:")
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Progressi Peso:")
                         .montserrat(size: 15)
                         .fontWeight(.bold)
-                    if let noteUtente = esercizio.noteUtente {
-                        Text(noteUtente)
-                            .montserrat(size: 15)
+
+                    if lastTenWeightLogs.isEmpty {
+                        if let legacyNote = esercizio.noteUtente, !legacyNote.isEmpty {
+                            Text(legacyNote)
+                                .montserrat(size: 15)
+                        } else {
+                            Text("Nessun peso registrato.")
+                                .montserrat(size: 15)
+                        }
                     } else {
-                        Text("Nessuna nota.")
-                            .montserrat(size: 15)
+                        if let latest = latestWeightLog {
+                            Text(summaryText(for: latest))
+                                .montserrat(size: 15)
+                        }
+
+                        Chart(lastTenWeightLogs) { log in
+                            LineMark(
+                                x: .value("Data", log.date),
+                                y: .value("Peso", log.weight)
+                            )
+                            PointMark(
+                                x: .value("Data", log.date),
+                                y: .value("Peso", log.weight)
+                            )
+                        }
+                        .frame(height: 200)
+                        .chartYScale(domain: .automatic(includesZero: false))
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(Array(lastTenWeightLogs.reversed())) { log in
+                                HStack {
+                                    Text(formattedDate(for: log))
+                                    Spacer()
+                                    Text("\(formattedWeight(log.weight)) kg")
+                                }
+                                .montserrat(size: 14)
+                            }
+                        }
                     }
-                    Spacer()
+
                     Button(action: {
-                        showingAlert.toggle()
+                        showingWeightAlert.toggle()
                     }, label: {
                         HStack {
-                            Image(systemName: "square.and.pencil")
-                            Text("Aggiungi Nota")
+                            Image(systemName: "chart.xyaxis.line")
+                            Text("Registra Peso")
                         }
                         .frame(maxWidth: .infinity)
                     })
                     .montserrat(size: 18)
                     .buttonStyle(BorderedProminentButtonStyle())
                     .controlSize(.large)
-                    .alert("Inserisci nota:", isPresented: $showingAlert) {
-                        TextField("Inserisci nota", text: $nota)
-                            .montserrat(size: 15)
-                        Button(action: addNota, label: {
-                            Text("Inserisci")
-                        })
-                        .montserrat(size: 15)
-                    } message: {
-                        Text("Inserisci una nota per questo esercizio")
-                            .montserrat(size: 15)
-                    }
                 }
-                
+                .alert("Inserisci peso:", isPresented: $showingWeightAlert) {
+                    TextField("Peso (kg)", text: $nuovoPeso)
+                        .keyboardType(.decimalPad)
+                        .montserrat(size: 15)
+                    Button(action: addWeightLog, label: {
+                        Text("Salva")
+                    })
+                    .montserrat(size: 15)
+                    Button("Annulla", role: .cancel) {
+                        nuovoPeso = ""
+                    }
+                } message: {
+                    Text("Inserisci il peso sollevato per questo esercizio.")
+                        .montserrat(size: 15)
+                }
+
                 Spacer()
             }
 
@@ -158,16 +245,28 @@ struct EsercizioView: View {
         .sheet(isPresented: $showTimerSheet) {
             TimerSheet(riposo: esercizio.riposo ?? "")
         }
-        .toast(isPresented: $isToastPresented, message: "Nota Salvata!")
+        .toast(isPresented: $isToastPresented, message: "Peso salvato!")
     }
-    
-    func addNota() {
+
+    func addWeightLog() {
+        let trimmed = nuovoPeso.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            print("Peso non inserito")
+            return
+        }
+
+        let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
+        guard let weightValue = Double(normalized), weightValue > 0 else {
+            print("Peso non valido")
+            return
+        }
+
         guard let code = UserDefaults.standard.string(forKey: "code") else {
             print("Codice utente non trovato.")
             return
         }
-        
-        let ref = Database.database().reference()
+
+        let esercizioRef = Database.database().reference()
             .child("users")
             .child(code)
             .child("scheda")
@@ -177,14 +276,34 @@ struct EsercizioView: View {
             .child(gruppoId)
             .child("esercizi")
             .child(esercizioId)
-            .child("noteUtente")
-        
-        ref.setValue(nota) { error, _ in
+
+        let weightLogsRef = esercizioRef.child("weightLogs").childByAutoId()
+        let timestamp = Date().timeIntervalSince1970 * 1000
+        let logData: [String: Any] = [
+            "timestamp": timestamp,
+            "weight": weightValue
+        ]
+
+        weightLogsRef.setValue(logData) { error, _ in
             if let error = error {
-                print("Errore nel salvataggio della nota utente: \(error.localizedDescription)")
-            } else {
+                print("Errore nel salvataggio del peso: \(error.localizedDescription)")
+                return
+            }
+
+            let newLog = WeightLog(id: weightLogsRef.key ?? UUID().uuidString, timestamp: timestamp, weight: weightValue)
+
+            DispatchQueue.main.async {
+                weightLogs.append(newLog)
+                esercizio.weightLogs = weightLogs
+
+                let summary = summaryText(for: newLog)
+                esercizioRef.child("noteUtente").setValue(summary)
+                esercizio.noteUtente = summary
+
+                nuovoPeso = ""
+                showingWeightAlert = false
                 isToastPresented = true
-                print("Nota utente salvata con successo")
+                print("Peso salvato con successo")
             }
         }
     }

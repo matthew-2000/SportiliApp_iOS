@@ -108,7 +108,10 @@ class UserManager {
                                             let noteUtente = esercizioData["noteUtente"] as? String
                                             let riposo = esercizioData["riposo"] as? String
                                             
-                                            let esercizio = Esercizio(id: keyEse, name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: noteUtente)
+                                            let weightLogsData = esercizioData["weightLogs"] as? [String: Any] ?? [:]
+                                            let weightLogs = WeightLog.parse(from: weightLogsData)
+
+                                            let esercizio = Esercizio(id: keyEse, name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: noteUtente, weightLogs: weightLogs)
                                             esercizi.append(esercizio)
                                         }
                                     }
