@@ -60,13 +60,21 @@ class Scheda: Codable {
                 var eserciziDict = [String: Any]()
                 
                 for (esercizioIndex, esercizio) in gruppo.esercizi.enumerated() {
-                    let esercizioDict: [String: Any] = [
+                    var esercizioDict: [String: Any] = [
                         "name": esercizio.name,
                         "riposo": esercizio.riposo ?? "",
                         "serie": esercizio.serie,
                         "notePT" : esercizio.notePT ?? "",
                         "noteUtente" : esercizio.noteUtente ?? ""
                     ]
+
+                    if !esercizio.weightLogs.isEmpty {
+                        var weightLogsDict = [String: Any]()
+                        for log in esercizio.weightLogs {
+                            weightLogsDict[log.id] = log.firebaseValue
+                        }
+                        esercizioDict["weightLogs"] = weightLogsDict
+                    }
                     eserciziDict["esercizio\(esercizioIndex + 1)"] = esercizioDict
                 }
                 
@@ -173,7 +181,10 @@ class SchedaManager {
                                         let noteUtente = esercizioData["noteUtente"] as? String
                                         let riposo = esercizioData["riposo"] as? String
                                         
-                                        let esercizio = Esercizio(id: keyEse, name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: noteUtente)
+                                        let weightLogsData = esercizioData["weightLogs"] as? [String: Any] ?? [:]
+                                        let weightLogs = WeightLog.parse(from: weightLogsData)
+
+                                        let esercizio = Esercizio(id: keyEse, name: nomeEsercizio, serie: serie, riposo: riposo, notePT: nota, noteUtente: noteUtente, weightLogs: weightLogs)
                                         esercizi.append(esercizio)
                                     }
                                 }
