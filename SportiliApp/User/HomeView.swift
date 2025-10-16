@@ -33,9 +33,7 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                
-                Spacer()
-                
+                                
                 if let scheda = schedaViewModel.scheda {
                     List {
                         
