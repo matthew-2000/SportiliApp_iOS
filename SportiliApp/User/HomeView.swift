@@ -52,7 +52,7 @@ struct HomeView: View {
                         .padding(.bottom, 20)
                         
                         if let settimaneRimanenti = scheda.getDurataScheda() {
-                            if settimaneRimanenti < 1 {
+                            if settimaneRimanenti < 2 {
                                 // ⚠️ Avviso: in scadenza
                                 VStack(spacing: 12) {
                                     Image(systemName: "clock.fill")
@@ -64,7 +64,7 @@ struct HomeView: View {
                                         .foregroundColor(.orange)
                                         .multilineTextAlignment(.center)
 
-                                    Text("Mancano solo \(settimaneRimanenti) sett. alla scadenza.\nPuoi già richiedere un aggiornamento.")
+                                    Text("Manca solo \(settimaneRimanenti) sett. alla scadenza.\nPuoi già richiedere un aggiornamento.")
                                         .font(.body)
                                         .foregroundColor(.gray)
                                         .multilineTextAlignment(.center)

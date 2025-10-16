@@ -12,6 +12,14 @@ import UIKit
 import SwiftToast
 import Charts
 
+struct UniformLog: Identifiable {
+    let id: Int
+    let index: Int
+    let date: Date
+    let weight: Double
+}
+
+
 struct EsercizioView: View {
     
     var giornoId: String
@@ -25,6 +33,14 @@ struct EsercizioView: View {
     @State private var showTimerSheet = false
     @State private var showFullScreenImage = false
     @State private var isToastPresented = false
+    
+    private var uniformLogs: [UniformLog] {
+        let logs = sortedWeightLogs.suffix(10)
+        return Array(logs.enumerated().map { (idx, log) in
+            UniformLog(id: idx, index: idx, date: log.date, weight: log.weight)
+        })
+    }
+
 
     private static let logDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -85,167 +101,149 @@ struct EsercizioView: View {
     }
     
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false)  {
-            VStack(alignment: .leading) {
-                ZStack {
-                    VStack(alignment: .leading) {
-                        if let image = imageLoader.image {
-                            Image(uiImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(height: 250)
-                                .cornerRadius(5)
-                                .onTapGesture {
-                                    showFullScreenImage.toggle()
-                                }
-                                .fullScreenCover(isPresented: $showFullScreenImage) {
-                                    FullScreenImageView(image: image)
-                                }
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 20) {
+                
+                // ——— IMMAGINE COMPATTA ———
+                if let image = imageLoader.image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 160)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .onTapGesture { showFullScreenImage.toggle() }
+                        .fullScreenCover(isPresented: $showFullScreenImage) {
+                            FullScreenImageView(image: image)
+                        }
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.gray.opacity(0.15))
+                            .frame(height: 160)
+                        if imageLoader.error != nil {
+                            Text("Immagine non disponibile")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         } else {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 5)
-                                    .frame(height: 250)
-                                    .foregroundColor(.gray.opacity(0.2))
-                                if imageLoader.error != nil {
-                                    Text("Immagine non disponibile")
-                                        .montserrat(size: 20)
-                                } else {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
-                                }
-                            }
+                            ProgressView()
                         }
-                        
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("\(esercizio.serie)")
-                                .montserrat(size: 30)
-                                .fontWeight(.bold)
-                                .foregroundColor(.accentColor)
-                            if let riposo = esercizio.riposo {
-                                if !riposo.isEmpty {
-                                    Text("\(riposo) recupero")
-                                        .montserrat(size: 20)
-                                    Button(action: {
-                                        showTimerSheet.toggle()
-                                    }, label: {
-                                        HStack {
-                                            Image(systemName: "timer")
-                                            Text("Avvia Timer di Recupero")
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                    })
-                                    .montserrat(size: 18)
-                                    .buttonStyle(BorderedProminentButtonStyle())
-                                    .controlSize(.large)
-                                }
-                            }
-                            
-                            VStack(alignment: .leading, content: {
-                                Text("Note PT:")
-                                    .montserrat(size: 15)
-                                    .fontWeight(.bold)
-                                if let notePT = esercizio.notePT, !notePT.isEmpty {
-                                    Text(notePT)
-                                        .montserrat(size: 15)
-                                } else {
-                                    Text("Nessuna nota.")
-                                        .montserrat(size: 15)
-                                }
-                            })
-                        }
-                        
-                        Spacer()
                     }
                 }
-                
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Progressi Peso:")
-                        .montserrat(size: 15)
-                        .fontWeight(.bold)
 
-                    if lastTenWeightLogs.isEmpty {
-                        if let legacyNote = esercizio.noteUtente, !legacyNote.isEmpty {
-                            Text(legacyNote)
-                                .montserrat(size: 15)
-                        } else {
-                            Text("Nessun peso registrato.")
-                                .montserrat(size: 15)
-                        }
+                // ——— SERIE & RIPOSO ———
+                HStack {
+                    Text(esercizio.serie)
+                        .font(.title2.bold())
+                        .foregroundColor(.accentColor)
+                    Spacer()
+                    if let riposo = esercizio.riposo, !riposo.isEmpty {
+                        Text("\(riposo) recupero")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                // ——— NOTE PT ———
+                if let notePT = esercizio.notePT, !notePT.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Note PT")
+                            .font(.headline)
+                        Text(notePT)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Divider().padding(.vertical, 4)
+
+                // ——— GRAFICO PESO ———
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Andamento Peso")
+                        .font(.headline)
+
+                    if uniformLogs.isEmpty {
+                        Text("Nessun peso registrato.")
+                            .font(.body)
+                            .foregroundColor(.secondary)
                     } else {
                         if let latest = latestWeightLog {
                             Text(summaryText(for: latest))
-                                .montserrat(size: 15)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         }
 
-                        Chart(lastTenWeightLogs) { log in
-                            LineMark(
-                                x: .value("Data", log.date),
-                                y: .value("Peso", log.weight)
-                            )
-                            PointMark(
-                                x: .value("Data", log.date),
-                                y: .value("Peso", log.weight)
-                            )
-                        }
-                        .frame(height: 200)
-                        .chartYScale(domain: .automatic(includesZero: false))
+                        WeightChartView(data: uniformLogs, dateFormatter: {
+                            let f = DateFormatter()
+                            f.dateFormat = "dd MMM"
+                            f.locale = Locale(identifier: "it_IT")
+                            return f
+                        }())
+                        .frame(height: 220)
 
+                        // (facoltativo) ultimi 3 log in lista
                         VStack(alignment: .leading, spacing: 4) {
-                            ForEach(Array(lastTenWeightLogs.reversed())) { log in
+                            ForEach(Array(lastTenWeightLogs.reversed().prefix(3))) { log in
                                 HStack {
                                     Text(formattedDate(for: log))
                                     Spacer()
                                     Text("\(formattedWeight(log.weight)) kg")
                                 }
-                                .montserrat(size: 14)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                             }
                         }
                     }
 
-                    Button(action: {
+                }
+
+                // ——— BOTTONI AZIONE ———
+                VStack(spacing: 10) {
+                    Button {
                         showingWeightAlert.toggle()
-                    }, label: {
-                        HStack {
-                            Image(systemName: "chart.xyaxis.line")
-                            Text("Registra Peso")
-                        }
-                        .frame(maxWidth: .infinity)
-                    })
-                    .montserrat(size: 18)
-                    .buttonStyle(BorderedProminentButtonStyle())
-                    .controlSize(.large)
-                }
-                .alert("Inserisci peso:", isPresented: $showingWeightAlert) {
-                    TextField("Peso (kg)", text: $nuovoPeso)
-                        .keyboardType(.decimalPad)
-                        .montserrat(size: 15)
-                    Button(action: addWeightLog, label: {
-                        Text("Salva")
-                    })
-                    .montserrat(size: 15)
-                    Button("Annulla", role: .cancel) {
-                        nuovoPeso = ""
+                    } label: {
+                        Label("Registra Peso", systemImage: "chart.xyaxis.line")
+                            .frame(maxWidth: .infinity)
                     }
-                } message: {
-                    Text("Inserisci il peso sollevato per questo esercizio.")
-                        .montserrat(size: 15)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+
+                    if let riposo = esercizio.riposo, !riposo.isEmpty {
+                        Button {
+                            showTimerSheet.toggle()
+                        } label: {
+                            Label("Avvia Timer di Recupero", systemImage: "timer")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                    }
                 }
+                .padding(.top, 8)
 
                 Spacer()
             }
-
+            .padding(.horizontal)
         }
-        .onAppear {
-            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(esercizio.name).png"
-            imageLoader.loadImage(from: storagePath)
-        }
-        .padding()
         .navigationTitle(esercizio.name)
         .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $showTimerSheet) {
             TimerSheet(riposo: esercizio.riposo ?? "")
         }
         .toast(isPresented: $isToastPresented, message: "Peso salvato!")
+        .alert("Registra peso", isPresented: $showingWeightAlert) {
+            TextField("Peso (kg)", text: $nuovoPeso)
+                .keyboardType(.decimalPad)
+            Button("Salva", action: addWeightLog)
+            Button("Annulla", role: .cancel) {
+                nuovoPeso = ""
+            }
+        } message: {
+            Text("Inserisci il peso sollevato per questo esercizio.")
+        }
+        .onAppear {
+            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(esercizio.name).png"
+            imageLoader.loadImage(from: storagePath)
+        }
     }
 
     func addWeightLog() {
@@ -308,6 +306,88 @@ struct EsercizioView: View {
         }
     }
 }
+
+struct WeightChartView: View {
+    let data: [UniformLog]
+    let dateFormatter: DateFormatter
+
+    // gradient semplice e tipato (type erasure per evitare inference)
+    private var lineGradient: AnyShapeStyle {
+        AnyShapeStyle(LinearGradient(
+            colors: [Color.blue, Color.purple],
+            startPoint: .leading,
+            endPoint: .trailing
+        ))
+    }
+
+    var body: some View {
+        Chart {
+            // Area (riempimento) – separata
+//            ForEach(data) { item in
+//                AreaMark(
+//                    x: .value("Index", item.index),
+//                    y: .value("Peso", item.weight)
+//                )
+//                .interpolationMethod(.catmullRom)
+//                .foregroundStyle(LinearGradient(
+//                    colors: [Color.blue.opacity(0.22), Color.purple.opacity(0.22)],
+//                    startPoint: .top,
+//                    endPoint: .bottom
+//                ))
+//            }
+
+            // Linea – separata
+            ForEach(data) { item in
+                LineMark(
+                    x: .value("Index", item.index),
+                    y: .value("Peso", item.weight)
+                )
+                .interpolationMethod(.catmullRom)
+                .foregroundStyle(lineGradient)
+            }
+
+            // Punti – separati
+            ForEach(data) { item in
+                PointMark(
+                    x: .value("Index", item.index),
+                    y: .value("Peso", item.weight)
+                )
+                .symbolSize(60)
+                .foregroundStyle(.accent)
+                .annotation(position: .top) {
+                    Text("\(formatWeight(item.weight)) kg")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .chartYScale(domain: .automatic(includesZero: false))
+        .chartXAxis {
+            AxisMarks(values: data.map { $0.index }) { value in
+                if let idx = value.as(Int.self),
+                   let item = data.first(where: { $0.index == idx }) {
+                    AxisValueLabel {
+                        Text(dateFormatter.string(from: item.date))
+                            .font(.caption2)
+                    }
+                }
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .leading) { value in
+                AxisGridLine()
+                AxisValueLabel()
+            }
+        }
+    }
+
+    // formatter leggero per i label peso sopra i punti (no NumberFormatter per semplificare)
+    private func formatWeight(_ w: Double) -> String {
+        if w == floor(w) { return String(format: "%.0f", w) }
+        return String(format: "%.1f", w)
+    }
+}
+
 
 struct FullScreenImageView: View {
     var image: UIImage
