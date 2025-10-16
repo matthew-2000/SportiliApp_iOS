@@ -16,7 +16,13 @@ struct ContentView: View {
                     Image(systemName: "house.fill")
                     Text("Home")
                 }
-            
+
+            AlertsView()
+                .tabItem {
+                    Image(systemName: "bell.badge.fill")
+                    Text("Avvisi")
+                }
+
             SettingsView()
                 .tabItem {
                     Image(systemName: "gearshape.fill")

@@ -42,6 +42,9 @@
 		3B23C2CF2C0A07030043D41E /* Montserrat-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2B42C09FFCF0043D41E /* Montserrat-ExtraLight.ttf */; };
 		3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */; };
 		3B5CF6AB2C0F59EE0068F17E /* Utente.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6AA2C0F59EE0068F17E /* Utente.swift */; };
+		3B5E2BC42EA127F100617085 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5E2BC22EA127F100617085 /* Alert.swift */; };
+		3B5E2BC52EA127F100617085 /* AlertsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5E2BC32EA127F100617085 /* AlertsViewModel.swift */; };
+		3B5E2BC92EA1284400617085 /* AlertsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5E2BC82EA1284400617085 /* AlertsView.swift */; };
 		3B70B8892C298258000DC6EB /* AddSchedaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B8882C298258000DC6EB /* AddSchedaView.swift */; };
 		3B70B88B2C298808000DC6EB /* GiornoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */; };
 		3B70B88D2C298824000DC6EB /* GruppoMuscolareDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */; };
@@ -92,6 +95,9 @@
 		3B23C2BC2C0A05830043D41E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminHomeView.swift; sourceTree = "<group>"; };
 		3B5CF6AA2C0F59EE0068F17E /* Utente.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utente.swift; sourceTree = "<group>"; };
+		3B5E2BC22EA127F100617085 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
+		3B5E2BC32EA127F100617085 /* AlertsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsViewModel.swift; sourceTree = "<group>"; };
+		3B5E2BC82EA1284400617085 /* AlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsView.swift; sourceTree = "<group>"; };
 		3B70B8882C298258000DC6EB /* AddSchedaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSchedaView.swift; sourceTree = "<group>"; };
 		3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiornoDetailView.swift; sourceTree = "<group>"; };
 		3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoMuscolareDetailView.swift; sourceTree = "<group>"; };
@@ -128,6 +134,8 @@
 		3B08CDD22C0DAF77001980B2 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				3B5E2BC22EA127F100617085 /* Alert.swift */,
+				3B5E2BC32EA127F100617085 /* AlertsViewModel.swift */,
 				3B5CF6AA2C0F59EE0068F17E /* Utente.swift */,
 				3B08CDD32C0DAF89001980B2 /* Esercizio.swift */,
 				3B08CDD52C0DAFEE001980B2 /* GruppoMuscolare.swift */,
@@ -179,6 +187,7 @@
 		3B70B8922C29B33F000DC6EB /* User */ = {
 			isa = PBXGroup;
 			children = (
+				3B5E2BC82EA1284400617085 /* AlertsView.swift */,
 				3B9337622C09CC8500057838 /* ContentView.swift */,
 				3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */,
 				3B23C24A2C09E3A70043D41E /* HomeView.swift */,
@@ -344,6 +353,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				3B23C24B2C09E3A70043D41E /* HomeView.swift in Sources */,
+				3B5E2BC42EA127F100617085 /* Alert.swift in Sources */,
+				3B5E2BC52EA127F100617085 /* AlertsViewModel.swift in Sources */,
 				3B08CDDA2C0DB087001980B2 /* Scheda.swift in Sources */,
 				3B70B88D2C298824000DC6EB /* GruppoMuscolareDetailView.swift in Sources */,
 				3B70B8892C298258000DC6EB /* AddSchedaView.swift in Sources */,
@@ -364,6 +375,7 @@
 				3BF2C8F32C23207600179D37 /* UtenteView.swift in Sources */,
 				3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */,
 				3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */,
+				3B5E2BC92EA1284400617085 /* AlertsView.swift in Sources */,
 				3B70B88B2C298808000DC6EB /* GiornoDetailView.swift in Sources */,
 				3B08CDD62C0DAFEE001980B2 /* GruppoMuscolare.swift in Sources */,
 				3B08CDD42C0DAF89001980B2 /* Esercizio.swift in Sources */,
