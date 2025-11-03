@@ -123,96 +123,100 @@ struct EsercizioView: View {
         let selectedSerie = Self.serie(for: currentIndex, parts: parts, seriesParts: seriesParts, fallback: esercizio.serie)
         let canManageData = !viewModel.userCode.isEmpty
 
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 20) {
+        let heroSubtitle = parts.count > 1 ? currentPartName : nil
 
-                // Immagine esercizio
-                if let image = imageLoader.image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 160)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .onTapGesture { showFullScreenImage.toggle() }
-                        .fullScreenCover(isPresented: $showFullScreenImage) {
-                            FullScreenImageView(image: image)
-                        }
-                } else {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.gray.opacity(0.15))
-                            .frame(height: 160)
-                        if imageLoader.error != nil {
-                            Text("Immagine non disponibile")
-                                .foregroundColor(.secondary)
-                        } else {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
-                        }
-                    }
-                    .onTapGesture { showFullScreenImage = false }
-                }
+        let heroState: ExerciseHeroState
+        if let image = imageLoader.image {
+            heroState = .loaded(image)
+        } else if imageLoader.error != nil {
+            heroState = .failed
+        } else {
+            heroState = .loading
+        }
+
+        return ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 24) {
+                ExerciseHeroView(
+                    state: heroState,
+                    title: esercizio.name,
+                    subtitle: heroSubtitle,
+                    onTap: { showFullScreenImage = true }
+                )
+                .padding(.top, 8)
 
                 if parts.count > 1 {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Seleziona esercizio")
+                    ExerciseCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("Variazioni esercizio", systemImage: "square.grid.2x2")
+                                .font(.headline)
+                            Picker("Esercizio", selection: $selectedPartIndex) {
+                                ForEach(parts.indices, id: \.self) { index in
+                                    Text(parts[index]).tag(index)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+                    }
+                }
+
+                ExerciseCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Label("Serie consigliate", systemImage: "figure.strengthtraining.functional")
                             .font(.headline)
-                            .foregroundColor(.accentColor)
-                        Picker("Esercizio", selection: $selectedPartIndex) {
-                            ForEach(parts.indices, id: \.self) { index in
-                                Text(parts[index]).tag(index)
+                        Text(selectedSerie)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+
+                        if let riposo = esercizio.riposo, !riposo.isEmpty {
+                            Divider()
+                            Label("\(riposo) recupero", systemImage: "timer")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+
+                        if let notePT = esercizio.notePT,
+                           !notePT.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Divider()
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("Note del coach", systemImage: "person.text.rectangle")
+                                    .font(.headline)
+                                Text(notePT)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
                             }
                         }
-                        .pickerStyle(.segmented)
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(selectedSerie)
-                        .montserrat(size: 25)
-                        .fontWeight(.bold)
-                        .foregroundColor(.accentColor)
-                    if let riposo = esercizio.riposo, !riposo.isEmpty {
-                        Text("\(riposo) recupero")
-                            .montserrat(size: 18)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                if let notePT = esercizio.notePT, !notePT.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Note PT")
+                ExerciseCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Label("Andamento peso", systemImage: "chart.line.uptrend.xyaxis")
                             .font(.headline)
-                        Text(notePT)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    }
-                }
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Andamento peso")
-                        .font(.headline)
-
-                    if recentLogs.isEmpty {
-                        Text("Nessun peso registrato")
-                            .foregroundColor(.secondary)
-                            .font(.body)
-                    } else {
-                        let chartData = recentLogs.enumerated().map { index, log in
-                            UniformLog(id: index, index: index, date: log.date, weight: log.weight)
-                        }
-                        WeightChartView(data: chartData, dateFormatter: Self.logDateFormatter)
-                            .frame(minHeight: 220)
-                    }
-
-                    if let record = latestRecord {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Ultimo peso registrato")
+                        if recentLogs.isEmpty {
+                            Text("Registra il tuo primo peso per visualizzare i progressi.")
                                 .font(.subheadline)
-                                .fontWeight(.semibold)
-                            Text("\(Self.summaryDateFormatter.string(from: record.date)) • \(formattedWeight(record.weight)) kg")
-                                .font(.footnote)
                                 .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            let chartData = recentLogs.enumerated().map { index, log in
+                                UniformLog(id: index, index: index, date: log.date, weight: log.weight)
+                            }
+                            WeightChartView(data: chartData, dateFormatter: Self.logDateFormatter)
+                                .frame(minHeight: 220)
+                        }
+
+                        if let record = latestRecord {
+                            Divider()
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Ultimo peso registrato")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                Text("\(Self.summaryDateFormatter.string(from: record.date)) • \(formattedWeight(record.weight)) kg")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
 
                             HStack(spacing: 12) {
                                 Button {
@@ -220,112 +224,133 @@ struct EsercizioView: View {
                                     weightDialogMode = .edit(record)
                                     weightInput = editingString(for: record.weight)
                                 } label: {
-                                    Text("Modifica")
+                                    Label("Modifica", systemImage: "pencil")
                                         .frame(maxWidth: .infinity)
                                 }
                                 .buttonStyle(.bordered)
+                                .controlSize(.large)
                                 .disabled(!canManageData)
 
                                 Button(role: .destructive) {
                                     deletionContext = WeightDeletionContext(record: record, exerciseKey: currentKey)
                                 } label: {
-                                    Text("Elimina")
+                                    Label("Elimina", systemImage: "trash")
                                         .frame(maxWidth: .infinity)
                                 }
                                 .buttonStyle(.bordered)
+                                .controlSize(.large)
                                 .disabled(!canManageData)
                             }
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                 }
 
-                VStack(spacing: 10) {
-                    Button {
-                        dialogExerciseKey = currentKey
-                        weightDialogMode = .create
-                        weightInput = ""
-                    } label: {
-                        Label("Registra Peso", systemImage: "chart.xyaxis.line")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(!canManageData)
+                ExerciseCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Label("Azioni rapide", systemImage: "bolt.fill")
+                            .font(.headline)
 
-                    if let riposo = esercizio.riposo, !riposo.isEmpty {
                         Button {
-                            showTimerSheet.toggle()
+                            dialogExerciseKey = currentKey
+                            weightDialogMode = .create
+                            weightInput = ""
                         } label: {
-                            Label("Avvia Timer di Recupero", systemImage: "timer")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
-                    }
-                }
-                .padding(.top, 8)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Note")
-                        .font(.headline)
-
-                    ZStack(alignment: .topLeading) {
-                        if noteInput.isEmpty {
-                            Text("Aggiungi una nota")
-                                .foregroundColor(.secondary)
-                                .padding(.top, 12)
-                                .padding(.leading, 8)
-                        }
-                        TextEditor(text: $noteInput)
-                            .frame(minHeight: 120)
-                            .padding(4)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                    }
-
-                    HStack(spacing: 12) {
-                        Button {
-                            saveNote(for: currentKey)
-                        } label: {
-                            Text("Salva nota")
+                            Label("Registra peso", systemImage: "plus.circle.fill")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
-                        .disabled(!isNoteDirty || !canManageData)
-
-                        Button {
-                            noteInput = savedNote
-                        } label: {
-                            Text("Annulla")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
-                        .disabled(!isNoteDirty)
-                    }
-
-                    if !savedNote.isEmpty {
-                        Button(role: .destructive) {
-                            removeNote(for: currentKey)
-                        } label: {
-                            Text("Rimuovi nota")
-                        }
                         .disabled(!canManageData)
+
+                        if let riposo = esercizio.riposo, !riposo.isEmpty {
+                            Button {
+                                showTimerSheet.toggle()
+                            } label: {
+                                Label("Avvia timer di recupero", systemImage: "timer")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                        }
                     }
                 }
 
-                Spacer(minLength: 20)
+                ExerciseCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Label("Note personali", systemImage: "square.and.pencil")
+                            .font(.headline)
+
+                        ZStack(alignment: .topLeading) {
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Color(.systemBackground))
+
+                            if noteInput.isEmpty {
+                                Text("Aggiungi una nota")
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                            }
+
+                            TextEditor(text: $noteInput)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 12)
+                                .background(Color.clear)
+                                .frame(minHeight: 140)
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(Color(.systemGray4), lineWidth: 1)
+                        )
+
+                        HStack(spacing: 12) {
+                            Button {
+                                saveNote(for: currentKey)
+                            } label: {
+                                Label("Salva", systemImage: "tray.and.arrow.down")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+                            .disabled(!isNoteDirty || !canManageData)
+
+                            Button {
+                                noteInput = savedNote
+                            } label: {
+                                Label("Annulla", systemImage: "arrow.uturn.backward")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                            .disabled(!isNoteDirty)
+                        }
+
+                        if !savedNote.isEmpty {
+                            Button(role: .destructive) {
+                                removeNote(for: currentKey)
+                            } label: {
+                                Label("Rimuovi nota", systemImage: "trash")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                            .disabled(!canManageData)
+                        }
+                    }
+                }
             }
-            .padding(.horizontal)
-            .padding(.bottom, 32)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 40)
         }
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .navigationTitle(esercizio.name)
         .navigationBarTitleDisplayMode(.large)
+        .fullScreenCover(isPresented: $showFullScreenImage) {
+            Group {
+                if let image = imageLoader.image {
+                    FullScreenImageView(image: image)
+                }
+            }
+        }
         .sheet(isPresented: weightSheetBinding) {
             WeightEntrySheet(
                 mode: weightDialogMode,
@@ -549,6 +574,114 @@ struct EsercizioView: View {
     }
 }
 
+private enum ExerciseHeroState {
+    case loading
+    case failed
+    case loaded(UIImage)
+}
+
+private struct ExerciseHeroView: View {
+    let state: ExerciseHeroState
+    let title: String
+    let subtitle: String?
+    let onTap: () -> Void
+
+    var body: some View {
+        ZStack {
+            backgroundContent
+            overlayContent
+        }
+        .frame(height: 220)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .onTapGesture {
+            if case .loaded = state {
+                onTap()
+            }
+        }
+        .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 8)
+    }
+
+    @ViewBuilder
+    private var backgroundContent: some View {
+        switch state {
+        case .loaded(let image):
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .overlay(
+                    LinearGradient(
+                        colors: [Color.black.opacity(0.05), Color.black.opacity(0.6)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        case .loading:
+            LinearGradient(
+                colors: [Color.accentColor.opacity(0.25), Color.accentColor.opacity(0.05)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .failed:
+            Color(.secondarySystemGroupedBackground)
+        }
+    }
+
+    @ViewBuilder
+    private var overlayContent: some View {
+        switch state {
+        case .loaded:
+            VStack(alignment: .leading, spacing: 6) {
+                Spacer()
+                Text(title)
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.callout)
+                        .foregroundColor(.white.opacity(0.85))
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            .padding(20)
+        case .loading:
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .failed:
+            VStack(spacing: 8) {
+                Image(systemName: "photo")
+                    .font(.title)
+                    .foregroundColor(.secondary)
+                Text("Immagine non disponibile")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
+private struct ExerciseCard<Content: View>: View {
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
+            .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 8)
+    }
+}
+
 private struct WeightEntrySheet: View {
     let mode: WeightDialogMode
     @Binding var weightInput: String
@@ -575,24 +708,30 @@ private struct WeightEntrySheet: View {
 
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Peso (kg)")
-                    .font(.headline)
-                TextField("Peso (kg)", text: $weightInput)
-                    .keyboardType(.decimalPad)
-                    .textFieldStyle(.roundedBorder)
-                if let record {
-                    Text("Ultimo aggiornamento: \(EsercizioView.sheetDateFormatter.string(from: record.date))")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("Data: \(EsercizioView.sheetDateFormatter.string(from: Date()))")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
+            Form {
+                Section(header: Text("Peso")) {
+                    TextField("Peso (kg)", text: $weightInput)
+                        .keyboardType(.decimalPad)
                 }
-                Spacer()
+
+                Section(header: Text("Dettagli")) {
+                    if let record {
+                        HStack {
+                            Label("Ultimo aggiornamento", systemImage: "clock")
+                            Spacer()
+                            Text(EsercizioView.sheetDateFormatter.string(from: record.date))
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        HStack {
+                            Label("Data", systemImage: "calendar")
+                            Spacer()
+                            Text(EsercizioView.sheetDateFormatter.string(from: Date()))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
             }
-            .padding()
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -738,34 +877,32 @@ struct TimerSheet: View {
 
                 Spacer()
 
-                HStack {
+                HStack(spacing: 16) {
                     if timerIsActive {
-                        Button(action: stopTimer) {
-                            HStack {
-                                Image(systemName: "stop.circle")
-                                Text("Stop")
-                            }
+                        Button(action: pauseTimer) {
+                            Label("Pausa", systemImage: "pause.circle")
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
-                    } else if timerPaused {
-                        Button(action: startTimer) {
-                            HStack {
-                                Image(systemName: "play.circle")
-                                Text("Riprendi")
-                            }
+
+                        Button(action: resetTimer) {
+                            Label("Reset", systemImage: "gobackward")
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.bordered)
                         .controlSize(.large)
                     } else {
                         Button(action: startTimer) {
-                            HStack {
-                                Image(systemName: "play.circle")
-                                Text("Inizia")
-                            }
+                            Label(timerPaused ? "Riprendi" : "Inizia", systemImage: "play.circle")
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
+
+                        Button(action: resetTimer) {
+                            Label("Reset", systemImage: "gobackward")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .disabled(timeRemaining == totalTime)
                     }
                 }
 
@@ -780,26 +917,42 @@ struct TimerSheet: View {
     }
 
     func startTimer() {
-        if !timerIsActive {
-            timerIsActive = true
-            timerPaused = false
-            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-                if timeRemaining > 0 {
-                    timeRemaining -= 1
-                } else {
-                    timer?.invalidate()
-                    timerIsActive = false
-                    playSound()
-                    triggerVibration()
-                }
+        guard !timerIsActive else { return }
+
+        if timeRemaining == 0 {
+            timeRemaining = totalTime
+        }
+
+        timerIsActive = true
+        timerPaused = false
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            } else {
+                timer?.invalidate()
+                timer = nil
+                timerIsActive = false
+                timerPaused = false
+                timeRemaining = totalTime
+                playSound()
+                triggerVibration()
             }
         }
     }
 
-    func stopTimer() {
+    func pauseTimer() {
         timer?.invalidate()
+        timer = nil
         timerIsActive = false
         timerPaused = true
+    }
+
+    func resetTimer() {
+        timer?.invalidate()
+        timer = nil
+        timeRemaining = totalTime
+        timerIsActive = false
+        timerPaused = false
     }
 
     func formatTime(_ time: Int) -> String {

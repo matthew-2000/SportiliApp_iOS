@@ -153,7 +153,8 @@ final class ExerciseDetailViewModel: ObservableObject {
                 updated.weightLogs.removeValue(forKey: entryId)
                 return updated
             }
-
+            self?.cleanupExerciseNodeIfNeeded(at: exerciseRef)
+            
             DispatchQueue.main.async { completion(.success(())) }
         }
     }
@@ -251,6 +252,21 @@ final class ExerciseDetailViewModel: ObservableObject {
                 current.removeValue(forKey: key)
             }
             self.exerciseData = current
+        }
+    }
+    
+    private func cleanupExerciseNodeIfNeeded(at reference: DatabaseReference) {
+        reference.observeSingleEvent(of: .value) { snapshot in
+            if let value = snapshot.value as? [String: Any] {
+                let note = value["noteUtente"] as? String
+                let noteHasContent = !(note?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+                let weightLogs = value["weightLogs"] as? [String: Any] ?? [:]
+                if noteHasContent || !weightLogs.isEmpty {
+                    return
+                }
+            }
+
+            reference.removeValue()
         }
     }
 }
