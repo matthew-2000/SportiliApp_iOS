@@ -110,7 +110,6 @@ struct EsercizioView: View {
 
     var body: some View {
         let parts = Self.exerciseParts(from: esercizio.name)
-        let seriesParts = Self.seriesParts(from: esercizio.serie)
         let currentIndex = min(selectedPartIndex, max(parts.count - 1, 0))
         let currentPartName = Self.partName(at: currentIndex, from: parts, fallback: esercizio.name)
         let currentKey = ExerciseDetailViewModel.makeExerciseKey(from: currentPartName)
@@ -120,7 +119,8 @@ struct EsercizioView: View {
         let latestRecord = sortedLogs.last
         let savedNote = currentData?.noteUtente ?? ""
         let isNoteDirty = noteInput != savedNote
-        let selectedSerie = Self.serie(for: currentIndex, parts: parts, seriesParts: seriesParts, fallback: esercizio.serie)
+        // SERIE: ora mostriamo sempre quella completa
+        let fullSerie = esercizio.serie
         let canManageData = !viewModel.userCode.isEmpty
 
         let heroSubtitle = parts.count > 1 ? currentPartName : nil
@@ -163,7 +163,8 @@ struct EsercizioView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Label("Serie", systemImage: "figure.strengthtraining.functional")
                             .font(.headline)
-                        Text(selectedSerie)
+                        // Mostra sempre la serie completa
+                        Text(fullSerie)
                             .font(.title3)
                             .fontWeight(.semibold)
 
@@ -275,65 +276,81 @@ struct EsercizioView: View {
                     }
                 }
 
+                // --- NOTE PERSONALI (nuova UI) ---
                 ExerciseCard {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Label("Note personali", systemImage: "square.and.pencil")
-                            .font(.headline)
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack {
+                            Label("Note personali", systemImage: "square.and.pencil")
+                                .font(.headline)
+                            Spacer()
+                            if !savedNote.isEmpty {
+                                Text("Salvata")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
 
+                        // TextEditor stile iOS
                         ZStack(alignment: .topLeading) {
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .fill(Color(.systemBackground))
 
+                            TextEditor(text: $noteInput)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .frame(minHeight: 120, maxHeight: 160)
+                                .background(Color.clear)
+                                .scrollContentBackground(.hidden)
+
                             if noteInput.isEmpty {
-                                Text("Aggiungi una nota")
+                                Text("Aggiungi una nota per questo esercizio…")
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
+                                    .padding(.vertical, 12)
                             }
-
-                            TextEditor(text: $noteInput)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 12)
-                                .background(Color.clear)
-                                .frame(minHeight: 140)
                         }
                         .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .stroke(Color(.systemGray4), lineWidth: 1)
                         )
 
-                        HStack(spacing: 12) {
+                        HStack(spacing: 10) {
                             Button {
                                 saveNote(for: currentKey)
                             } label: {
                                 Label("Salva", systemImage: "tray.and.arrow.down")
-                                    .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.borderedProminent)
-                            .controlSize(.large)
+                            .controlSize(.regular)
                             .disabled(!isNoteDirty || !canManageData)
 
                             Button {
                                 noteInput = savedNote
                             } label: {
-                                Label("Annulla", systemImage: "arrow.uturn.backward")
-                                    .frame(maxWidth: .infinity)
+                                Text("Annulla")
                             }
                             .buttonStyle(.bordered)
-                            .controlSize(.large)
+                            .controlSize(.regular)
                             .disabled(!isNoteDirty)
+
+                            Spacer()
+
+                            if !savedNote.isEmpty {
+                                Button(role: .destructive) {
+                                    removeNote(for: currentKey)
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.regular)
+                                .disabled(!canManageData)
+                            }
                         }
 
                         if !savedNote.isEmpty {
-                            Button(role: .destructive) {
-                                removeNote(for: currentKey)
-                            } label: {
-                                Label("Rimuovi nota", systemImage: "trash")
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.large)
-                            .disabled(!canManageData)
+                            Text("Ultimo salvataggio collegato a: \(currentPartName)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
                         }
                     }
                 }
@@ -403,7 +420,9 @@ struct EsercizioView: View {
             )
         }
         .onAppear {
-            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(esercizio.name).png"
+            // carica immagine in base alla prima parte dell’esercizio
+            let initialPartName = Self.primaryExerciseName(from: esercizio.name)
+            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(initialPartName).png"
             imageLoader.loadImage(from: storagePath)
         }
         .onReceive(viewModel.$exerciseData) { _ in
@@ -417,6 +436,10 @@ struct EsercizioView: View {
             weightDialogMode = .hidden
             weightInput = ""
             deletionContext = nil
+
+            // cambia immagine in base alla variazione
+            let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(newPartName).png"
+            imageLoader.loadImage(from: storagePath)
         }
     }
 
@@ -564,25 +587,11 @@ struct EsercizioView: View {
         exerciseParts(from: name).first ?? name
     }
 
-    private static func seriesParts(from serie: String) -> [String] {
-        serie.split(separator: "+").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
-    }
-
     private static func partName(at index: Int, from parts: [String], fallback: String) -> String {
         guard index >= 0 && index < parts.count else {
             return fallback
         }
         return parts[index]
-    }
-
-    private static func serie(for index: Int, parts: [String], seriesParts: [String], fallback: String) -> String {
-        if seriesParts.count == parts.count, index < seriesParts.count {
-            return seriesParts[index]
-        }
-        if index < seriesParts.count {
-            return seriesParts[index]
-        }
-        return fallback
     }
 }
 
