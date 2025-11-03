@@ -161,7 +161,7 @@ struct EsercizioView: View {
 
                 ExerciseCard {
                     VStack(alignment: .leading, spacing: 16) {
-                        Label("Serie consigliate", systemImage: "figure.strengthtraining.functional")
+                        Label("Serie", systemImage: "figure.strengthtraining.functional")
                             .font(.headline)
                         Text(selectedSerie)
                             .font(.title3)
@@ -372,17 +372,28 @@ struct EsercizioView: View {
             position: .bottom,
             animationStyle: .slide
         )
-        .alert(item: $deletionContext) { context in
-            Alert(
-                title: Text("Elimina peso"),
-                message: Text("Vuoi eliminare il peso registrato il \(Self.summaryDateFormatter.string(from: context.record.date))?"),
-                primaryButton: .destructive(Text("Elimina")) {
-                    handleDeletion(context: context)
-                },
-                secondaryButton: .cancel {
-                    deletionContext = nil
+        .confirmationDialog(
+            "Elimina peso",
+            isPresented: Binding(
+                get: { deletionContext != nil },
+                set: { if !$0 { deletionContext = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Elimina", role: .destructive) {
+                if let ctx = deletionContext {
+                    handleDeletion(context: ctx)
                 }
-            )
+                deletionContext = nil
+            }
+
+            Button("Annulla", role: .cancel) {
+                deletionContext = nil
+            }
+        } message: {
+            if let ctx = deletionContext {
+                Text("Vuoi eliminare il peso registrato il \(Self.summaryDateFormatter.string(from: ctx.record.date))?")
+            }
         }
         .alert(item: $errorAlert) { alert in
             Alert(
@@ -478,6 +489,7 @@ struct EsercizioView: View {
     }
 
     private func handleDeletion(context: WeightDeletionContext) {
+        print("Elimina")
         viewModel.deleteWeightEntry(for: context.exerciseKey, entryId: context.record.id) { result in
             switch result {
             case .success:
