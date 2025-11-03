@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct WeightLog: Identifiable, Codable {
+struct WeightLog: Identifiable, Codable, Equatable {
     var id: String
     var timestamp: TimeInterval
     var weight: Double

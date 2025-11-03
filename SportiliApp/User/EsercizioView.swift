@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import FirebaseDatabase
 import AVFoundation
 import UIKit
 import SwiftToast
@@ -19,28 +18,66 @@ struct UniformLog: Identifiable {
     let weight: Double
 }
 
+private enum WeightDialogMode: Equatable {
+    case hidden
+    case create
+    case edit(WeightLog)
+}
+
+private struct WeightDeletionContext: Identifiable {
+    let id = UUID()
+    let record: WeightLog
+    let exerciseKey: String
+}
+
+private struct ErrorAlert: Identifiable {
+    let id = UUID()
+    let message: String
+}
 
 struct EsercizioView: View {
-    
+
     var giornoId: String
     var gruppoId: String
     var esercizioId: String
     var esercizio: Esercizio
-    @State private var showingWeightAlert = false
-    @State private var nuovoPeso: String
-    @State private var weightLogs: [WeightLog]
-    @StateObject var imageLoader = ImageLoader()
+
+    @State private var selectedPartIndex = 0
+    @State private var weightDialogMode: WeightDialogMode = .hidden
+    @State private var weightInput: String = ""
+    @State private var dialogExerciseKey: String
+    @State private var noteInput: String
+    @State private var lastSyncedNote: String
+    @State private var lastSyncedNoteKey: String
     @State private var showTimerSheet = false
     @State private var showFullScreenImage = false
     @State private var isToastPresented = false
-    
-    private var uniformLogs: [UniformLog] {
-        let logs = sortedWeightLogs.suffix(10)
-        return Array(logs.enumerated().map { (idx, log) in
-            UniformLog(id: idx, index: idx, date: log.date, weight: log.weight)
-        })
-    }
+    @State private var toastMessage = ""
+    @State private var toastColor: Color = .green
+    @State private var errorAlert: ErrorAlert?
+    @State private var deletionContext: WeightDeletionContext?
 
+    @StateObject var imageLoader = ImageLoader()
+    @StateObject private var viewModel: ExerciseDetailViewModel
+
+    init(giornoId: String, gruppoId: String, esercizioId: String, esercizio: Esercizio) {
+        self.giornoId = giornoId
+        self.gruppoId = gruppoId
+        self.esercizioId = esercizioId
+        self.esercizio = esercizio
+
+        let code = UserDefaults.standard.string(forKey: "code") ?? ""
+        _viewModel = StateObject(wrappedValue: ExerciseDetailViewModel(userCode: code))
+
+        let initialPartName = EsercizioView.primaryExerciseName(from: esercizio.name)
+        let initialKey = ExerciseDetailViewModel.makeExerciseKey(from: initialPartName)
+
+        _dialogExerciseKey = State(initialValue: initialKey)
+        let initialNote = esercizio.noteUtente ?? ""
+        _noteInput = State(initialValue: initialNote)
+        _lastSyncedNote = State(initialValue: initialNote)
+        _lastSyncedNoteKey = State(initialValue: initialKey)
+    }
 
     private static let logDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -57,6 +94,13 @@ struct EsercizioView: View {
         return formatter
     }()
 
+    static let sheetDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMM yyyy"
+        formatter.locale = Locale(identifier: "it_IT")
+        return formatter
+    }()
+
     private static let weightFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.maximumFractionDigits = 2
@@ -64,47 +108,25 @@ struct EsercizioView: View {
         return formatter
     }()
 
-    init(giornoId: String, gruppoId: String, esercizioId: String, esercizio: Esercizio, showingAlert: Bool = false) {
-        self.giornoId = giornoId
-        self.gruppoId = gruppoId
-        self.esercizioId = esercizioId
-        self.esercizio = esercizio
-        self._showingWeightAlert = State(initialValue: showingAlert)
-        self._nuovoPeso = State(initialValue: "")
-        self._weightLogs = State(initialValue: esercizio.weightLogs)
-    }
-
-    private var sortedWeightLogs: [WeightLog] {
-        weightLogs.sorted { $0.timestamp < $1.timestamp }
-    }
-
-    private var lastTenWeightLogs: [WeightLog] {
-        let logs = sortedWeightLogs
-        return logs.count > 10 ? Array(logs.suffix(10)) : logs
-    }
-
-    private var latestWeightLog: WeightLog? {
-        sortedWeightLogs.last
-    }
-
-    private func formattedDate(for log: WeightLog) -> String {
-        Self.logDateFormatter.string(from: log.date)
-    }
-
-    private func formattedWeight(_ value: Double) -> String {
-        Self.weightFormatter.string(from: NSNumber(value: value)) ?? String(format: "%.2f", value)
-    }
-
-    private func summaryText(for log: WeightLog) -> String {
-        let formattedDate = Self.summaryDateFormatter.string(from: log.date)
-        return "Ultimo peso: \(formattedWeight(log.weight)) kg - \(formattedDate)"
-    }
-    
     var body: some View {
+        let parts = Self.exerciseParts(from: esercizio.name)
+        let seriesParts = Self.seriesParts(from: esercizio.serie)
+        let currentIndex = min(selectedPartIndex, max(parts.count - 1, 0))
+        let currentPartName = Self.partName(at: currentIndex, from: parts, fallback: esercizio.name)
+        let currentKey = ExerciseDetailViewModel.makeExerciseKey(from: currentPartName)
+        let currentData = viewModel.data(for: currentKey)
+        let sortedLogs = currentData?.sortedWeightLogs ?? []
+        let recentLogs = Array(sortedLogs.suffix(10))
+        let latestRecord = sortedLogs.last
+        let savedNote = currentData?.noteUtente ?? ""
+        let isNoteDirty = noteInput != savedNote
+        let selectedSerie = Self.serie(for: currentIndex, parts: parts, seriesParts: seriesParts, fallback: esercizio.serie)
+        let canManageData = !viewModel.userCode.isEmpty
+
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
-                
-                // ——— IMMAGINE COMPATTA ———
+
+                // Immagine esercizio
                 if let image = imageLoader.image {
                     Image(uiImage: image)
                         .resizable()
@@ -122,29 +144,42 @@ struct EsercizioView: View {
                             .frame(height: 160)
                         if imageLoader.error != nil {
                             Text("Immagine non disponibile")
-                                .font(.subheadline)
                                 .foregroundColor(.secondary)
                         } else {
                             ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
                         }
+                    }
+                    .onTapGesture { showFullScreenImage = false }
+                }
+
+                if parts.count > 1 {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Seleziona esercizio")
+                            .font(.headline)
+                            .foregroundColor(.accentColor)
+                        Picker("Esercizio", selection: $selectedPartIndex) {
+                            ForEach(parts.indices, id: \.self) { index in
+                                Text(parts[index]).tag(index)
+                            }
+                        }
+                        .pickerStyle(.segmented)
                     }
                 }
 
-                // ——— SERIE & RIPOSO ———
-                HStack {
-                    Text(esercizio.serie)
-                        .font(.title2.bold())
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(selectedSerie)
+                        .montserrat(size: 25)
+                        .fontWeight(.bold)
                         .foregroundColor(.accentColor)
-                    Spacer()
                     if let riposo = esercizio.riposo, !riposo.isEmpty {
                         Text("\(riposo) recupero")
-                            .font(.subheadline)
+                            .montserrat(size: 18)
                             .foregroundColor(.secondary)
                     }
                 }
 
-                // ——— NOTE PT ———
-                if let notePT = esercizio.notePT, !notePT.isEmpty {
+                if let notePT = esercizio.notePT, !notePT.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Note PT")
                             .font(.headline)
@@ -154,58 +189,72 @@ struct EsercizioView: View {
                     }
                 }
 
-                Divider().padding(.vertical, 4)
-
-                // ——— GRAFICO PESO ———
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Andamento Peso")
+                    Text("Andamento peso")
                         .font(.headline)
 
-                    if uniformLogs.isEmpty {
-                        Text("Nessun peso registrato.")
-                            .font(.body)
+                    if recentLogs.isEmpty {
+                        Text("Nessun peso registrato")
                             .foregroundColor(.secondary)
+                            .font(.body)
                     } else {
-                        if let latest = latestWeightLog {
-                            Text(summaryText(for: latest))
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                        let chartData = recentLogs.enumerated().map { index, log in
+                            UniformLog(id: index, index: index, date: log.date, weight: log.weight)
                         }
-
-                        WeightChartView(data: uniformLogs, dateFormatter: {
-                            let f = DateFormatter()
-                            f.dateFormat = "dd MMM"
-                            f.locale = Locale(identifier: "it_IT")
-                            return f
-                        }())
-                        .frame(height: 220)
-
-                        // (facoltativo) ultimi 3 log in lista
-                        VStack(alignment: .leading, spacing: 4) {
-                            ForEach(Array(lastTenWeightLogs.reversed().prefix(3))) { log in
-                                HStack {
-                                    Text(formattedDate(for: log))
-                                    Spacer()
-                                    Text("\(formattedWeight(log.weight)) kg")
-                                }
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            }
-                        }
+                        WeightChartView(data: chartData, dateFormatter: Self.logDateFormatter)
+                            .frame(minHeight: 220)
                     }
 
+                    if let record = latestRecord {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Ultimo peso registrato")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Text("\(Self.summaryDateFormatter.string(from: record.date)) • \(formattedWeight(record.weight)) kg")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+
+                            HStack(spacing: 12) {
+                                Button {
+                                    dialogExerciseKey = currentKey
+                                    weightDialogMode = .edit(record)
+                                    weightInput = editingString(for: record.weight)
+                                } label: {
+                                    Text("Modifica")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(!canManageData)
+
+                                Button(role: .destructive) {
+                                    deletionContext = WeightDeletionContext(record: record, exerciseKey: currentKey)
+                                } label: {
+                                    Text("Elimina")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(!canManageData)
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
                 }
 
-                // ——— BOTTONI AZIONE ———
                 VStack(spacing: 10) {
                     Button {
-                        showingWeightAlert.toggle()
+                        dialogExerciseKey = currentKey
+                        weightDialogMode = .create
+                        weightInput = ""
                     } label: {
                         Label("Registra Peso", systemImage: "chart.xyaxis.line")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
+                    .disabled(!canManageData)
 
                     if let riposo = esercizio.riposo, !riposo.isEmpty {
                         Button {
@@ -220,88 +269,339 @@ struct EsercizioView: View {
                 }
                 .padding(.top, 8)
 
-                Spacer()
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Note")
+                        .font(.headline)
+
+                    ZStack(alignment: .topLeading) {
+                        if noteInput.isEmpty {
+                            Text("Aggiungi una nota")
+                                .foregroundColor(.secondary)
+                                .padding(.top, 12)
+                                .padding(.leading, 8)
+                        }
+                        TextEditor(text: $noteInput)
+                            .frame(minHeight: 120)
+                            .padding(4)
+                            .background(Color(.secondarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+
+                    HStack(spacing: 12) {
+                        Button {
+                            saveNote(for: currentKey)
+                        } label: {
+                            Text("Salva nota")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .disabled(!isNoteDirty || !canManageData)
+
+                        Button {
+                            noteInput = savedNote
+                        } label: {
+                            Text("Annulla")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .disabled(!isNoteDirty)
+                    }
+
+                    if !savedNote.isEmpty {
+                        Button(role: .destructive) {
+                            removeNote(for: currentKey)
+                        } label: {
+                            Text("Rimuovi nota")
+                        }
+                        .disabled(!canManageData)
+                    }
+                }
+
+                Spacer(minLength: 20)
             }
             .padding(.horizontal)
+            .padding(.bottom, 32)
         }
         .navigationTitle(esercizio.name)
         .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: weightSheetBinding) {
+            WeightEntrySheet(
+                mode: weightDialogMode,
+                weightInput: $weightInput,
+                onConfirm: handleWeightConfirm,
+                onCancel: dismissWeightSheet
+            )
+        }
         .sheet(isPresented: $showTimerSheet) {
             TimerSheet(riposo: esercizio.riposo ?? "")
         }
-        .toast(isPresented: $isToastPresented, message: "Peso salvato!")
-        .alert("Registra peso", isPresented: $showingWeightAlert) {
-            TextField("Peso (kg)", text: $nuovoPeso)
-                .keyboardType(.decimalPad)
-            Button("Salva", action: addWeightLog)
-            Button("Annulla", role: .cancel) {
-                nuovoPeso = ""
-            }
-        } message: {
-            Text("Inserisci il peso sollevato per questo esercizio.")
+        .toast(
+            isPresented: $isToastPresented,
+            message: toastMessage,
+            duration: 2.0,
+            backgroundColor: toastColor,
+            textColor: .white,
+            font: .callout,
+            position: .bottom,
+            animationStyle: .slide
+        )
+        .alert(item: $deletionContext) { context in
+            Alert(
+                title: Text("Elimina peso"),
+                message: Text("Vuoi eliminare il peso registrato il \(Self.summaryDateFormatter.string(from: context.record.date))?"),
+                primaryButton: .destructive(Text("Elimina")) {
+                    handleDeletion(context: context)
+                },
+                secondaryButton: .cancel {
+                    deletionContext = nil
+                }
+            )
+        }
+        .alert(item: $errorAlert) { alert in
+            Alert(
+                title: Text("Errore"),
+                message: Text(alert.message),
+                dismissButton: .default(Text("OK"))
+            )
         }
         .onAppear {
             let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(esercizio.name).png"
             imageLoader.loadImage(from: storagePath)
         }
+        .onReceive(viewModel.$exerciseData) { _ in
+            syncNote(for: currentKey, force: false)
+        }
+        .onChange(of: selectedPartIndex) { newIndex in
+            let newPartName = Self.partName(at: newIndex, from: parts, fallback: esercizio.name)
+            let newKey = ExerciseDetailViewModel.makeExerciseKey(from: newPartName)
+            dialogExerciseKey = newKey
+            syncNote(for: newKey, force: true)
+            weightDialogMode = .hidden
+            weightInput = ""
+            deletionContext = nil
+        }
     }
 
-    func addWeightLog() {
-        let trimmed = nuovoPeso.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            print("Peso non inserito")
-            return
-        }
+    private var weightSheetBinding: Binding<Bool> {
+        Binding(
+            get: { weightDialogMode != .hidden },
+            set: { if !$0 { dismissWeightSheet() } }
+        )
+    }
 
-        let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
+    private func formattedWeight(_ value: Double) -> String {
+        Self.weightFormatter.string(from: NSNumber(value: value)) ?? String(format: "%.2f", value)
+    }
+
+    private func editingString(for weight: Double) -> String {
+        if weight.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", weight)
+        }
+        return String(format: "%.2f", weight)
+    }
+
+    private func showToast(message: String, color: Color = .green) {
+        toastMessage = message
+        toastColor = color
+        isToastPresented = true
+    }
+
+    private func showError(_ message: String) {
+        errorAlert = ErrorAlert(message: message)
+    }
+
+    private func dismissWeightSheet() {
+        weightDialogMode = .hidden
+        weightInput = ""
+    }
+
+    private func handleWeightConfirm() {
+        let normalized = weightInput.replacingOccurrences(of: ",", with: ".")
         guard let weightValue = Double(normalized), weightValue > 0 else {
-            print("Peso non valido")
+            showError("Inserisci un peso valido")
             return
         }
 
-        guard let code = UserDefaults.standard.string(forKey: "code") else {
-            print("Codice utente non trovato.")
-            return
-        }
+        let key = dialogExerciseKey
 
-        let esercizioRef = Database.database().reference()
-            .child("users")
-            .child(code)
-            .child("scheda")
-            .child("giorni")
-            .child(giornoId)
-            .child("gruppiMuscolari")
-            .child(gruppoId)
-            .child("esercizi")
-            .child(esercizioId)
-
-        let weightLogsRef = esercizioRef.child("weightLogs").childByAutoId()
-        let timestamp = Date().timeIntervalSince1970 * 1000
-        let logData: [String: Any] = [
-            "timestamp": timestamp,
-            "weight": weightValue
-        ]
-
-        weightLogsRef.setValue(logData) { error, _ in
-            if let error = error {
-                print("Errore nel salvataggio del peso: \(error.localizedDescription)")
-                return
+        switch weightDialogMode {
+        case .create:
+            viewModel.addWeightEntry(for: key, weight: weightValue) { result in
+                switch result {
+                case .success:
+                    showToast(message: "Peso salvato")
+                    dismissWeightSheet()
+                case .failure(let message):
+                    showError(message.errorDescription ?? "Errore sconosciuto")
+                }
             }
+        case .edit(let record):
+            viewModel.updateWeightEntry(for: key, entryId: record.id, weight: weightValue) { result in
+                switch result {
+                case .success:
+                    showToast(message: "Peso aggiornato")
+                    dismissWeightSheet()
+                case .failure(let message):
+                    showError(message.errorDescription ?? "Errore sconosciuto")
+                }
+            }
+        case .hidden:
+            break
+        }
+    }
 
-            let newLog = WeightLog(id: weightLogsRef.key ?? UUID().uuidString, timestamp: timestamp, weight: weightValue)
+    private func handleDeletion(context: WeightDeletionContext) {
+        viewModel.deleteWeightEntry(for: context.exerciseKey, entryId: context.record.id) { result in
+            switch result {
+            case .success:
+                showToast(message: "Peso eliminato")
+                deletionContext = nil
+            case .failure(let message):
+                deletionContext = nil
+                showError(message.errorDescription ?? "Errore sconosciuto")
+            }
+        }
+    }
 
-            DispatchQueue.main.async {
-                weightLogs.append(newLog)
-                esercizio.weightLogs = weightLogs
+    private func saveNote(for key: String) {
+        let trimmed = noteInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            removeNote(for: key)
+            return
+        }
+        viewModel.updateUserNote(for: key, note: trimmed) { result in
+            switch result {
+            case .success:
+                let sanitized = trimmed.isEmpty ? "" : trimmed
+                noteInput = sanitized
+                lastSyncedNote = sanitized
+                lastSyncedNoteKey = key
+                showToast(message: "Nota salvata")
+            case .failure(let message):
+                showError(message.errorDescription ?? "Errore sconosciuto")
+            }
+        }
+    }
 
-                let summary = summaryText(for: newLog)
-                esercizioRef.child("noteUtente").setValue(summary)
-                esercizio.noteUtente = summary
+    private func removeNote(for key: String) {
+        viewModel.updateUserNote(for: key, note: nil) { result in
+            switch result {
+            case .success:
+                noteInput = ""
+                lastSyncedNote = ""
+                lastSyncedNoteKey = key
+                showToast(message: "Nota rimossa", color: .orange)
+            case .failure(let message):
+                showError(message.errorDescription ?? "Errore sconosciuto")
+            }
+        }
+    }
 
-                nuovoPeso = ""
-                showingWeightAlert = false
-                isToastPresented = true
-                print("Peso salvato con successo")
+    private func syncNote(for key: String, force: Bool) {
+        let remoteNote = viewModel.data(for: key)?.noteUtente ?? ""
+        if force {
+            noteInput = remoteNote
+            lastSyncedNote = remoteNote
+            lastSyncedNoteKey = key
+        } else {
+            guard key == lastSyncedNoteKey else { return }
+            if noteInput == lastSyncedNote {
+                noteInput = remoteNote
+                lastSyncedNote = remoteNote
+            }
+        }
+    }
+
+    private static func exerciseParts(from name: String) -> [String] {
+        let components = name.split(separator: "+").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+        if !components.isEmpty {
+            return components
+        }
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? [] : [trimmed]
+    }
+
+    private static func primaryExerciseName(from name: String) -> String {
+        exerciseParts(from: name).first ?? name
+    }
+
+    private static func seriesParts(from serie: String) -> [String] {
+        serie.split(separator: "+").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+    }
+
+    private static func partName(at index: Int, from parts: [String], fallback: String) -> String {
+        guard index >= 0 && index < parts.count else {
+            return fallback
+        }
+        return parts[index]
+    }
+
+    private static func serie(for index: Int, parts: [String], seriesParts: [String], fallback: String) -> String {
+        if seriesParts.count == parts.count, index < seriesParts.count {
+            return seriesParts[index]
+        }
+        if index < seriesParts.count {
+            return seriesParts[index]
+        }
+        return fallback
+    }
+}
+
+private struct WeightEntrySheet: View {
+    let mode: WeightDialogMode
+    @Binding var weightInput: String
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    private var record: WeightLog? {
+        if case let .edit(log) = mode {
+            return log
+        }
+        return nil
+    }
+
+    private var title: String {
+        switch mode {
+        case .create:
+            return "Registra peso"
+        case .edit:
+            return "Modifica peso"
+        case .hidden:
+            return "Peso"
+        }
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Peso (kg)")
+                    .font(.headline)
+                TextField("Peso (kg)", text: $weightInput)
+                    .keyboardType(.decimalPad)
+                    .textFieldStyle(.roundedBorder)
+                if let record {
+                    Text("Ultimo aggiornamento: \(EsercizioView.sheetDateFormatter.string(from: record.date))")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("Data: \(EsercizioView.sheetDateFormatter.string(from: Date()))")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding()
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Annulla", action: onCancel)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Salva", action: onConfirm)
+                }
             }
         }
     }
@@ -311,7 +611,6 @@ struct WeightChartView: View {
     let data: [UniformLog]
     let dateFormatter: DateFormatter
 
-    // gradient semplice e tipato (type erasure per evitare inference)
     private var lineGradient: AnyShapeStyle {
         AnyShapeStyle(LinearGradient(
             colors: [Color.blue, Color.purple],
@@ -322,21 +621,6 @@ struct WeightChartView: View {
 
     var body: some View {
         Chart {
-            // Area (riempimento) – separata
-//            ForEach(data) { item in
-//                AreaMark(
-//                    x: .value("Index", item.index),
-//                    y: .value("Peso", item.weight)
-//                )
-//                .interpolationMethod(.catmullRom)
-//                .foregroundStyle(LinearGradient(
-//                    colors: [Color.blue.opacity(0.22), Color.purple.opacity(0.22)],
-//                    startPoint: .top,
-//                    endPoint: .bottom
-//                ))
-//            }
-
-            // Linea – separata
             ForEach(data) { item in
                 LineMark(
                     x: .value("Index", item.index),
@@ -346,7 +630,6 @@ struct WeightChartView: View {
                 .foregroundStyle(lineGradient)
             }
 
-            // Punti – separati
             ForEach(data) { item in
                 PointMark(
                     x: .value("Index", item.index),
@@ -364,8 +647,7 @@ struct WeightChartView: View {
         .chartYScale(domain: .automatic(includesZero: false))
         .chartXAxis {
             AxisMarks(values: data.map { $0.index }) { value in
-                if let idx = value.as(Int.self),
-                   let item = data.first(where: { $0.index == idx }) {
+                if let idx = value.as(Int.self), let item = data.first(where: { $0.index == idx }) {
                     AxisValueLabel {
                         Text(dateFormatter.string(from: item.date))
                             .font(.caption2)
@@ -374,20 +656,18 @@ struct WeightChartView: View {
             }
         }
         .chartYAxis {
-            AxisMarks(position: .leading) { value in
+            AxisMarks(position: .leading) { _ in
                 AxisGridLine()
                 AxisValueLabel()
             }
         }
     }
 
-    // formatter leggero per i label peso sopra i punti (no NumberFormatter per semplificare)
-    private func formatWeight(_ w: Double) -> String {
-        if w == floor(w) { return String(format: "%.0f", w) }
-        return String(format: "%.1f", w)
+    private func formatWeight(_ weight: Double) -> String {
+        if weight == floor(weight) { return String(format: "%.0f", weight) }
+        return String(format: "%.1f", weight)
     }
 }
-
 
 struct FullScreenImageView: View {
     var image: UIImage
@@ -449,7 +729,7 @@ struct TimerSheet: View {
                         .stroke(Color.accentColor, lineWidth: 10)
                         .frame(width: 200, height: 200)
                         .rotationEffect(.degrees(-90))
-                    
+
                     Text(formatTime(timeRemaining))
                         .montserrat(size: 80)
                         .bold()
@@ -499,7 +779,6 @@ struct TimerSheet: View {
         }
     }
 
-    // Funzione per avviare il timer
     func startTimer() {
         if !timerIsActive {
             timerIsActive = true
@@ -517,21 +796,18 @@ struct TimerSheet: View {
         }
     }
 
-    // Funzione per stoppare il timer
     func stopTimer() {
         timer?.invalidate()
         timerIsActive = false
         timerPaused = true
     }
 
-    // Funzione per convertire secondi in formato mm:ss
     func formatTime(_ time: Int) -> String {
         let minutes = time / 60
         let seconds = time % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
 
-    // Funzione per parsare il riposo (esempio formato "m'ss''")
     static func parseRiposo(_ riposo: String) -> Int {
         let components = riposo.split(separator: "'")
         if components.count == 2 {
@@ -542,12 +818,10 @@ struct TimerSheet: View {
         return 0
     }
 
-    // Riproduci il suono quando il timer finisce
     func playSound() {
         AudioServicesPlaySystemSound(SystemSoundID(1022))
     }
 
-    // Attiva la vibrazione quando il timer finisce
     func triggerVibration() {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
