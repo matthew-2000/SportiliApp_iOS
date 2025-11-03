@@ -165,8 +165,9 @@ struct EsercizioView: View {
                             .font(.headline)
                         // Mostra sempre la serie completa
                         Text(fullSerie)
-                            .font(.title3)
-                            .fontWeight(.semibold)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.accent)
 
                         if let riposo = esercizio.riposo, !riposo.isEmpty {
                             Divider()
