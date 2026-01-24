@@ -69,17 +69,30 @@ struct EsercizioView: View {
     @State private var errorAlert: ErrorAlert?
     @State private var deletionContext: WeightDeletionContext?
 
-    @StateObject var imageLoader = ImageLoader()
+    @StateObject private var imageLoader: ImageLoader
     @StateObject private var viewModel: ExerciseDetailViewModel
+    private let autoLoadImage: Bool
 
-    init(giornoId: String, gruppoId: String, esercizioId: String, esercizio: Esercizio) {
+    init(
+        giornoId: String,
+        gruppoId: String,
+        esercizioId: String,
+        esercizio: Esercizio,
+        userCode: String? = nil,
+        viewModel: ExerciseDetailViewModel? = nil,
+        imageLoader: ImageLoader = ImageLoader(),
+        autoLoadImage: Bool = true
+    ) {
         self.giornoId = giornoId
         self.gruppoId = gruppoId
         self.esercizioId = esercizioId
         self.esercizio = esercizio
+        self.autoLoadImage = autoLoadImage
 
-        let code = UserDefaults.standard.string(forKey: "code") ?? ""
-        _viewModel = StateObject(wrappedValue: ExerciseDetailViewModel(userCode: code))
+        let resolvedCode = userCode ?? UserDefaults.standard.string(forKey: "code") ?? ""
+        let resolvedViewModel = viewModel ?? ExerciseDetailViewModel(userCode: resolvedCode)
+        _viewModel = StateObject(wrappedValue: resolvedViewModel)
+        _imageLoader = StateObject(wrappedValue: imageLoader)
 
         let initialPartName = EsercizioView.primaryExerciseName(from: esercizio.name)
         let initialKey = ExerciseDetailViewModel.makeExerciseKey(from: initialPartName)
@@ -371,6 +384,7 @@ struct EsercizioView: View {
     // MARK: - Helpers
 
     private func loadExerciseImage(for partName: String) {
+        guard autoLoadImage, !PreviewContext.isPreview else { return }
         let storagePath = "https://firebasestorage.googleapis.com/v0/b/sportiliapp.appspot.com/o/\(partName).png"
         imageLoader.loadImage(from: storagePath)
     }
@@ -1192,3 +1206,36 @@ struct TimerSheet: View {
     }
 }
 
+#Preview("Esercizio View") {
+    NavigationView {
+        let exercise = PreviewData.singleExercise
+        let previewModel = ExerciseDetailViewModel(
+            userCode: "preview",
+            autoObserve: false,
+            initialData: PreviewData.exerciseData(for: exercise)
+        )
+        EsercizioView(
+            giornoId: PreviewData.giorno.id,
+            gruppoId: PreviewData.gruppo.id,
+            esercizioId: exercise.id,
+            esercizio: exercise,
+            userCode: "preview",
+            viewModel: previewModel,
+            autoLoadImage: false
+        )
+    }
+}
+
+#Preview("Weight Chart") {
+    let chartData = PreviewData.weightLogs.enumerated().map { index, log in
+        UniformLog(id: index, index: index, date: log.date, weight: log.weight)
+    }
+    return WeightChartView(data: chartData, dateFormatter: EsercizioView.summaryDateFormatter)
+        .frame(height: 240)
+        .padding()
+}
+
+#Preview("Full Screen Image") {
+    let image = UIImage(systemName: "figure.strengthtraining.traditional") ?? UIImage()
+    return FullScreenImageView(image: image)
+}

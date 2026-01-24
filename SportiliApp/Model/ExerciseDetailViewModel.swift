@@ -30,16 +30,24 @@ struct UserExerciseData {
 }
 
 final class ExerciseDetailViewModel: ObservableObject {
-    @Published private(set) var exerciseData: [String: UserExerciseData] = [:]
+    @Published private(set) var exerciseData: [String: UserExerciseData]
 
     let userCode: String
 
+    private let autoObserve: Bool
     private var reference: DatabaseReference?
     private var handle: DatabaseHandle?
 
-    init(userCode: String) {
+    init(
+        userCode: String,
+        autoObserve: Bool = true,
+        initialData: [String: UserExerciseData] = [:]
+    ) {
         self.userCode = userCode
-        if !userCode.isEmpty {
+        self.autoObserve = autoObserve
+        self.exerciseData = initialData
+
+        if autoObserve, !userCode.isEmpty {
             startObservingExerciseData()
         }
     }
@@ -197,6 +205,7 @@ final class ExerciseDetailViewModel: ObservableObject {
     }
 
     private func startObservingExerciseData() {
+        guard autoObserve else { return }
         guard handle == nil else { return }
         let ref = Database.database().reference()
             .child("users")

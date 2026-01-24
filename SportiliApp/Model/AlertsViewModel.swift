@@ -2,16 +2,30 @@ import Foundation
 import FirebaseDatabase
 
 final class AlertsViewModel: ObservableObject {
-    @Published private(set) var alerts: [UserAlert] = []
-    @Published private(set) var isLoading: Bool = false
+    @Published private(set) var alerts: [UserAlert]
+    @Published private(set) var isLoading: Bool
     @Published private(set) var errorMessage: String?
 
     private let reference: DatabaseReference
+    private let autoObserve: Bool
     private var handle: DatabaseHandle?
 
-    init(database: DatabaseReference = Database.database().reference()) {
+    init(
+        database: DatabaseReference = Database.database().reference(),
+        autoObserve: Bool = true,
+        initialAlerts: [UserAlert] = [],
+        initialLoading: Bool = false,
+        initialErrorMessage: String? = nil
+    ) {
         self.reference = database.child("alerts")
-        observeAlerts()
+        self.autoObserve = autoObserve
+        self.alerts = initialAlerts
+        self.isLoading = initialLoading
+        self.errorMessage = initialErrorMessage
+
+        if autoObserve {
+            observeAlerts()
+        }
     }
 
     deinit {
@@ -21,6 +35,7 @@ final class AlertsViewModel: ObservableObject {
     }
 
     func retry() {
+        guard autoObserve else { return }
         observeAlerts()
     }
 
