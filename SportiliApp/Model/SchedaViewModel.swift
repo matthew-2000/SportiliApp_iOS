@@ -7,26 +7,35 @@
 
 import Foundation
 
-class SchedaViewModel: ObservableObject {
+final class SchedaViewModel: ObservableObject {
     @Published var scheda: Scheda?
-    private var schedaManager: SchedaManager = SchedaManager()
-    
-    init() {
-        fetchScheda()
+
+    private let schedaManager: SchedaManager
+    private let autoFetchOnInit: Bool
+
+    init(
+        schedaManager: SchedaManager = SchedaManager(),
+        autoFetchOnInit: Bool = true,
+        scheda: Scheda? = nil
+    ) {
+        self.schedaManager = schedaManager
+        self.autoFetchOnInit = autoFetchOnInit
+        self.scheda = scheda
+
+        if autoFetchOnInit {
+            fetchScheda()
+        }
     }
 
     func fetchScheda() {
-        
         guard let code = UserDefaults.standard.string(forKey: "code") else {
             return
         }
-        
-        schedaManager.getSchedaFromFirebase(code: code, completion: { scheda in
+
+        schedaManager.getSchedaFromFirebase(code: code) { scheda in
             DispatchQueue.main.async {
                 self.scheda = scheda
             }
-        })
-
+        }
     }
-    
 }

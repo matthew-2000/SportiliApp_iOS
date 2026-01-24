@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AlertsView: View {
-    @StateObject private var viewModel = AlertsViewModel()
+    @StateObject private var viewModel: AlertsViewModel
 
     static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -11,6 +11,10 @@ struct AlertsView: View {
         return formatter
     }()
 
+    init(viewModel: AlertsViewModel = AlertsViewModel()) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+
     var body: some View {
         NavigationView {
             Group {
@@ -19,51 +23,9 @@ struct AlertsView: View {
                         .progressViewStyle(CircularProgressViewStyle())
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let error = viewModel.errorMessage {
-                    VStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 48))
-                            .foregroundColor(.orange)
-
-                        Text("Impossibile caricare gli avvisi")
-                            .font(.title3.weight(.semibold))
-                            .multilineTextAlignment(.center)
-                            .montserrat(size: 20)
-
-                        Text(error)
-                            .foregroundColor(.gray)
-                            .multilineTextAlignment(.center)
-                            .montserrat(size: 16)
-
-                        Button(action: {
-                            viewModel.retry()
-                        }) {
-                            Text("Riprova")
-                                .bold()
-                                .montserrat(size: 18)
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 10)
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    AlertsErrorState(error: error, onRetry: viewModel.retry)
                 } else if viewModel.alerts.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "bell.slash.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(.gray)
-
-                        Text("Nessun avviso")
-                            .font(.title3.weight(.semibold))
-                            .montserrat(size: 20)
-
-                        Text("Quando il tuo trainer pubblicherà un avviso lo troverai qui.")
-                            .foregroundColor(.gray)
-                            .multilineTextAlignment(.center)
-                            .montserrat(size: 16)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    AlertsEmptyState()
                 } else {
                     List {
                         ForEach(viewModel.alerts) { alert in
@@ -77,6 +39,61 @@ struct AlertsView: View {
             }
             .navigationTitle("Avvisi")
         }
+    }
+}
+
+private struct AlertsErrorState: View {
+    let error: String
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 48))
+                .foregroundColor(.orange)
+
+            Text("Impossibile caricare gli avvisi")
+                .font(.title3.weight(.semibold))
+                .multilineTextAlignment(.center)
+                .montserrat(size: 20)
+
+            Text(error)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .montserrat(size: 16)
+
+            Button(action: onRetry) {
+                Text("Riprova")
+                    .bold()
+                    .montserrat(size: 18)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct AlertsEmptyState: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "bell.slash.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.gray)
+
+            Text("Nessun avviso")
+                .font(.title3.weight(.semibold))
+                .montserrat(size: 20)
+
+            Text("Quando il tuo trainer pubblicherà un avviso lo troverai qui.")
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .montserrat(size: 16)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -135,6 +152,20 @@ private struct AlertRow: View {
     }
 }
 
-#Preview {
-    AlertsView()
+#Preview("Alerts - Loaded") {
+    AlertsView(
+        viewModel: AlertsViewModel(autoObserve: false, initialAlerts: PreviewData.alerts)
+    )
+}
+
+#Preview("Alerts - Empty") {
+    AlertsView(
+        viewModel: AlertsViewModel(autoObserve: false, initialAlerts: [])
+    )
+}
+
+#Preview("Alerts - Error") {
+    AlertsView(
+        viewModel: AlertsViewModel(autoObserve: false, initialErrorMessage: "Connessione non disponibile")
+    )
 }

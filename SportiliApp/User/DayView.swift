@@ -276,6 +276,7 @@ private struct ExerciseThumbnailView: View {
     }
 
     private func loadImageIfNeeded() {
+        guard !PreviewContext.isPreview else { return }
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
 
@@ -310,4 +311,22 @@ private func exerciseNameParts(from name: String) -> [String] {
 
     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? [] : [trimmed]
+}
+
+#Preview("Day View") {
+    NavigationView {
+        DayView(day: PreviewData.giorno)
+    }
+}
+
+#Preview("Gruppo Row") {
+    GruppoRow(gruppo: PreviewData.gruppo)
+        .previewLayout(.sizeThatFits)
+        .padding()
+}
+
+#Preview("Esercizio Row") {
+    EsercizioRow(esercizio: PreviewData.singleExercise)
+        .previewLayout(.sizeThatFits)
+        .padding()
 }
