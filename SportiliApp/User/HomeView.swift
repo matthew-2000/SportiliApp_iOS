@@ -56,7 +56,6 @@ struct HomeView: View {
                             NavigationLink(destination: DayView(day: giorno)) {
                                 DayRow(day: giorno)
                             }
-                            .listRowSeparator(.hidden)
                         }
                     }
                     .listStyle(.plain)

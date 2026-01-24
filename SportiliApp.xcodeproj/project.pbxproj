@@ -40,6 +40,9 @@
 		3B23C2CD2C0A07030043D41E /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2B82C09FFCF0043D41E /* Montserrat-Regular.ttf */; };
 		3B23C2CE2C0A07030043D41E /* Montserrat-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2BA2C09FFCF0043D41E /* Montserrat-Medium.ttf */; };
 		3B23C2CF2C0A07030043D41E /* Montserrat-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B23C2B42C09FFCF0043D41E /* Montserrat-ExtraLight.ttf */; };
+		3B2DC15D2F252D2E000C89FB /* PreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2DC15B2F252D2E000C89FB /* PreviewData.swift */; };
+		3B2DC15E2F252D2E000C89FB /* PreviewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2DC15A2F252D2E000C89FB /* PreviewContext.swift */; };
+		3B2DC1602F252D5D000C89FB /* DayRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2DC15F2F252D5D000C89FB /* DayRow.swift */; };
 		3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */; };
 		3B5CF6AB2C0F59EE0068F17E /* Utente.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6AA2C0F59EE0068F17E /* Utente.swift */; };
 		3B5E2BC42EA127F100617085 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5E2BC22EA127F100617085 /* Alert.swift */; };
@@ -94,6 +97,9 @@
 		3B23C2BA2C09FFCF0043D41E /* Montserrat-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Medium.ttf"; sourceTree = "<group>"; };
 		3B23C2BB2C09FFCF0043D41E /* Montserrat-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		3B23C2BC2C0A05830043D41E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		3B2DC15A2F252D2E000C89FB /* PreviewContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewContext.swift; sourceTree = "<group>"; };
+		3B2DC15B2F252D2E000C89FB /* PreviewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewData.swift; sourceTree = "<group>"; };
+		3B2DC15F2F252D5D000C89FB /* DayRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRow.swift; sourceTree = "<group>"; };
 		3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminHomeView.swift; sourceTree = "<group>"; };
 		3B5CF6AA2C0F59EE0068F17E /* Utente.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utente.swift; sourceTree = "<group>"; };
 		3B5E2BC22EA127F100617085 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
@@ -176,6 +182,15 @@
 			path = Montserrat;
 			sourceTree = "<group>";
 		};
+		3B2DC15C2F252D2E000C89FB /* Preview */ = {
+			isa = PBXGroup;
+			children = (
+				3B2DC15A2F252D2E000C89FB /* PreviewContext.swift */,
+				3B2DC15B2F252D2E000C89FB /* PreviewData.swift */,
+			);
+			path = Preview;
+			sourceTree = "<group>";
+		};
 		3B5CF6A72C0F4D070068F17E /* Fausto */ = {
 			isa = PBXGroup;
 			children = (
@@ -190,6 +205,7 @@
 		3B70B8922C29B33F000DC6EB /* User */ = {
 			isa = PBXGroup;
 			children = (
+				3B2DC15F2F252D5D000C89FB /* DayRow.swift */,
 				3B5E2BC82EA1284400617085 /* AlertsView.swift */,
 				3B9337622C09CC8500057838 /* ContentView.swift */,
 				3B1BD3672C0CE92800BA9A3D /* EsercizioView.swift */,
@@ -242,6 +258,7 @@
 				3B78AE932C2B0F5E006E1173 /* ImageLoader.swift */,
 				3B9337642C09CC8600057838 /* Assets.xcassets */,
 				3B9337662C09CC8600057838 /* Preview Content */,
+				3B2DC15C2F252D2E000C89FB /* Preview */,
 			);
 			path = SportiliApp;
 			sourceTree = "<group>";
@@ -369,6 +386,7 @@
 				3B70B88F2C298842000DC6EB /* EsercizioDetailView.swift in Sources */,
 				3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */,
 				3BF2C8EF2C20451000179D37 /* GymViewModel.swift in Sources */,
+				3B2DC1602F252D5D000C89FB /* DayRow.swift in Sources */,
 				3B9337632C09CC8500057838 /* ContentView.swift in Sources */,
 				3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */,
 				3B70B8912C29AA65000DC6EB /* AddEsercizioView.swift in Sources */,
@@ -379,6 +397,8 @@
 				3BF2C8F32C23207600179D37 /* UtenteView.swift in Sources */,
 				3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */,
 				3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */,
+				3B2DC15D2F252D2E000C89FB /* PreviewData.swift in Sources */,
+				3B2DC15E2F252D2E000C89FB /* PreviewContext.swift in Sources */,
 				3B5E2BC92EA1284400617085 /* AlertsView.swift in Sources */,
 				3B70B88B2C298808000DC6EB /* GiornoDetailView.swift in Sources */,
 				3B08CDD62C0DAFEE001980B2 /* GruppoMuscolare.swift in Sources */,
