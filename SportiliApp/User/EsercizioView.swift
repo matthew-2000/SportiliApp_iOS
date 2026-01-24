@@ -168,16 +168,12 @@ struct EsercizioView: View {
                     title: esercizio.name,
                     subtitle: heroSubtitle   // oppure nil se non la vuoi
                 )
-                .listRowInsets(.init(top: 0, leading: 0, bottom: 8, trailing: 0))
-                .listRowBackground(Color.clear)
                 ExerciseHeroHeader(
                     state: heroState,
                     title: esercizio.name,
                     subtitle: heroSubtitle,
                     onTap: { showFullScreenImage = true }
                 )
-                .listRowInsets(.init(top: 0, leading: 0, bottom: 8, trailing: 0))
-                .listRowBackground(Color.clear)
             }
 
             if parts.count > 1 {
@@ -191,7 +187,7 @@ struct EsercizioView: View {
 
                 if let riposo = esercizio.riposo, !riposo.isEmpty {
                     LabeledContent {
-                        Text(riposo).foregroundStyle(.secondary)
+                        Text(riposo).bold()
                     } label: {
                         Label("Recupero", systemImage: "timer")
                     }
@@ -201,12 +197,28 @@ struct EsercizioView: View {
                     CoachNotesRow(text: notePT)
                 }
             }
+            
+            Section("Note personali") {
+                if savedNote.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Text("Nessuna nota salvata.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(savedNote)
+                        .lineLimit(10)
+                }
+                NotesPreviewRow(
+                    text: savedNote,
+                    isDirty: isNoteDirty,
+                    onTap: { showNotesSheet = true }
+                )
+            }
 
             Section("Progressi") {
                 if recentLogs.isEmpty {
                     EmptyStateRow(
                         title: "Nessun peso registrato",
-                        message: "Registra il tuo primo peso per visualizzare i progressi.",
+                        message: "Registra il tuo primo peso cliccando sul + in alto per visualizzare i progressi.",
                         systemImage: "scalemass"
                     )
                     .padding(.vertical, 6)
@@ -245,13 +257,6 @@ struct EsercizioView: View {
                 }
             }
 
-            Section("Note personali") {
-                NotesPreviewRow(
-                    text: savedNote,
-                    isDirty: isNoteDirty,
-                    onTap: { showNotesSheet = true }
-                )
-            }
         }
         .listStyle(.insetGrouped)
         .navigationTitle("")
@@ -615,9 +620,6 @@ private struct ExerciseTitleBlock: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 4)
-        .padding(.bottom, 2)
     }
 }
 
@@ -647,7 +649,6 @@ private struct ExerciseHeroHeader: View {
             if case .loaded = state { onTap() }
         }
         .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 8)
-        .padding(.horizontal, 16)
     }
 
     @ViewBuilder
@@ -722,12 +723,13 @@ private struct ExerciseSerieRow: View {
     let serie: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        HStack(alignment: .center) {
             Label("Serie", systemImage: "figure.strengthtraining.functional")
                 .font(.subheadline.weight(.semibold))
+            Spacer()
             Text(serie)
-                .font(.title3.weight(.bold))
-                .foregroundStyle(.tint)
+                .montserrat(size: 20)
+                .bold()
         }
         .padding(.vertical, 4)
     }
@@ -742,7 +744,6 @@ private struct CoachNotesRow: View {
                 .font(.subheadline.weight(.semibold))
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
     }
@@ -829,17 +830,6 @@ private struct NotesPreviewRow: View {
                                 .font(.caption)
                                 .foregroundStyle(.orange)
                         }
-                    }
-
-                    if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text("Nessuna nota salvata.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text(text)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
                     }
                 }
 
