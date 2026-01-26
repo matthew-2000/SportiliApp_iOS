@@ -31,13 +31,10 @@ struct DayView: View {
                     }
                 }
             }
-            .listStyle(PlainListStyle())
+            .listStyle(.automatic)
             .onAppear {
                 UITableView.appearance().separatorStyle = .none
             }
-            
-            Spacer()
-            
         }
         .navigationTitle("\(day.name)")
         .navigationBarTitleDisplayMode(.large)

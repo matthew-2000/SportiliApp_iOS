@@ -58,9 +58,9 @@ struct HomeView: View {
                             }
                         }
                     }
-                    .listStyle(.plain)
+                    .listStyle(.automatic)
                     .onAppear {
-                        UITableView.appearance().separatorStyle = .none
+                        UITableView.appearance().separatorStyle = .singleLine
                     }
                 } else {
                     ProgressView()
