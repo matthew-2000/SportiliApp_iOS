@@ -177,19 +177,23 @@ struct EsercizioView: View {
             }
 
             if parts.count > 1 {
-                Section("Variazioni") {
+                Section(header: Text("Variazioni").montserrat(size: 17)) {
                     ExerciseVariationPicker(parts: parts, selectedIndex: $selectedPartIndex)
                 }
             }
 
-            Section("Programma") {
+            Section(header: Text("Programma").montserrat(size: 17)) {
                 ExerciseSerieRow(serie: esercizio.serie)
 
                 if let riposo = esercizio.riposo, !riposo.isEmpty {
                     LabeledContent {
-                        Text(riposo).bold()
+                        Text(riposo)
+                            .montserrat(size: 17)
+                            .fontWeight(.bold)
                     } label: {
                         Label("Recupero", systemImage: "timer")
+                            .montserrat(size: 15)
+                            .fontWeight(.semibold)
                     }
                 }
 
@@ -198,14 +202,15 @@ struct EsercizioView: View {
                 }
             }
             
-            Section("Note personali") {
+            Section(header: Text("Note personali").montserrat(size: 17)) {
                 if savedNote.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Text("Nessuna nota salvata.")
-                        .font(.subheadline)
+                        .montserrat(size: 15)
                         .foregroundStyle(.secondary)
                 } else {
                     Text(savedNote)
                         .lineLimit(10)
+                        .montserrat(size: 17)
                 }
                 NotesPreviewRow(
                     text: savedNote,
@@ -214,7 +219,7 @@ struct EsercizioView: View {
                 )
             }
 
-            Section("Progressi") {
+            Section(header: Text("Progressi").montserrat(size: 17)) {
                 if recentLogs.isEmpty {
                     EmptyStateRow(
                         title: "Nessun peso registrato",
@@ -241,6 +246,7 @@ struct EsercizioView: View {
                                 deletionContext = WeightDeletionContext(record: log, exerciseKey: currentKey)
                             } label: {
                                 Label("Elimina", systemImage: "trash")
+                                    .montserrat(size: 17)
                             }
 
                             Button {
@@ -249,6 +255,7 @@ struct EsercizioView: View {
                                 weightInput = editingString(for: log.weight)
                             } label: {
                                 Label("Modifica", systemImage: "pencil")
+                                    .montserrat(size: 17)
                             }
                             .tint(.blue)
                         }
@@ -326,7 +333,7 @@ struct EsercizioView: View {
             animationStyle: .slide
         )
         .confirmationDialog(
-            "Elimina peso",
+            Text("Elimina peso").montserrat(size: 17),
             isPresented: Binding(
                 get: { deletionContext != nil },
                 set: { if !$0 { deletionContext = nil } }
@@ -339,19 +346,22 @@ struct EsercizioView: View {
                 }
                 deletionContext = nil
             }
+            .montserrat(size: 17)
             Button("Annulla", role: .cancel) {
                 deletionContext = nil
             }
+            .montserrat(size: 17)
         } message: {
             if let ctx = deletionContext {
                 Text("Vuoi eliminare il peso registrato il \(Self.summaryDateFormatter.string(from: ctx.record.date))?")
+                    .montserrat(size: 15)
             }
         }
         .alert(item: $errorAlert) { alert in
             Alert(
-                title: Text("Errore"),
-                message: Text(alert.message),
-                dismissButton: .default(Text("OK"))
+                title: Text("Errore").montserrat(size: 17),
+                message: Text(alert.message).montserrat(size: 15),
+                dismissButton: .default(Text("OK").montserrat(size: 17))
             )
         }
         .onAppear {
@@ -606,7 +616,8 @@ private struct ExerciseTitleBlock: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.title.weight(.bold))
+                .montserrat(size: 28)
+                .fontWeight(.bold)
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
                 .lineLimit(nil)
@@ -614,7 +625,7 @@ private struct ExerciseTitleBlock: View {
 
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.subheadline)
+                    .montserrat(size: 15)
                     .foregroundStyle(.secondary)
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
@@ -678,7 +689,7 @@ private struct ExerciseHeroHeader: View {
                             .font(.title2)
                             .foregroundStyle(.secondary)
                         Text("Immagine non disponibile")
-                            .font(.footnote)
+                            .montserrat(size: 13)
                             .foregroundStyle(.secondary)
                     }
                 )
@@ -688,14 +699,15 @@ private struct ExerciseHeroHeader: View {
     private var overlay: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.title3.weight(.semibold))
+                .montserrat(size: 20)
+                .fontWeight(.semibold)
                 .foregroundStyle(.white)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
 
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.subheadline)
+                    .montserrat(size: 15)
                     .foregroundStyle(.white.opacity(0.85))
             }
         }
@@ -712,9 +724,12 @@ private struct ExerciseVariationPicker: View {
     var body: some View {
         Picker("Esercizio", selection: $selectedIndex) {
             ForEach(parts.indices, id: \.self) { idx in
-                Text(parts[idx]).tag(idx)
+                Text(parts[idx])
+                    .montserrat(size: 17)
+                    .tag(idx)
             }
         }
+        .montserrat(size: 17)
         .pickerStyle(.segmented)
     }
 }
@@ -725,7 +740,8 @@ private struct ExerciseSerieRow: View {
     var body: some View {
         HStack(alignment: .center) {
             Label("Serie", systemImage: "figure.strengthtraining.functional")
-                .font(.subheadline.weight(.semibold))
+                .montserrat(size: 15)
+                .fontWeight(.semibold)
             Spacer()
             Text(serie)
                 .montserrat(size: 20)
@@ -741,9 +757,10 @@ private struct CoachNotesRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Note del coach", systemImage: "person.text.rectangle")
-                .font(.subheadline.weight(.semibold))
+                .montserrat(size: 15)
+                .fontWeight(.semibold)
             Text(text)
-                .font(.subheadline)
+                .montserrat(size: 15)
         }
         .padding(.vertical, 4)
     }
@@ -760,9 +777,10 @@ private struct EmptyStateRow: View {
                 .font(.system(size: 30, weight: .semibold))
                 .foregroundStyle(.secondary)
             Text(title)
-                .font(.headline)
+                .montserrat(size: 17)
+                .fontWeight(.semibold)
             Text(message)
-                .font(.subheadline)
+                .montserrat(size: 15)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -778,7 +796,8 @@ private struct WeightChartCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Andamento (ultimi 10)", systemImage: "chart.line.uptrend.xyaxis")
-                .font(.subheadline.weight(.semibold))
+                .montserrat(size: 15)
+                .fontWeight(.semibold)
 
             WeightChartView(data: data, dateFormatter: dateFormatter)
                 .frame(height: 220)
@@ -795,9 +814,10 @@ private struct WeightLogRow: View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(weight)
-                    .font(.body.weight(.semibold))
+                    .montserrat(size: 17)
+                    .fontWeight(.semibold)
                 Text(date)
-                    .font(.caption)
+                    .montserrat(size: 12)
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -824,10 +844,11 @@ private struct NotesPreviewRow: View {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("Apri editor note")
-                            .font(.body.weight(.semibold))
+                            .montserrat(size: 17)
+                            .fontWeight(.semibold)
                         if isDirty {
                             Text("• modifiche")
-                                .font(.caption)
+                                .montserrat(size: 12)
                                 .foregroundStyle(.orange)
                         }
                     }
@@ -863,10 +884,12 @@ private struct NotesEditorSheet: View {
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $text)
                             .frame(minHeight: 220)
+                            .montserrat(size: 17)
 
                         if text.isEmpty {
                             Text("Aggiungi una nota per questo esercizio…")
                                 .foregroundStyle(.secondary)
+                                .montserrat(size: 15)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 8)
                         }
@@ -880,12 +903,13 @@ private struct NotesEditorSheet: View {
                             dismiss()
                         } label: {
                             Label("Elimina nota", systemImage: "trash")
+                                .montserrat(size: 17)
                         }
                         .disabled(!canManage)
                     }
                 }
             }
-            .navigationTitle(title)
+            .navigationTitle(Text(title).montserrat(size: 20))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -893,12 +917,14 @@ private struct NotesEditorSheet: View {
                         onRevert()
                         dismiss()
                     }
+                    .montserrat(size: 17)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Salva") {
                         onSave()
                         dismiss()
                     }
+                    .montserrat(size: 17)
                     .disabled(!isDirty || !canManage)
                 }
             }
@@ -930,33 +956,44 @@ private struct WeightEntrySheet: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Peso") {
+                Section(header: Text("Peso").montserrat(size: 17)) {
                     TextField("Peso (kg)", text: $weightInput)
                         .keyboardType(.decimalPad)
+                        .montserrat(size: 17)
                 }
 
-                Section("Dettagli") {
+                Section(header: Text("Dettagli").montserrat(size: 17)) {
                     if let record {
-                        LabeledContent("Ultimo aggiornamento") {
+                        LabeledContent {
                             Text(EsercizioView.sheetDateFormatter.string(from: record.date))
                                 .foregroundStyle(.secondary)
+                                .montserrat(size: 15)
+                        } label: {
+                            Text("Ultimo aggiornamento")
+                                .montserrat(size: 15)
                         }
                     } else {
-                        LabeledContent("Data") {
+                        LabeledContent {
                             Text(EsercizioView.sheetDateFormatter.string(from: Date()))
                                 .foregroundStyle(.secondary)
+                                .montserrat(size: 15)
+                        } label: {
+                            Text("Data")
+                                .montserrat(size: 15)
                         }
                     }
                 }
             }
-            .navigationTitle(title)
+            .navigationTitle(Text(title).montserrat(size: 20))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Annulla", action: onCancel)
+                        .montserrat(size: 17)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Salva", action: onConfirm)
+                        .montserrat(size: 17)
                 }
             }
         }
@@ -1006,7 +1043,7 @@ struct WeightChartView: View {
                    let item = data.first(where: { $0.index == idx }) {
                     AxisValueLabel {
                         Text(dateFormatter.string(from: item.date))
-                            .font(.caption2)
+                            .montserrat(size: 11)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -1098,24 +1135,28 @@ struct TimerSheet: View {
                     if timerIsActive {
                         Button(action: pauseTimer) {
                             Label("Pausa", systemImage: "pause.circle")
+                                .montserrat(size: 17)
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
 
                         Button(action: resetTimer) {
                             Label("Reset", systemImage: "gobackward")
+                                .montserrat(size: 17)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                     } else {
                         Button(action: startTimer) {
                             Label(timerPaused ? "Riprendi" : "Inizia", systemImage: "play.circle")
+                                .montserrat(size: 17)
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
 
                         Button(action: resetTimer) {
                             Label("Reset", systemImage: "gobackward")
+                                .montserrat(size: 17)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
@@ -1128,7 +1169,8 @@ struct TimerSheet: View {
             .padding()
             .navigationBarItems(trailing: Button("Chiudi") {
                 presentationMode.wrappedValue.dismiss()
-            })
+            }
+            .montserrat(size: 17))
             .interactiveDismissDisabled(true)
         }
     }

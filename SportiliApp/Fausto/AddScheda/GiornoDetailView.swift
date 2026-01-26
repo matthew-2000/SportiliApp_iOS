@@ -13,16 +13,19 @@ struct GiornoDetailView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("Nome Giorno")) {
+            Section(header: Text("Nome Giorno").montserrat(size: 17)) {
                 TextField("Nome Giorno", text: $giorno.name)
+                    .montserrat(size: 17)
             }
             
-            Section(header: Text("Gruppi Muscolari")) {
+            Section(header: Text("Gruppi Muscolari").montserrat(size: 17)) {
                 ForEach($giorno.gruppiMuscolari) { $gruppo in
                     NavigationLink(destination: GruppoMuscolareDetailView(gruppo: $gruppo)) {
                         VStack(alignment: .leading) {
                             Text(gruppo.nome.isEmpty ? "Nuovo Gruppo Muscolare" : gruppo.nome)
+                                .montserrat(size: 17)
                             Text("Numero esercizi: \(gruppo.esercizi.count)")
+                                .montserrat(size: 15)
                         }
                     }
                 }
@@ -37,13 +40,14 @@ struct GiornoDetailView: View {
                     showingAddGruppoMuscolareView.toggle()
                 }) {
                     Text("Aggiungi Gruppo Muscolare")
+                        .montserrat(size: 17)
                 }
                 .sheet(isPresented: $showingAddGruppoMuscolareView) {
                     AddGruppoMuscolareView(giorno: $giorno)
                 }
             }
         }
-        .navigationTitle("\(giorno.name)")
+        .navigationTitle(Text("\(giorno.name)").montserrat(size: 20))
     }
 }
 
@@ -68,27 +72,31 @@ struct AddGruppoMuscolareView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Dettagli Gruppo Muscolare")) {
+                Section(header: Text("Dettagli Gruppo Muscolare").montserrat(size: 17)) {
                     Picker("Seleziona Gruppo Muscolare", selection: $selectedGruppoMuscolare) {
                         ForEach(gruppiMuscolariPredefiniti, id: \.self) { gruppo in
                             if !giorno.gruppiMuscolari.contains(where: { $0.nome == gruppo }) {
                                 Text(gruppo)
+                                    .montserrat(size: 17)
                             }
                         }
                     }
+                    .montserrat(size: 17)
                 }
                 
                 Section {
                     Button(action: aggiungiGruppoMuscolare) {
                         Text("Aggiungi")
+                            .montserrat(size: 17)
                     }
                     .disabled(selectedGruppoMuscolare.isEmpty)
                 }
             }
-            .navigationTitle("Nuovo Gruppo Muscolare")
+            .navigationTitle(Text("Nuovo Gruppo Muscolare").montserrat(size: 20))
             .navigationBarItems(trailing: Button("Annulla") {
                 presentationMode.wrappedValue.dismiss()
-            })
+            }
+            .montserrat(size: 17))
         }
         .interactiveDismissDisabled(true)
     }
@@ -99,4 +107,3 @@ struct AddGruppoMuscolareView: View {
         presentationMode.wrappedValue.dismiss()
     }
 }
-

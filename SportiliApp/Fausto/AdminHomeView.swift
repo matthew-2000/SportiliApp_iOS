@@ -46,7 +46,7 @@ struct AdminHomeView: View {
                 
             }
             .searchable(text: $searchText)
-            .navigationTitle("Home")
+            .navigationTitle(Text("Home").montserrat(size: 20))
             .toolbar(content: {
                 Button(action: {
                     showAddUserView.toggle()
@@ -73,14 +73,17 @@ struct UtenteRow: View {
         HStack {
             VStack(alignment: .leading) {
                 Text("\(utente.nome) \(utente.cognome)")
+                    .montserrat(size: 17)
                 if utente.scheda == nil {
                     Text("Scheda mancante!")
+                        .montserrat(size: 15)
                         .underline()
                         .foregroundColor(.red)
                         .fontWeight(.semibold)
                 } else {
                     if utente.scheda?.getDurataScheda() == nil {
                         Text("Scheda scaduta!")
+                            .montserrat(size: 15)
                             .underline()
                             .foregroundColor(.red)
                             .fontWeight(.semibold)
@@ -103,20 +106,24 @@ struct AddUserView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Dati utente")) {
+                Section(header: Text("Dati utente").montserrat(size: 17)) {
                     TextField("Codice", text: $code)
+                        .montserrat(size: 17)
                     TextField("Nome", text: $nome)
+                        .montserrat(size: 17)
                     TextField("Cognome", text: $cognome)
+                        .montserrat(size: 17)
                 }
                 
             }
-            .navigationTitle("Aggiungi utente")
+            .navigationTitle(Text("Aggiungi utente").montserrat(size: 20))
             .navigationBarItems(leading: Button("Annulla") {
                 presentationMode.wrappedValue.dismiss()
             }, trailing: Button("Salva") {
                 gymViewModel.addUser(code: code, cognome: cognome, nome: nome)
                 presentationMode.wrappedValue.dismiss()
             })
+            .montserrat(size: 17)
         }
     }
 }

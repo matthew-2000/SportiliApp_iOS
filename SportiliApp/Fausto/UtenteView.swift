@@ -27,43 +27,50 @@ struct UtenteView: View {
     var body: some View {
         Form {
             
-            Section("Codice", content: {
+            Section(header: Text("Codice").montserrat(size: 17), content: {
                 Text("\(utente.code)")
+                    .montserrat(size: 17)
             })
             
-            Section(header: Text("Modifica Utente")) {
+            Section(header: Text("Modifica Utente").montserrat(size: 17)) {
                 TextField("Nome", text: $editedNome)
+                    .montserrat(size: 17)
                 TextField("Cognome", text: $editedCognome)
+                    .montserrat(size: 17)
             }
             
-            Section(header: Text("Scheda")) {
+            Section(header: Text("Scheda").montserrat(size: 17)) {
                 if utente.scheda != nil {
                     Button(action: {
                         showAddSchedaView.toggle()
                     }) {
                         Text("Modifica scheda")
+                            .montserrat(size: 17)
                     }
                 } else {
                     Button(action: {
                         showAddSchedaView.toggle()
                     }) {
                         Text("Aggiungi scheda")
+                            .montserrat(size: 17)
                     }
                 }
             }
             
-            Section(header: Text("Azioni")) {
+            Section(header: Text("Azioni").montserrat(size: 17)) {
                 Button(action: {
                     let updatedUtente = Utente(code: editedCode, cognome: editedCognome, nome: editedNome, scheda: utente.scheda)
                     gymViewModel.updateUser(utente: updatedUtente)
                 }) {
                     Text("Salva modifiche")
+                        .montserrat(size: 17)
                 }
                 
                 Button(action: {
                     showEliminaAlert = true
                 }) {
                     Text("Elimina")
+                        .montserrat(size: 17)
                 }
                 .foregroundColor(.red)
                 .buttonStyle(PlainButtonStyle())
@@ -72,12 +79,12 @@ struct UtenteView: View {
         }
         .alert(isPresented: $showEliminaAlert) {
             Alert(
-                title: Text("Conferma Eliminazione"),
-                message: Text("Sei sicuro di voler eliminare questo utente?"),
-                primaryButton: .destructive(Text("Elimina")) {
+                title: Text("Conferma Eliminazione").montserrat(size: 17),
+                message: Text("Sei sicuro di voler eliminare questo utente?").montserrat(size: 15),
+                primaryButton: .destructive(Text("Elimina").montserrat(size: 17)) {
                     gymViewModel.removeUser(code: utente.code)
                 },
-                secondaryButton: .cancel(Text("Annulla"))
+                secondaryButton: .cancel(Text("Annulla").montserrat(size: 17))
             )
         }
         .onAppear {
@@ -85,7 +92,7 @@ struct UtenteView: View {
             editedCognome = utente.cognome
             editedCode = utente.code
         }
-        .navigationTitle("Modifica Utente")
+        .navigationTitle(Text("Modifica Utente").montserrat(size: 20))
         .sheet(isPresented: $showAddSchedaView) {
             AddSchedaView(userCode: utente.code, gymViewModel: gymViewModel, scheda: utente.scheda)
         }

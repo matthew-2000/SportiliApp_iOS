@@ -21,38 +21,46 @@ struct AddEsercizioView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Dettagli Esercizio")) {
+                Section(header: Text("Dettagli Esercizio").montserrat(size: 17)) {
                     TextField("Nome Esercizio", text: $nomeEsercizio)
+                        .montserrat(size: 17)
                     
                     Stepper(value: $serieInt, in: 1...30) {
                         Text("\(serieInt) serie")
+                            .montserrat(size: 17)
                     }
                     
                     Stepper(value: $ripetizioni, in: 1...50) {
                         Text("\(ripetizioni) ripetizioni")
+                            .montserrat(size: 17)
                     }
                 }
                 
-                Section(header: Text("Ripetizioni testuali")) {
+                Section(header: Text("Ripetizioni testuali").montserrat(size: 17)) {
                     TextField("Serie o minuti", text: $serie)
+                        .montserrat(size: 17)
                 }
                 
-                Section(header: Text("Altro")) {
+                Section(header: Text("Altro").montserrat(size: 17)) {
                     TextField("Riposo", text: $riposo)
+                        .montserrat(size: 17)
                     TextField("Note PT", text: $notePT)
+                        .montserrat(size: 17)
                 }
                 
                 Section {
                     Button(action: aggiungiEsercizio) {
                         Text("Aggiungi")
+                            .montserrat(size: 17)
                     }
                     .disabled(nomeEsercizio.isEmpty)
                 }
             }
-            .navigationTitle("Nuovo Esercizio")
+            .navigationTitle(Text("Nuovo Esercizio").montserrat(size: 20))
             .navigationBarItems(trailing: Button("Annulla") {
                 presentationMode.wrappedValue.dismiss()
-            })
+            }
+            .montserrat(size: 17))
         }
     }
     

@@ -36,7 +36,7 @@ struct DayView: View {
                 UITableView.appearance().separatorStyle = .none
             }
         }
-        .navigationTitle("\(day.name)")
+        .navigationTitle(Text("\(day.name)").montserrat(size: 20))
         .navigationBarTitleDisplayMode(.large)
     }
 }

@@ -79,7 +79,7 @@ struct HomeView: View {
                 animationStyle: .slide
             )
             .onAppear(perform: updateUserName)
-            .navigationTitle(getTitle())
+            .navigationTitle(Text(getTitle()).montserrat(size: 20))
             .navigationBarTitleDisplayMode(.large)
         }
     }
@@ -181,19 +181,21 @@ private struct ExpiringSchedaBanner: View {
                 .foregroundColor(tint)
 
             Text("⏳ Scheda in scadenza!")
-                .font(.title3.weight(.bold))
+                .montserrat(size: 20)
+                .fontWeight(.bold)
                 .foregroundColor(tint)
                 .multilineTextAlignment(.center)
 
             Text("Manca solo \(settimaneRimanenti) sett. alla scadenza.\nPuoi già richiedere un aggiornamento.")
-                .font(.body)
+                .montserrat(size: 17)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 16)
 
             if cambioRichiesto {
                 Label("Richiesta inviata", systemImage: "checkmark.circle.fill")
-                    .font(.callout.weight(.semibold))
+                    .montserrat(size: 16)
+                    .fontWeight(.semibold)
                     .foregroundColor(.green)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -221,19 +223,21 @@ private struct ExpiredSchedaBanner: View {
                 .foregroundColor(.red)
 
             Text("⚠️ Scheda scaduta!")
-                .font(.title2.weight(.bold))
+                .montserrat(size: 22)
+                .fontWeight(.bold)
                 .foregroundColor(.red)
                 .multilineTextAlignment(.center)
 
             Text("Richiedi un aggiornamento al tuo personal trainer.")
-                .font(.body)
+                .montserrat(size: 17)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 16)
 
             if cambioRichiesto {
                 Label("Richiesta inviata", systemImage: "checkmark.circle.fill")
-                    .font(.callout.weight(.semibold))
+                    .montserrat(size: 16)
+                    .fontWeight(.semibold)
                     .foregroundColor(.green)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -263,7 +267,8 @@ private struct RequestSchedaButton: View {
                     .padding(.vertical, 8)
             } else {
                 Text("Richiedi nuova scheda")
-                    .font(.callout.weight(.semibold))
+                    .montserrat(size: 16)
+                    .fontWeight(.semibold)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
             }
