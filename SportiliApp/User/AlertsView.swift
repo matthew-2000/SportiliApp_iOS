@@ -37,7 +37,7 @@ struct AlertsView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle("Avvisi")
+            .navigationTitle(Text("Avvisi").montserrat(size: 20))
         }
     }
 }
@@ -53,7 +53,7 @@ private struct AlertsErrorState: View {
                 .foregroundColor(.orange)
 
             Text("Impossibile caricare gli avvisi")
-                .font(.title3.weight(.semibold))
+                .fontWeight(.semibold)
                 .multilineTextAlignment(.center)
                 .montserrat(size: 20)
 
@@ -84,7 +84,7 @@ private struct AlertsEmptyState: View {
                 .foregroundColor(.gray)
 
             Text("Nessun avviso")
-                .font(.title3.weight(.semibold))
+                .fontWeight(.semibold)
                 .montserrat(size: 20)
 
             Text("Quando il tuo trainer pubblicherà un avviso lo troverai qui.")
@@ -104,7 +104,7 @@ private struct AlertRow: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Label(alert.urgenza.displayName.uppercased(), systemImage: "exclamationmark.circle.fill")
-                    .font(.caption.weight(.bold))
+                    .fontWeight(.bold)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
                     .background(backgroundColor.opacity(0.2))
@@ -116,7 +116,6 @@ private struct AlertRow: View {
 
                 if let scadenza = alert.scadenza {
                     Text("Scade il \(AlertsView.dateFormatter.string(from: scadenza))")
-                        .font(.caption)
                         .foregroundColor(.gray)
                         .montserrat(size: 13)
                 }

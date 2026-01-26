@@ -28,11 +28,13 @@ struct EsercizioDetailView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("Dettagli Esercizio")) {
+            Section(header: Text("Dettagli Esercizio").montserrat(size: 17)) {
                 TextField("Nome Esercizio", text: $esercizio.name)
+                    .montserrat(size: 17)
                 
                 Stepper(value: $serieInt, in: 1...30, step: 1) {
                     Text("\(serieInt) serie")
+                        .montserrat(size: 17)
                 }
                 .onChange(of: serieInt) { _ in
                     updateSerie()
@@ -40,6 +42,7 @@ struct EsercizioDetailView: View {
                 
                 Stepper(value: $ripetizioni, in: 1...50, step: 1) {
                     Text("\(ripetizioni) ripetizioni")
+                        .montserrat(size: 17)
                 }
                 .onChange(of: ripetizioni) { _ in
                     updateSerie()
@@ -47,26 +50,29 @@ struct EsercizioDetailView: View {
                 
             }
             
-            Section(header: Text("Ripetizioni testuali"), content: {
+            Section(header: Text("Ripetizioni testuali").montserrat(size: 17), content: {
                 TextField("Serie o minuti", text: $customSerie)
+                    .montserrat(size: 17)
                     .onChange(of: customSerie) { newValue in
                         parseCustomSerie(newValue)
                     }
             })
             
-            Section(header: Text("Altro")) {
+            Section(header: Text("Altro").montserrat(size: 17)) {
                 TextField("Riposo", text: Binding(
                     get: { esercizio.riposo ?? "" },
                     set: { esercizio.riposo = $0 }
                 ))
+                .montserrat(size: 17)
                 
                 TextField("Note PT", text: Binding(
                     get: { esercizio.notePT ?? "" },
                     set: { esercizio.notePT = $0 }
                 ))
+                .montserrat(size: 17)
             }
         }
-        .navigationTitle("\(esercizio.name)")
+        .navigationTitle(Text("\(esercizio.name)").montserrat(size: 20))
     }
     
     private func updateSerie() {

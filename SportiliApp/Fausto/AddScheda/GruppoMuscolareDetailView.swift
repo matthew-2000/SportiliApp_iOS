@@ -15,17 +15,20 @@ struct GruppoMuscolareDetailView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Nome Gruppo Muscolare")) {
+            Section(header: Text("Nome Gruppo Muscolare").montserrat(size: 17)) {
                 TextField("Nome Gruppo Muscolare", text: $gruppo.nome)
+                    .montserrat(size: 17)
             }
             
-            Section(header: Text("Esercizi")) {
+            Section(header: Text("Esercizi").montserrat(size: 17)) {
                 List {
                     ForEach(gruppo.esercizi.indices, id: \.self) { index in
                         NavigationLink(destination: EsercizioDetailView(esercizio: $gruppo.esercizi[index])) {
                             VStack(alignment: .leading, content: {
                                 Text(gruppo.esercizi[index].name.isEmpty ? "Nuovo Esercizio" : gruppo.esercizi[index].name)
+                                    .montserrat(size: 17)
                                 Text(gruppo.esercizi[index].serie)
+                                    .montserrat(size: 15)
                             })
                             
                         }
@@ -44,6 +47,7 @@ struct GruppoMuscolareDetailView: View {
                     showingAddSheet = true
                 }) {
                     Text("Aggiungi Esercizio")
+                        .montserrat(size: 17)
                 }
                 .sheet(isPresented: $showingAddSheet) {
                     AddEsercizioView(gruppo: $gruppo, nomeEsercizio: selectedEsercizio)
@@ -51,7 +55,7 @@ struct GruppoMuscolareDetailView: View {
                 
             }
             
-            Section(header: Text("Esercizi Predefiniti")) {
+            Section(header: Text("Esercizi Predefiniti").montserrat(size: 17)) {
                 List(eserciziPredViewModel.getGruppoMuscolare(named: gruppo.nome)?.esercizi ?? []) { esercizio in
                     if !gruppo.esercizi.contains(where: { $0.name == esercizio.nome }) {
                         Button(action: {
@@ -65,7 +69,7 @@ struct GruppoMuscolareDetailView: View {
             }
             
         }
-        .navigationTitle("\(gruppo.nome)")
+        .navigationTitle(Text("\(gruppo.nome)").montserrat(size: 20))
     }
     
     private func aggiornaOrdineEsercizi() {
@@ -83,6 +87,7 @@ struct EserciziPredefinitiRow: View {
     var body: some View {
         HStack {
             Text(esercizio.nome)
+                .montserrat(size: 17)
             Spacer()
 //            if let image = imageLoader.image {
 //                Image(uiImage: image)
@@ -110,4 +115,3 @@ struct EserciziPredefinitiRow: View {
         }
     }
 }
-

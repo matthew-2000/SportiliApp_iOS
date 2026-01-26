@@ -64,7 +64,7 @@ struct LoginView: View {
                             .frame(maxWidth: .infinity)
                     })
                     .alert(isPresented: $showAlert) {
-                        Alert(title: Text("Attenzione"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                        Alert(title: Text("Attenzione").montserrat(size: 17), message: Text(alertMessage).montserrat(size: 15), dismissButton: .default(Text("OK").montserrat(size: 17)))
                     }
                     .montserrat(size: 20)
                     .bold()
@@ -77,7 +77,7 @@ struct LoginView: View {
                     self.showAlert.toggle()
                 })
                 .alert(isPresented: $showAlert) {
-                    Alert(title: Text("Attenzione!"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                    Alert(title: Text("Attenzione!").montserrat(size: 17), message: Text(alertMessage).montserrat(size: 15), dismissButton: .default(Text("OK").montserrat(size: 17)))
                 }
                 .montserrat(size: 15)
                 

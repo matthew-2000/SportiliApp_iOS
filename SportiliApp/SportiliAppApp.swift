@@ -13,6 +13,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
+    if let montserratFont = UIFont(name: "Montserrat-Regular", size: 17) {
+        UILabel.appearance().font = montserratFont
+        UITextField.appearance().font = montserratFont
+        UITextView.appearance().font = montserratFont
+        UIButton.appearance().titleLabel?.font = montserratFont
+    }
     return true
   }
 }
@@ -23,15 +29,18 @@ struct SportiliAppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if Auth.auth().currentUser != nil {
-                if UserDefaults.standard.bool(forKey: "isAdmin") {
-                    AdminContentView()
+            Group {
+                if Auth.auth().currentUser != nil {
+                    if UserDefaults.standard.bool(forKey: "isAdmin") {
+                        AdminContentView()
+                    } else {
+                        ContentView()
+                    }
                 } else {
-                    ContentView()
+                    LoginView()
                 }
-            } else {
-                LoginView()
             }
+            .montserrat(size: 17)
         }
     }
 }
