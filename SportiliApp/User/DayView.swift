@@ -36,7 +36,7 @@ struct DayView: View {
                 UITableView.appearance().separatorStyle = .none
             }
         }
-        .navigationTitle(Text("\(day.name)").montserrat(size: 20))
+        .navigationTitle(Text("\(day.name)"))
         .navigationBarTitleDisplayMode(.large)
     }
 }
@@ -47,7 +47,6 @@ struct GruppoRow: View {
     var body: some View {
         Text(gruppo.nome)
             .montserrat(size: 20)
-            .bold()
     }
 }
 

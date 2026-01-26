@@ -37,7 +37,7 @@ struct AlertsView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle(Text("Avvisi").montserrat(size: 20))
+            .navigationTitle(Text("Avvisi"))
         }
     }
 }

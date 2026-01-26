@@ -100,7 +100,7 @@ struct SettingsView: View {
                 }
                 
             }
-            .navigationTitle(Text("Impostazioni").montserrat(size: 20))
+            .navigationTitle(Text("Impostazioni"))
             .navigationBarTitleDisplayMode(.large)
         }
         .fullScreenCover(isPresented: $isLoggedOut) {

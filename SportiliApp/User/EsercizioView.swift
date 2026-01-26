@@ -333,7 +333,7 @@ struct EsercizioView: View {
             animationStyle: .slide
         )
         .confirmationDialog(
-            Text("Elimina peso").montserrat(size: 17),
+            Text("Elimina peso"),
             isPresented: Binding(
                 get: { deletionContext != nil },
                 set: { if !$0 { deletionContext = nil } }
@@ -359,9 +359,9 @@ struct EsercizioView: View {
         }
         .alert(item: $errorAlert) { alert in
             Alert(
-                title: Text("Errore").montserrat(size: 17),
-                message: Text(alert.message).montserrat(size: 15),
-                dismissButton: .default(Text("OK").montserrat(size: 17))
+                title: Text("Errore"),
+                message: Text(alert.message),
+                dismissButton: .default(Text("OK"))
             )
         }
         .onAppear {
@@ -909,7 +909,7 @@ private struct NotesEditorSheet: View {
                     }
                 }
             }
-            .navigationTitle(Text(title).montserrat(size: 20))
+            .navigationTitle(Text(title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -984,7 +984,7 @@ private struct WeightEntrySheet: View {
                     }
                 }
             }
-            .navigationTitle(Text(title).montserrat(size: 20))
+            .navigationTitle(Text(title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

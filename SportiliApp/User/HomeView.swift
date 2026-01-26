@@ -79,7 +79,7 @@ struct HomeView: View {
                 animationStyle: .slide
             )
             .onAppear(perform: updateUserName)
-            .navigationTitle(Text(getTitle()).montserrat(size: 20))
+            .navigationTitle(Text(getTitle()))
             .navigationBarTitleDisplayMode(.large)
         }
     }

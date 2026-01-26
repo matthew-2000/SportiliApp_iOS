@@ -43,17 +43,10 @@
 		3B2DC15D2F252D2E000C89FB /* PreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2DC15B2F252D2E000C89FB /* PreviewData.swift */; };
 		3B2DC15E2F252D2E000C89FB /* PreviewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2DC15A2F252D2E000C89FB /* PreviewContext.swift */; };
 		3B2DC1602F252D5D000C89FB /* DayRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2DC15F2F252D5D000C89FB /* DayRow.swift */; };
-		3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */; };
 		3B5CF6AB2C0F59EE0068F17E /* Utente.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5CF6AA2C0F59EE0068F17E /* Utente.swift */; };
 		3B5E2BC42EA127F100617085 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5E2BC22EA127F100617085 /* Alert.swift */; };
 		3B5E2BC52EA127F100617085 /* AlertsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5E2BC32EA127F100617085 /* AlertsViewModel.swift */; };
 		3B5E2BC92EA1284400617085 /* AlertsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5E2BC82EA1284400617085 /* AlertsView.swift */; };
-		3B70B8892C298258000DC6EB /* AddSchedaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B8882C298258000DC6EB /* AddSchedaView.swift */; };
-		3B70B88B2C298808000DC6EB /* GiornoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */; };
-		3B70B88D2C298824000DC6EB /* GruppoMuscolareDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */; };
-		3B70B88F2C298842000DC6EB /* EsercizioDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */; };
-		3B70B8912C29AA65000DC6EB /* AddEsercizioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */; };
-		3B78AE902C2B02DC006E1173 /* AdminContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */; };
 		3B78AE922C2B0D71006E1173 /* EserciziPredefinitiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B78AE912C2B0D71006E1173 /* EserciziPredefinitiManager.swift */; };
 		3B78AE942C2B0F5E006E1173 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B78AE932C2B0F5E006E1173 /* ImageLoader.swift */; };
 		3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9337602C09CC8500057838 /* SportiliAppApp.swift */; };
@@ -63,7 +56,6 @@
 		3BAFD00E2EB8CE0700960E7F /* ExerciseDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BAFD00D2EB8CE0700960E7F /* ExerciseDetailViewModel.swift */; };
 		3BE03C692D8C1C860090918F /* SwiftToast in Frameworks */ = {isa = PBXBuildFile; productRef = 3BE03C682D8C1C860090918F /* SwiftToast */; };
 		3BF2C8EF2C20451000179D37 /* GymViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF2C8EE2C20451000179D37 /* GymViewModel.swift */; };
-		3BF2C8F32C23207600179D37 /* UtenteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF2C8F22C23207600179D37 /* UtenteView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -100,17 +92,10 @@
 		3B2DC15A2F252D2E000C89FB /* PreviewContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewContext.swift; sourceTree = "<group>"; };
 		3B2DC15B2F252D2E000C89FB /* PreviewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewData.swift; sourceTree = "<group>"; };
 		3B2DC15F2F252D5D000C89FB /* DayRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRow.swift; sourceTree = "<group>"; };
-		3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminHomeView.swift; sourceTree = "<group>"; };
 		3B5CF6AA2C0F59EE0068F17E /* Utente.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utente.swift; sourceTree = "<group>"; };
 		3B5E2BC22EA127F100617085 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 		3B5E2BC32EA127F100617085 /* AlertsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsViewModel.swift; sourceTree = "<group>"; };
 		3B5E2BC82EA1284400617085 /* AlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsView.swift; sourceTree = "<group>"; };
-		3B70B8882C298258000DC6EB /* AddSchedaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSchedaView.swift; sourceTree = "<group>"; };
-		3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiornoDetailView.swift; sourceTree = "<group>"; };
-		3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoMuscolareDetailView.swift; sourceTree = "<group>"; };
-		3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsercizioDetailView.swift; sourceTree = "<group>"; };
-		3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEsercizioView.swift; sourceTree = "<group>"; };
-		3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminContentView.swift; sourceTree = "<group>"; };
 		3B78AE912C2B0D71006E1173 /* EserciziPredefinitiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EserciziPredefinitiManager.swift; sourceTree = "<group>"; };
 		3B78AE932C2B0F5E006E1173 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
 		3B93375D2C09CC8500057838 /* SportiliApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SportiliApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,7 +105,6 @@
 		3B9337672C09CC8600057838 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3BAFD00D2EB8CE0700960E7F /* ExerciseDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailViewModel.swift; sourceTree = "<group>"; };
 		3BF2C8EE2C20451000179D37 /* GymViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymViewModel.swift; sourceTree = "<group>"; };
-		3BF2C8F22C23207600179D37 /* UtenteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtenteView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,17 +175,6 @@
 			path = Preview;
 			sourceTree = "<group>";
 		};
-		3B5CF6A72C0F4D070068F17E /* Fausto */ = {
-			isa = PBXGroup;
-			children = (
-				3B78AE952C2D4781006E1173 /* AddScheda */,
-				3B5CF6A82C0F4D160068F17E /* AdminHomeView.swift */,
-				3BF2C8F22C23207600179D37 /* UtenteView.swift */,
-				3B78AE8F2C2B02DC006E1173 /* AdminContentView.swift */,
-			);
-			path = Fausto;
-			sourceTree = "<group>";
-		};
 		3B70B8922C29B33F000DC6EB /* User */ = {
 			isa = PBXGroup;
 			children = (
@@ -214,18 +187,6 @@
 				3B23C2BC2C0A05830043D41E /* SettingsView.swift */,
 			);
 			path = User;
-			sourceTree = "<group>";
-		};
-		3B78AE952C2D4781006E1173 /* AddScheda */ = {
-			isa = PBXGroup;
-			children = (
-				3B70B8882C298258000DC6EB /* AddSchedaView.swift */,
-				3B70B88A2C298808000DC6EB /* GiornoDetailView.swift */,
-				3B70B88C2C298824000DC6EB /* GruppoMuscolareDetailView.swift */,
-				3B70B88E2C298842000DC6EB /* EsercizioDetailView.swift */,
-				3B70B8902C29AA65000DC6EB /* AddEsercizioView.swift */,
-			);
-			path = AddScheda;
 			sourceTree = "<group>";
 		};
 		3B9337542C09CC8500057838 = {
@@ -251,7 +212,6 @@
 				3B23C2A92C09FF870043D41E /* Montserrat */,
 				3B08CDC72C0DADF3001980B2 /* GoogleService-Info.plist */,
 				3B23C27A2C09FE1A0043D41E /* Info.plist */,
-				3B5CF6A72C0F4D070068F17E /* Fausto */,
 				3B70B8922C29B33F000DC6EB /* User */,
 				3B08CDDB2C0DF338001980B2 /* LoginView.swift */,
 				3B9337602C09CC8500057838 /* SportiliAppApp.swift */,
@@ -376,31 +336,23 @@
 				3B5E2BC42EA127F100617085 /* Alert.swift in Sources */,
 				3B5E2BC52EA127F100617085 /* AlertsViewModel.swift in Sources */,
 				3B08CDDA2C0DB087001980B2 /* Scheda.swift in Sources */,
-				3B70B88D2C298824000DC6EB /* GruppoMuscolareDetailView.swift in Sources */,
-				3B70B8892C298258000DC6EB /* AddSchedaView.swift in Sources */,
-				3B78AE902C2B02DC006E1173 /* AdminContentView.swift in Sources */,
 				3BAFD00E2EB8CE0700960E7F /* ExerciseDetailViewModel.swift in Sources */,
 				3B5CF6AB2C0F59EE0068F17E /* Utente.swift in Sources */,
 				3B1BD3642C0CE60700BA9A3D /* DayView.swift in Sources */,
 				3B23C2BD2C0A05830043D41E /* SettingsView.swift in Sources */,
-				3B70B88F2C298842000DC6EB /* EsercizioDetailView.swift in Sources */,
-				3B5CF6A92C0F4D160068F17E /* AdminHomeView.swift in Sources */,
 				3BF2C8EF2C20451000179D37 /* GymViewModel.swift in Sources */,
 				3B2DC1602F252D5D000C89FB /* DayRow.swift in Sources */,
 				3B9337632C09CC8500057838 /* ContentView.swift in Sources */,
 				3B08CDDC2C0DF338001980B2 /* LoginView.swift in Sources */,
-				3B70B8912C29AA65000DC6EB /* AddEsercizioView.swift in Sources */,
 				3B78AE942C2B0F5E006E1173 /* ImageLoader.swift in Sources */,
 				3B08CDD82C0DB03C001980B2 /* Giorno.swift in Sources */,
 				3B08CDDE2C0E040C001980B2 /* SchedaViewModel.swift in Sources */,
 				3B78AE922C2B0D71006E1173 /* EserciziPredefinitiManager.swift in Sources */,
-				3BF2C8F32C23207600179D37 /* UtenteView.swift in Sources */,
 				3B9337612C09CC8500057838 /* SportiliAppApp.swift in Sources */,
 				3B1BD3682C0CE92800BA9A3D /* EsercizioView.swift in Sources */,
 				3B2DC15D2F252D2E000C89FB /* PreviewData.swift in Sources */,
 				3B2DC15E2F252D2E000C89FB /* PreviewContext.swift in Sources */,
 				3B5E2BC92EA1284400617085 /* AlertsView.swift in Sources */,
-				3B70B88B2C298808000DC6EB /* GiornoDetailView.swift in Sources */,
 				3B08CDD62C0DAFEE001980B2 /* GruppoMuscolare.swift in Sources */,
 				3B08CDD42C0DAF89001980B2 /* Esercizio.swift in Sources */,
 			);
