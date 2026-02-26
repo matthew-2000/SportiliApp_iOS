@@ -123,15 +123,44 @@ class Scheda: Codable {
 
 
 class SchedaManager {
+    
+    enum SchedaFetchError: LocalizedError {
+        case invalidData
+        case invalidStartDate
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidData:
+                return "I dati della scheda non sono validi."
+            case .invalidStartDate:
+                return "La data di inizio scheda non e valida."
+            }
+        }
+    }
 
     func getSchedaFromFirebase(code: String, completion: @escaping (Scheda?) -> Void) {
+        getSchedaFromFirebaseResult(code: code) { result in
+            switch result {
+            case .success(let scheda):
+                completion(scheda)
+            case .failure:
+                completion(nil)
+            }
+        }
+    }
+
+    func getSchedaFromFirebaseResult(code: String, completion: @escaping (Result<Scheda?, Error>) -> Void) {
         if Auth.auth().currentUser != nil {
             let ref = Database.database().reference().child("users").child(code).child("scheda")
                         
-            ref.observe(.value) { (snapshot) in
+            ref.observe(.value, with: { (snapshot) in
+                guard snapshot.exists() else {
+                    completion(.success(nil))
+                    return
+                }
+
                 guard let schedaData = snapshot.value as? [String: Any] else {
-                    print("Errore nel recupero dei dati della scheda")
-                    completion(nil)
+                    completion(.failure(SchedaFetchError.invalidData))
                     return
                 }
                 
@@ -143,8 +172,7 @@ class SchedaManager {
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
                 guard let dataInizio = dateFormatter.date(from: dataInizioString) else {
-                    print("Errore nel convertire la data di inizio")
-                    completion(nil)
+                    completion(.failure(SchedaFetchError.invalidStartDate))
                     return
                 }
                 
@@ -201,10 +229,12 @@ class SchedaManager {
                 let cambioRichiesto = schedaData["cambioRichiesto"] as? Bool ?? false
                 let scheda = Scheda(dataInizio: dataInizio, durata: durata, giorni: giorni, cambioRichiesto: cambioRichiesto)
                 
-                completion(scheda)
-            }
+                completion(.success(scheda))
+            }, withCancel: { error in
+                completion(.failure(error))
+            })
         } else {
-            completion(nil)
+            completion(.success(nil))
         }
 
     }

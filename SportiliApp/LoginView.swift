@@ -13,10 +13,10 @@ struct LoginView: View {
     
     @State private var code: String = ""
     @State private var isLoggedIn: Bool = false
-    @State private var isFaustoLoggedIn: Bool = false
     @State private var showAlert = false
     @State private var isLoading = false
     @State private var alertMessage = ""
+    @State private var inlineError: String?
     
     var body: some View {
         VStack {
@@ -36,30 +36,35 @@ struct LoginView: View {
                     .textFieldStyle(.roundedBorder)
                     .montserrat(size: 20)
                     .fontWeight(.semibold)
-                    .padding(.bottom, 30)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.go)
+                    .onSubmit {
+                        attemptLogin()
+                    }
+                    .onChange(of: code) { _ in
+                        inlineError = nil
+                    }
+
+                if let inlineError {
+                    Text(inlineError)
+                        .montserrat(size: 14)
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                
+                Text("Inserisci il codice fornito dal tuo personal trainer.")
+                    .montserrat(size: 13)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 24)
                 
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .accent))
                         .padding()
                 } else {
-                    Button(action: {
-                        
-                        if code.isEmpty {
-                            self.alertMessage = "Inserisci il codice!"
-                            self.showAlert.toggle()
-                            return
-                        }
-                        isLoading.toggle()
-                        isAdmin(codice: code, completion: { isAdmin in
-                            if !isAdmin {
-                                register()
-                            } else {
-                                loginFausto()
-                            }
-                        })
-                        
-                    }, label: {
+                    Button(action: attemptLogin, label: {
                         Text("Entra")
                             .frame(maxWidth: .infinity)
                     })
@@ -92,14 +97,37 @@ struct LoginView: View {
         }
     }
     
+    private func attemptLogin() {
+        let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedCode.isEmpty else {
+            inlineError = "Inserisci il codice."
+            return
+        }
+
+        inlineError = nil
+        isLoading = true
+        code = trimmedCode
+
+        isAdmin(codice: trimmedCode, completion: { isAdmin in
+            if isAdmin {
+                loginFausto()
+            } else {
+                register()
+            }
+        })
+    }
+    
     func loginFausto() {
         Auth.auth().signInAnonymously { (authResult, error) in
             if error != nil {
                 self.alertMessage = "Errore durante l'accesso. Riprova più tardi."
                 self.showAlert.toggle()
+                self.isLoading = false
             } else {
                 UserDefaults.standard.set(true, forKey: "isAdmin")
-                isFaustoLoggedIn = true
+                UserDefaults.standard.set(code, forKey: "code")
+                self.isLoading = false
+                self.isLoggedIn = true
             }
         }
     }
@@ -127,6 +155,7 @@ struct LoginView: View {
                                 }
                             })
                             UserDefaults.standard.set(code, forKey: "code")
+                            self.isLoading = false
                             self.isLoggedIn = true
                         }
                     }

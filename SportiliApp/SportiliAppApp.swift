@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import FirebaseCore
 import FirebaseAuth
 
@@ -19,7 +20,25 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         UITextView.appearance().font = montserratFont
         UIButton.appearance().titleLabel?.font = montserratFont
     }
+
+    let navigationAppearance = UINavigationBarAppearance()
+    navigationAppearance.titleTextAttributes = [.font: navigationTitleFont]
+    navigationAppearance.largeTitleTextAttributes = [.font: navigationLargeTitleFont]
+
+    let navigationBar = UINavigationBar.appearance()
+    navigationBar.prefersLargeTitles = true
+    navigationBar.standardAppearance = navigationAppearance
+    navigationBar.scrollEdgeAppearance = navigationAppearance
+    navigationBar.compactAppearance = navigationAppearance
     return true
+  }
+
+  private var navigationTitleFont: UIFont {
+      UIFont(name: "Montserrat-SemiBold", size: 18) ?? .systemFont(ofSize: 18, weight: .semibold)
+  }
+
+  private var navigationLargeTitleFont: UIFont {
+      UIFont(name: "Montserrat-Bold", size: 35) ?? .systemFont(ofSize: 35, weight: .bold)
   }
 }
 
@@ -43,14 +62,15 @@ struct SportiliAppApp: App {
 
 struct MontserratFontModifier: ViewModifier {
     let size: CGFloat
+    let relativeTo: Font.TextStyle
     
     func body(content: Content) -> some View {
-        content.font(.custom("Montserrat-Regular", size: size))
+        content.font(.custom("Montserrat-Regular", size: size, relativeTo: relativeTo))
     }
 }
 
 extension View {
-    func montserrat(size: CGFloat) -> some View {
-        self.modifier(MontserratFontModifier(size: size))
+    func montserrat(size: CGFloat, relativeTo: Font.TextStyle = .body) -> some View {
+        self.modifier(MontserratFontModifier(size: size, relativeTo: relativeTo))
     }
 }

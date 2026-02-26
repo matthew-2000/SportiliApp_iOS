@@ -26,61 +26,71 @@ struct HomeView: View {
     ) {
         _schedaViewModel = StateObject(wrappedValue: schedaViewModel)
         self.previewUserName = previewUserName
-        configureNavigationBarAppearance()
     }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                if let scheda = schedaViewModel.scheda {
-                    List {
-                        header(for: scheda)
+        Group {
+            if schedaViewModel.isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if let errorMessage = schedaViewModel.errorMessage {
+                HomeErrorState(errorMessage: errorMessage, onRetry: schedaViewModel.fetchScheda)
+            } else if let scheda = schedaViewModel.scheda {
+                homeList(for: scheda)
+            } else if schedaViewModel.hasLoadedOnce {
+                HomeEmptyState(onRetry: schedaViewModel.fetchScheda)
+            } else {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .toast(
+            isPresented: $showToast,
+            message: toastMessage,
+            duration: 2.5,
+            backgroundColor: toastColor,
+            textColor: .white,
+            font: .callout,
+            position: .bottom,
+            animationStyle: .slide
+        )
+        .onAppear(perform: updateUserName)
+        .navigationTitle(Text(getTitle()))
+        .navigationBarTitleDisplayMode(.large)
+    }
 
-                        if let settimaneRimanenti = scheda.getDurataScheda(), settimaneRimanenti < 2 {
-                            ExpiringSchedaBanner(
-                                settimaneRimanenti: settimaneRimanenti,
-                                cambioRichiesto: scheda.cambioRichiesto,
-                                isRequesting: isRequesting,
-                                tint: .orange,
-                                onRequest: requestSchedaUpdate
-                            )
-                        } else if scheda.getDurataScheda() == nil {
-                            ExpiredSchedaBanner(
-                                cambioRichiesto: scheda.cambioRichiesto,
-                                isRequesting: isRequesting,
-                                onRequest: requestSchedaUpdate
-                            )
-                        }
+    @ViewBuilder
+    private func homeList(for scheda: Scheda) -> some View {
+        List {
+            header(for: scheda)
 
-                        ForEach(scheda.giorni, id: \.id) { giorno in
-                            NavigationLink(destination: DayView(day: giorno)) {
-                                DayRow(day: giorno)
-                            }
-                        }
-                    }
-                    .listStyle(.automatic)
-                    .onAppear {
-                        UITableView.appearance().separatorStyle = .singleLine
-                    }
-                } else {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if let settimaneRimanenti = scheda.getDurataScheda(), settimaneRimanenti < 2 {
+                ExpiringSchedaBanner(
+                    settimaneRimanenti: settimaneRimanenti,
+                    cambioRichiesto: scheda.cambioRichiesto,
+                    isRequesting: isRequesting,
+                    tint: .orange,
+                    onRequest: requestSchedaUpdate
+                )
+            } else if scheda.getDurataScheda() == nil {
+                ExpiredSchedaBanner(
+                    cambioRichiesto: scheda.cambioRichiesto,
+                    isRequesting: isRequesting,
+                    onRequest: requestSchedaUpdate
+                )
+            }
+
+            ForEach(scheda.giorni, id: \.id) { giorno in
+                NavigationLink(destination: DayView(day: giorno)) {
+                    DayRow(day: giorno)
                 }
             }
-            .toast(
-                isPresented: $showToast,
-                message: toastMessage,
-                duration: 2.5,
-                backgroundColor: toastColor,
-                textColor: .white,
-                font: .callout,
-                position: .bottom,
-                animationStyle: .slide
-            )
-            .onAppear(perform: updateUserName)
-            .navigationTitle(Text(getTitle()))
-            .navigationBarTitleDisplayMode(.large)
+        }
+        .listStyle(.automatic)
+        .refreshable {
+            schedaViewModel.fetchScheda()
         }
     }
 
@@ -147,23 +157,62 @@ struct HomeView: View {
         return formatter.string(from: scheda.dataInizio)
     }
 
-    private func configureNavigationBarAppearance() {
-        let appearance = UINavigationBarAppearance()
-        appearance.titleTextAttributes = [.font: navigationTitleFont]
-        appearance.largeTitleTextAttributes = [.font: navigationLargeTitleFont]
+}
 
-        let navigationBar = UINavigationBar.appearance()
-        navigationBar.standardAppearance = appearance
-        navigationBar.scrollEdgeAppearance = appearance
-        navigationBar.compactAppearance = appearance
+private struct HomeErrorState: View {
+    let errorMessage: String
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "wifi.exclamationmark")
+                .font(.system(size: 42))
+                .foregroundStyle(.orange)
+
+            Text("Impossibile caricare la scheda")
+                .montserrat(size: 21)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+
+            Text(errorMessage)
+                .montserrat(size: 15)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            Button("Riprova", action: onRetry)
+                .montserrat(size: 17)
+                .buttonStyle(.borderedProminent)
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+}
 
-    private var navigationTitleFont: UIFont {
-        UIFont(name: "Montserrat-SemiBold", size: 18) ?? .systemFont(ofSize: 18, weight: .semibold)
-    }
+private struct HomeEmptyState: View {
+    let onRetry: () -> Void
 
-    private var navigationLargeTitleFont: UIFont {
-        UIFont(name: "Montserrat-Bold", size: 35) ?? .systemFont(ofSize: 35, weight: .bold)
+    var body: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "list.bullet.clipboard")
+                .font(.system(size: 42))
+                .foregroundStyle(.secondary)
+
+            Text("Nessuna scheda disponibile")
+                .montserrat(size: 21)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+
+            Text("Il tuo trainer non ha ancora pubblicato la scheda.")
+                .montserrat(size: 15)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            Button("Aggiorna", action: onRetry)
+                .montserrat(size: 17)
+                .buttonStyle(.bordered)
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

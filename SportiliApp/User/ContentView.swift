@@ -11,21 +11,27 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
-            HomeView()
+            NavigationStack {
+                HomeView()
+            }
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Home")
                         .montserrat(size: 12)
                 }
 
-            AlertsView()
+            NavigationStack {
+                AlertsView()
+            }
                 .tabItem {
                     Image(systemName: "bell.badge.fill")
                     Text("Avvisi")
                         .montserrat(size: 12)
                 }
 
-            SettingsView()
+            NavigationStack {
+                SettingsView()
+            }
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Impostazioni")

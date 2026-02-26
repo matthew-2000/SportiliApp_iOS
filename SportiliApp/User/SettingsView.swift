@@ -11,107 +11,101 @@ import FirebaseAuth
 struct SettingsView: View {
     
     @State private var isLoggedOut: Bool = false
+    @Environment(\.openURL) private var openURL
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
+            Form {
+                Section(header: Text("Sportilia")
+                    .montserrat(size: 13), content: {
+                    HStack {
+                        Spacer()
+                        Text("PALESTRA SPORTILIA \nvia Valle, 22 83024 \nMonteforte Irpino (Avellino) \ncell. 338 7731977")
+                            .montserrat(size: 15)
+                            .multilineTextAlignment(.center)
+                        Spacer()
+                    }
+                    .padding()
+                })
                 
-                Form {
-                    Section(header: Text("Sportilia")
-                        .montserrat(size: 13), content: {
-                        HStack {
-                            Spacer()
-                            Text("PALESTRA SPORTILIA \nvia Valle, 22 83024 \nMonteforte Irpino (Avellino) \ncell. 338 7731977")
-                                .montserrat(size: 15)
-                                .multilineTextAlignment(.center)
-                            Spacer()
-                        }
-                        .padding()
-                    })
-                    
-                    Section(header: Text("Social")                                
-                        .montserrat(size: 13), 
-                            content: {
-                        Button("Seguici su Instagram", action: {
-                            if let url = URL(string: "https://www.instagram.com/sportiliacentrofitness") {
-                                UIApplication.shared.open(url)
-                            }
-                        })
-                        .montserrat(size: 15)
-                        .fontWeight(.semibold)
+                Section(header: Text("Social")
+                    .montserrat(size: 13),
+                        content: {
+                    Button("Seguici su Instagram") {
+                        openLink("https://www.instagram.com/sportiliacentrofitness")
+                    }
+                    .montserrat(size: 15)
+                    .fontWeight(.semibold)
+                    .accessibilityHint("Apre Instagram in Safari")
 
-                        Button("Seguici su Facebook", action: {
-                            if let url = URL(string: "https://www.facebook.com/centrofitness.sportilia") {
-                                UIApplication.shared.open(url)
-                            }
-                        })
-                        .montserrat(size: 15)
-                        .fontWeight(.semibold)
-                    
-                        Button(action: {
-                            if let url = URL(string: "https://www.tiktok.com/@palestrasportilia") {
-                                UIApplication.shared.open(url)
-                            }
-                        }, label: {
-                            HStack {
-                                Text("Seguici su Tik Tok")
-                                    .montserrat(size: 15)
-                                    .fontWeight(.semibold)
-                            }
-                        })
-
-                        Button("Visita il sito web", action: {
-                            if let url = URL(string: "https://www.palestrasportilia.it") {
-                                UIApplication.shared.open(url)
-                            }
-                        })
-                        .montserrat(size: 15)
-                        .fontWeight(.semibold)
-                    })
-                    
-                    Section(header: Text("Logout")
-                        .montserrat(size: 13), content: {
-                        Button(action: {
-                            let firebaseAuth = Auth.auth()
-                            do {
-                                try firebaseAuth.signOut()
-                                resetDefaults()
-                                isLoggedOut.toggle()
-                            } catch let signOutError as NSError {
-                              print("Error signing out: %@", signOutError)
-                            }
-                        }, label: {
-                            Text("Logout")
-                                .montserrat(size: 18)
-                                .fontWeight(.semibold)
-                        })
-                    })
-                    
-                    Section(header: Text("Credits")
-                        .montserrat(size: 13), content: {
-                        HStack {
-                            Spacer()
-                            Text("Made with ❤️ by Matteo Ercolino")
-                                .montserrat(size: 13)
-                            Spacer()
-                        }
-                    })
-
-                }
+                    Button("Seguici su Facebook") {
+                        openLink("https://www.facebook.com/centrofitness.sportilia")
+                    }
+                    .montserrat(size: 15)
+                    .fontWeight(.semibold)
+                    .accessibilityHint("Apre Facebook in Safari")
                 
+                    Button("Seguici su Tik Tok") {
+                        openLink("https://www.tiktok.com/@palestrasportilia")
+                    }
+                    .montserrat(size: 15)
+                    .fontWeight(.semibold)
+                    .accessibilityHint("Apre TikTok in Safari")
+
+                    Button("Visita il sito web") {
+                        openLink("https://www.palestrasportilia.it")
+                    }
+                    .montserrat(size: 15)
+                    .fontWeight(.semibold)
+                    .accessibilityHint("Apre il sito ufficiale in Safari")
+                })
+                
+                Section(header: Text("Logout")
+                    .montserrat(size: 13), content: {
+                    Button(action: {
+                        let firebaseAuth = Auth.auth()
+                        do {
+                            try firebaseAuth.signOut()
+                            resetDefaults()
+                            isLoggedOut.toggle()
+                        } catch let signOutError as NSError {
+                          print("Error signing out: %@", signOutError)
+                        }
+                    }, label: {
+                        Text("Logout")
+                            .montserrat(size: 18)
+                            .fontWeight(.semibold)
+                    })
+                    .accessibilityHint("Termina la sessione corrente")
+                })
+                
+                Section(header: Text("Credits")
+                    .montserrat(size: 13), content: {
+                    HStack {
+                        Spacer()
+                        Text("Made with ❤️ by Matteo Ercolino")
+                            .montserrat(size: 13)
+                        Spacer()
+                    }
+                })
             }
-            .navigationTitle(Text("Impostazioni"))
-            .navigationBarTitleDisplayMode(.large)
         }
+        .navigationTitle(Text("Impostazioni"))
+        .navigationBarTitleDisplayMode(.large)
         .fullScreenCover(isPresented: $isLoggedOut) {
             LoginView()
         }
     }
+
+    private func openLink(_ urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        openURL(url)
+    }
     
     func resetDefaults() {
         let defaults = UserDefaults.standard
-        let dictionary = defaults.dictionaryRepresentation()
-        dictionary.keys.forEach { key in
+        let keysToReset = ["code", "isAdmin"]
+        keysToReset.forEach { key in
             defaults.removeObject(forKey: key)
         }
     }

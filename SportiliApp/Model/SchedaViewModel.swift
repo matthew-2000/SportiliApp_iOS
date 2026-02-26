@@ -9,6 +9,9 @@ import Foundation
 
 final class SchedaViewModel: ObservableObject {
     @Published var scheda: Scheda?
+    @Published var isLoading: Bool
+    @Published var errorMessage: String?
+    @Published var hasLoadedOnce: Bool
 
     private let schedaManager: SchedaManager
     private let autoFetchOnInit: Bool
@@ -21,6 +24,9 @@ final class SchedaViewModel: ObservableObject {
         self.schedaManager = schedaManager
         self.autoFetchOnInit = autoFetchOnInit
         self.scheda = scheda
+        self.isLoading = false
+        self.errorMessage = nil
+        self.hasLoadedOnce = scheda != nil
 
         if autoFetchOnInit {
             fetchScheda()
@@ -29,12 +35,29 @@ final class SchedaViewModel: ObservableObject {
 
     func fetchScheda() {
         guard let code = UserDefaults.standard.string(forKey: "code") else {
+            isLoading = false
+            hasLoadedOnce = true
+            scheda = nil
+            errorMessage = "Codice utente mancante. Effettua di nuovo l'accesso."
             return
         }
 
-        schedaManager.getSchedaFromFirebase(code: code) { scheda in
+        isLoading = true
+        errorMessage = nil
+
+        schedaManager.getSchedaFromFirebaseResult(code: code) { result in
             DispatchQueue.main.async {
-                self.scheda = scheda
+                self.isLoading = false
+                self.hasLoadedOnce = true
+
+                switch result {
+                case .success(let scheda):
+                    self.scheda = scheda
+                    self.errorMessage = nil
+                case .failure(let error):
+                    self.scheda = nil
+                    self.errorMessage = error.localizedDescription
+                }
             }
         }
     }

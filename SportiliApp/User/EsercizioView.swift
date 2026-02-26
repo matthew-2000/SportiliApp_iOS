@@ -59,6 +59,7 @@ struct EsercizioView: View {
     @State private var lastSyncedNote: String
     @State private var lastSyncedNoteKey: String
     @State private var showNotesSheet = false
+    @State private var isNotesSaving = false
 
     // UI
     @State private var showTimerSheet = false
@@ -215,7 +216,10 @@ struct EsercizioView: View {
                 NotesPreviewRow(
                     text: savedNote,
                     isDirty: isNoteDirty,
-                    onTap: { showNotesSheet = true }
+                    onTap: {
+                        isNotesSaving = false
+                        showNotesSheet = true
+                    }
                 )
             }
 
@@ -316,10 +320,29 @@ struct EsercizioView: View {
                 text: $noteInput,
                 savedText: savedNote,
                 canManage: canManageData,
+                isSaving: isNotesSaving,
                 isDirty: isNoteDirty,
-                onSave: { saveNote(for: currentKey) },
+                onSave: {
+                    guard !isNotesSaving else { return }
+                    isNotesSaving = true
+                    saveNote(for: currentKey) { isSuccess in
+                        isNotesSaving = false
+                        if isSuccess {
+                            showNotesSheet = false
+                        }
+                    }
+                },
                 onRevert: { noteInput = savedNote },
-                onDelete: { removeNote(for: currentKey) }
+                onDelete: {
+                    guard !isNotesSaving else { return }
+                    isNotesSaving = true
+                    removeNote(for: currentKey) { isSuccess in
+                        isNotesSaving = false
+                        if isSuccess {
+                            showNotesSheet = false
+                        }
+                    }
+                }
             )
         }
         .toast(
@@ -484,10 +507,10 @@ struct EsercizioView: View {
 
     // MARK: - Notes actions (includes scheda sync)
 
-    private func saveNote(for key: String) {
+    private func saveNote(for key: String, completion: @escaping (Bool) -> Void) {
         let trimmed = noteInput.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
-            removeNote(for: key)
+            removeNote(for: key, completion: completion)
             return
         }
 
@@ -502,17 +525,20 @@ struct EsercizioView: View {
                         lastSyncedNote = sanitized
                         lastSyncedNoteKey = key
                         showToast(message: "Nota salvata")
+                        completion(true)
                     case .failure(let message):
                         showError(message.errorDescription ?? "Errore sconosciuto")
+                        completion(false)
                     }
                 }
             case .failure(let message):
                 showError(message.errorDescription ?? "Errore sconosciuto")
+                completion(false)
             }
         }
     }
 
-    private func removeNote(for key: String) {
+    private func removeNote(for key: String, completion: @escaping (Bool) -> Void) {
         viewModel.updateUserNote(for: key, note: nil) { result in
             switch result {
             case .success:
@@ -523,12 +549,15 @@ struct EsercizioView: View {
                         lastSyncedNote = ""
                         lastSyncedNoteKey = key
                         showToast(message: "Nota rimossa", color: .orange)
+                        completion(true)
                     case .failure(let message):
                         showError(message.errorDescription ?? "Errore sconosciuto")
+                        completion(false)
                     }
                 }
             case .failure(let message):
                 showError(message.errorDescription ?? "Errore sconosciuto")
+                completion(false)
             }
         }
     }
@@ -870,6 +899,7 @@ private struct NotesEditorSheet: View {
     @Binding var text: String
     let savedText: String
     let canManage: Bool
+    let isSaving: Bool
     let isDirty: Bool
     let onSave: () -> Void
     let onRevert: () -> Void
@@ -878,7 +908,7 @@ private struct NotesEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section {
                     ZStack(alignment: .topLeading) {
@@ -900,12 +930,11 @@ private struct NotesEditorSheet: View {
                     Section {
                         Button(role: .destructive) {
                             onDelete()
-                            dismiss()
                         } label: {
                             Label("Elimina nota", systemImage: "trash")
                                 .montserrat(size: 17)
                         }
-                        .disabled(!canManage)
+                        .disabled(!canManage || isSaving)
                     }
                 }
             }
@@ -918,17 +947,22 @@ private struct NotesEditorSheet: View {
                         dismiss()
                     }
                     .montserrat(size: 17)
+                    .disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Salva") {
-                        onSave()
-                        dismiss()
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Button("Salva") {
+                            onSave()
+                        }
+                        .montserrat(size: 17)
+                        .disabled(!isDirty || !canManage)
                     }
-                    .montserrat(size: 17)
-                    .disabled(!isDirty || !canManage)
                 }
             }
         }
+        .interactiveDismissDisabled(isSaving)
     }
 }
 
@@ -954,7 +988,7 @@ private struct WeightEntrySheet: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Peso").montserrat(size: 17)) {
                     TextField("Peso (kg)", text: $weightInput)
@@ -1006,6 +1040,13 @@ struct WeightChartView: View {
     let data: [UniformLog]
     let dateFormatter: DateFormatter
 
+    private static let compactAxisFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM"
+        formatter.locale = Locale(identifier: "it_IT")
+        return formatter
+    }()
+
     private var lineGradient: AnyShapeStyle {
         AnyShapeStyle(
             LinearGradient(
@@ -1014,6 +1055,20 @@ struct WeightChartView: View {
                 endPoint: .trailing
             )
         )
+    }
+
+    private var xAxisIndices: [Int] {
+        guard !data.isEmpty else { return [] }
+        if data.count <= 4 {
+            return data.map(\.index)
+        }
+
+        let step = max(1, data.count / 3)
+        var selected = stride(from: 0, to: data.count, by: step).map { data[$0].index }
+        if let last = data.last?.index, selected.last != last {
+            selected.append(last)
+        }
+        return selected
     }
 
     var body: some View {
@@ -1038,13 +1093,14 @@ struct WeightChartView: View {
         }
         .chartYScale(domain: .automatic(includesZero: false))
         .chartXAxis {
-            AxisMarks(values: data.map { $0.index }) { value in
+            AxisMarks(values: xAxisIndices) { value in
                 if let idx = value.as(Int.self),
                    let item = data.first(where: { $0.index == idx }) {
                     AxisValueLabel {
-                        Text(dateFormatter.string(from: item.date))
+                        Text(Self.compactAxisFormatter.string(from: item.date))
                             .montserrat(size: 11)
                             .foregroundStyle(.secondary)
+                            .accessibilityLabel(dateFormatter.string(from: item.date))
                     }
                 }
             }
@@ -1091,9 +1147,17 @@ struct FullScreenImageView: View {
 // MARK: - Timer Sheet
 
 struct TimerSheet: View {
+    private static let fallbackDuration = 60
+
+    private struct ParseResult {
+        let seconds: Int
+        let usedFallback: Bool
+    }
+
     @Environment(\.presentationMode) var presentationMode
     @State private var timeRemaining: Int
     @State private var totalTime: Int
+    @State private var showsFallbackWarning: Bool
     @State private var timerIsActive = false
     @State private var timerPaused = false
     @State private var timer: Timer?
@@ -1101,13 +1165,14 @@ struct TimerSheet: View {
     @State private var audioPlayer: AVAudioPlayer?
 
     init(riposo: String) {
-        let parsedTime = TimerSheet.parseRiposo(riposo)
-        _timeRemaining = State(initialValue: parsedTime)
-        _totalTime = State(initialValue: parsedTime)
+        let parsed = TimerSheet.parseRiposoResult(riposo)
+        _timeRemaining = State(initialValue: parsed.seconds)
+        _totalTime = State(initialValue: parsed.seconds)
+        _showsFallbackWarning = State(initialValue: parsed.usedFallback)
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 Spacer()
 
@@ -1115,6 +1180,14 @@ struct TimerSheet: View {
                     .montserrat(size: 30)
                     .bold()
                     .padding(.bottom, 40)
+
+                if showsFallbackWarning {
+                    Text("Formato recupero non riconosciuto, usato 01:00.")
+                        .montserrat(size: 13)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.bottom, 8)
+                }
 
                 ZStack {
                     Circle()
@@ -1219,13 +1292,78 @@ struct TimerSheet: View {
     }
 
     static func parseRiposo(_ riposo: String) -> Int {
-        let components = riposo.split(separator: "'")
-        if components.count == 2 {
-            let minutes = Int(components[0]) ?? 0
-            let seconds = Int(components[1].replacingOccurrences(of: "\"", with: "")) ?? 0
-            return minutes * 60 + seconds
+        parseRiposoResult(riposo).seconds
+    }
+
+    private static func parseRiposoResult(_ riposo: String) -> ParseResult {
+        let cleaned = riposo
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+
+        if cleaned.isEmpty {
+            return ParseResult(seconds: fallbackDuration, usedFallback: true)
         }
-        return 0
+
+        if let quoteSeconds = parseQuoteFormat(cleaned) {
+            return ParseResult(seconds: quoteSeconds, usedFallback: false)
+        }
+
+        if let colonSeconds = parseColonFormat(cleaned) {
+            return ParseResult(seconds: colonSeconds, usedFallback: false)
+        }
+
+        if let letterSeconds = parseLetterFormat(cleaned) {
+            return ParseResult(seconds: letterSeconds, usedFallback: false)
+        }
+
+        if let pureSeconds = Int(cleaned), pureSeconds > 0 {
+            return ParseResult(seconds: pureSeconds, usedFallback: false)
+        }
+
+        return ParseResult(seconds: fallbackDuration, usedFallback: true)
+    }
+
+    private static func parseQuoteFormat(_ value: String) -> Int? {
+        let splitByQuote = value.split(separator: "'")
+        guard splitByQuote.count == 2 else { return nil }
+
+        let minutes = Int(splitByQuote[0].trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
+        let secondsString = splitByQuote[1]
+            .replacingOccurrences(of: "\"", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let seconds = Int(secondsString) ?? 0
+        let total = minutes * 60 + seconds
+        return total > 0 ? total : nil
+    }
+
+    private static func parseColonFormat(_ value: String) -> Int? {
+        let components = value.split(separator: ":")
+        guard components.count == 2 else { return nil }
+        guard let minutes = Int(components[0]),
+              let seconds = Int(components[1]) else { return nil }
+        let total = minutes * 60 + seconds
+        return total > 0 ? total : nil
+    }
+
+    private static func parseLetterFormat(_ value: String) -> Int? {
+        // Supporta "2m 30s", "2m", "30s"
+        let minutePattern = #"(\d+)\s*m"#
+        let secondPattern = #"(\d+)\s*s"#
+
+        let minutes = firstMatchInt(value: value, pattern: minutePattern) ?? 0
+        let seconds = firstMatchInt(value: value, pattern: secondPattern) ?? 0
+        let total = minutes * 60 + seconds
+        return total > 0 ? total : nil
+    }
+
+    private static func firstMatchInt(value: String, pattern: String) -> Int? {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let range = NSRange(location: 0, length: value.utf16.count)
+        guard let match = regex.firstMatch(in: value, range: range),
+              let matchRange = Range(match.range(at: 1), in: value) else {
+            return nil
+        }
+        return Int(value[matchRange])
     }
 
     func playSound() {
@@ -1239,7 +1377,7 @@ struct TimerSheet: View {
 }
 
 #Preview("Esercizio View") {
-    NavigationView {
+    NavigationStack {
         let exercise = PreviewData.singleExercise
         let previewModel = ExerciseDetailViewModel(
             userCode: "preview",

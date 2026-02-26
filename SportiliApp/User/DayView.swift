@@ -27,14 +27,12 @@ struct DayView: View {
                             ) {
                                 EsercizioRow(esercizio: esercizio)
                             }
+                            .listRowSeparator(.hidden)
                         }
                     }
                 }
             }
             .listStyle(.automatic)
-            .onAppear {
-                UITableView.appearance().separatorStyle = .none
-            }
         }
         .navigationTitle(Text("\(day.name)"))
         .navigationBarTitleDisplayMode(.large)
@@ -184,8 +182,9 @@ private struct SupersetItemRow: View {
             Text(displayName)
                 .montserrat(size: 17)
                 .fontWeight(.semibold)
-                .lineLimit(1)
+                .lineLimit(2)
                 .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
 
             Spacer()
         }
@@ -310,7 +309,7 @@ private func exerciseNameParts(from name: String) -> [String] {
 }
 
 #Preview("Day View") {
-    NavigationView {
+    NavigationStack {
         DayView(day: PreviewData.giorno)
     }
 }

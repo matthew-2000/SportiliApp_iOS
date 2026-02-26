@@ -16,29 +16,27 @@ struct AlertsView: View {
     }
 
     var body: some View {
-        NavigationView {
-            Group {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let error = viewModel.errorMessage {
-                    AlertsErrorState(error: error, onRetry: viewModel.retry)
-                } else if viewModel.alerts.isEmpty {
-                    AlertsEmptyState()
-                } else {
-                    List {
-                        ForEach(viewModel.alerts) { alert in
-                            AlertRow(alert: alert)
-                                .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
-                                .listRowSeparator(.hidden)
-                        }
+        Group {
+            if viewModel.isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if let error = viewModel.errorMessage {
+                AlertsErrorState(error: error, onRetry: viewModel.retry)
+            } else if viewModel.alerts.isEmpty {
+                AlertsEmptyState()
+            } else {
+                List {
+                    ForEach(viewModel.alerts) { alert in
+                        AlertRow(alert: alert)
+                            .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                            .listRowSeparator(.hidden)
                     }
-                    .listStyle(.plain)
                 }
+                .listStyle(.plain)
             }
-            .navigationTitle(Text("Avvisi"))
         }
+        .navigationTitle(Text("Avvisi"))
     }
 }
 
@@ -103,7 +101,7 @@ private struct AlertRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Label(alert.urgenza.displayName.uppercased(), systemImage: "exclamationmark.circle.fill")
+                Label(urgencyLabelText, systemImage: urgencyIconName)
                     .fontWeight(.bold)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
@@ -144,9 +142,26 @@ private struct AlertRow: View {
         case .bassa:
             return .blue
         case .media:
-            return .primary
+            return .orange
         case .alta:
             return .red
+        }
+    }
+
+    private var urgencyLabelText: String {
+        "Priorita \(alert.urgenza.displayName)"
+    }
+
+    private var urgencyIconName: String {
+        switch alert.urgenza {
+        case .nessuna:
+            return "bell"
+        case .bassa:
+            return "bell.badge"
+        case .media:
+            return "exclamationmark.circle"
+        case .alta:
+            return "exclamationmark.triangle.fill"
         }
     }
 }
