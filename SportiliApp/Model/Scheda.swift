@@ -102,21 +102,25 @@ class Scheda: Codable {
         return schedaDict
     }
     
-    func getDurataScheda() -> Int? {
-        // Calcola la data finale aggiungendo il numero di settimane alla data di inizio
+    func getDurataScheda() -> Int {
+        // Calcola la data finale aggiungendo il numero di settimane alla data di inizio.
         let calendar = Calendar.current
         guard let endDate = calendar.date(byAdding: .weekOfYear, value: durata, to: dataInizio) else {
-            return nil
+            return 0
         }
-        
-        // Calcola la differenza tra la data corrente e la data finale
+
+        // A scadenza o oltre, la scheda ha 0 settimane rimanenti.
         let currentDate = Date()
         guard currentDate < endDate else {
-            return nil
+            return 0
         }
-        
+
         let components = calendar.dateComponents([.weekOfYear], from: currentDate, to: endDate)
-        return components.weekOfYear
+        return max(components.weekOfYear ?? 0, 0)
+    }
+
+    var isScaduta: Bool {
+        getDurataScheda() == 0
     }
     
 }

@@ -63,23 +63,19 @@ struct HomeView: View {
 
     @ViewBuilder
     private func homeList(for scheda: Scheda) -> some View {
-        List {
-            header(for: scheda)
+        let settimaneRimanenti = scheda.getDurataScheda()
 
-            if let settimaneRimanenti = scheda.getDurataScheda(), settimaneRimanenti < 2 {
-                ExpiringSchedaBanner(
-                    settimaneRimanenti: settimaneRimanenti,
-                    cambioRichiesto: scheda.cambioRichiesto,
-                    isRequesting: isRequesting,
-                    tint: .orange,
-                    onRequest: requestSchedaUpdate
-                )
-            } else if scheda.getDurataScheda() == nil {
+        List {
+            header(for: scheda, settimaneRimanenti: settimaneRimanenti)
+
+            if scheda.isScaduta {
                 ExpiredSchedaBanner(
                     cambioRichiesto: scheda.cambioRichiesto,
                     isRequesting: isRequesting,
                     onRequest: requestSchedaUpdate
                 )
+            } else {
+                ActiveSchedaBanner(settimaneRimanenti: settimaneRimanenti)
             }
 
             ForEach(scheda.giorni, id: \.id) { giorno in
@@ -94,15 +90,24 @@ struct HomeView: View {
         }
     }
 
-    private func header(for scheda: Scheda) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text("Inizio: \(getDateString(from: scheda))")
-                .montserrat(size: 20)
-                .fontWeight(.semibold)
-            Text("x\(scheda.durata) sett.")
-                .montserrat(size: 25)
-                .foregroundColor(.accentColor)
-                .bold()
+    private func header(for scheda: Scheda, settimaneRimanenti: Int) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Inizio: \(getDateString(from: scheda))")
+                    .montserrat(size: 20)
+                    .fontWeight(.semibold)
+                Text("x\(scheda.durata) sett.")
+                    .montserrat(size: 25)
+                    .foregroundColor(.accentColor)
+                    .bold()
+            }
+
+            Label(
+                settimaneRimanenti == 1 ? "1 settimana rimanente" : "\(settimaneRimanenti) settimane rimanenti",
+                systemImage: "calendar.badge.clock"
+            )
+            .montserrat(size: 16)
+            .foregroundStyle(settimaneRimanenti == 0 ? .red : .secondary)
         }
         .padding(.vertical, 20)
         .listRowSeparator(.hidden)
@@ -121,6 +126,13 @@ struct HomeView: View {
 
     private func requestSchedaUpdate() {
         guard !isRequesting else { return }
+        guard let scheda = schedaViewModel.scheda, scheda.isScaduta else {
+            showToast(
+                message: "La nuova scheda può essere richiesta solo quando le settimane rimanenti sono 0.",
+                color: .orange
+            )
+            return
+        }
         guard let code = UserDefaults.standard.string(forKey: "code") else {
             showToast(message: "Codice utente mancante ❌", color: .red)
             return
@@ -216,47 +228,35 @@ private struct HomeEmptyState: View {
     }
 }
 
-private struct ExpiringSchedaBanner: View {
+private struct ActiveSchedaBanner: View {
     let settimaneRimanenti: Int
-    let cambioRichiesto: Bool
-    let isRequesting: Bool
-    let tint: Color
-    let onRequest: () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "clock.fill")
                 .font(.system(size: 40))
-                .foregroundColor(tint)
+                .foregroundColor(.orange)
 
-            Text("⏳ Scheda in scadenza!")
+            Text("Scheda attiva")
                 .montserrat(size: 20)
                 .fontWeight(.bold)
-                .foregroundColor(tint)
+                .foregroundColor(.orange)
                 .multilineTextAlignment(.center)
 
-            Text("Manca solo \(settimaneRimanenti) sett. alla scadenza.\nPuoi già richiedere un aggiornamento.")
+            Text(activeMessage)
                 .montserrat(size: 17)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 16)
-
-            if cambioRichiesto {
-                Label("Richiesta inviata", systemImage: "checkmark.circle.fill")
-                    .montserrat(size: 16)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.green)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.green.opacity(0.15))
-                    .clipShape(Capsule())
-            } else {
-                RequestSchedaButton(isRequesting: isRequesting, tint: tint, action: onRequest)
-            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .listRowSeparator(.hidden)
+    }
+
+    private var activeMessage: String {
+        let settimaneLabel = settimaneRimanenti == 1 ? "1 settimana rimanente" : "\(settimaneRimanenti) settimane rimanenti"
+        return "\(settimaneLabel). Il cambio scheda sarà disponibile solo quando il conteggio arriva a 0.\nLe modifiche vengono gestite nel weekend: invia la richiesta tra le 20:00 di venerdì e le 10:00 di sabato."
     }
 }
 
@@ -277,7 +277,7 @@ private struct ExpiredSchedaBanner: View {
                 .foregroundColor(.red)
                 .multilineTextAlignment(.center)
 
-            Text("Richiedi un aggiornamento al tuo personal trainer.")
+            Text("La scheda è terminata e può essere aggiornata.\nLe modifiche vengono gestite nel weekend: invia la richiesta tra le 20:00 di venerdi e le 10:00 di sabato. Durante la settimana il cambio potrebbe non essere effettuato.")
                 .montserrat(size: 17)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)

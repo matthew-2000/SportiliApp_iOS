@@ -149,7 +149,7 @@ private struct AlertRow: View {
     }
 
     private var urgencyLabelText: String {
-        "Priorita \(alert.urgenza.displayName)"
+        "Priorità \(alert.urgenza.displayName)"
     }
 
     private var urgencyIconName: String {
