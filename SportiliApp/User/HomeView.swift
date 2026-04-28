@@ -74,8 +74,6 @@ struct HomeView: View {
                     isRequesting: isRequesting,
                     onRequest: requestSchedaUpdate
                 )
-            } else {
-                ActiveSchedaBanner(settimaneRimanenti: settimaneRimanenti)
             }
 
             ForEach(scheda.giorni, id: \.id) { giorno in
@@ -225,38 +223,6 @@ private struct HomeEmptyState: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-private struct ActiveSchedaBanner: View {
-    let settimaneRimanenti: Int
-
-    var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "clock.fill")
-                .font(.system(size: 40))
-                .foregroundColor(.orange)
-
-            Text("Scheda attiva")
-                .montserrat(size: 20)
-                .fontWeight(.bold)
-                .foregroundColor(.orange)
-                .multilineTextAlignment(.center)
-
-            Text(activeMessage)
-                .montserrat(size: 17)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .listRowSeparator(.hidden)
-    }
-
-    private var activeMessage: String {
-        let settimaneLabel = settimaneRimanenti == 1 ? "1 settimana rimanente" : "\(settimaneRimanenti) settimane rimanenti"
-        return "\(settimaneLabel). Il cambio scheda sarà disponibile solo quando il conteggio arriva a 0.\nLe modifiche vengono gestite nel weekend: invia la richiesta tra le 20:00 di venerdì e le 10:00 di sabato."
     }
 }
 
