@@ -14,6 +14,28 @@ let dateFormatter: DateFormatter = {
     return formatter
 }()
 
+func firebaseKeyHasNumericSuffixOrder(_ lhs: String, _ rhs: String) -> Bool {
+    let left = firebaseKeyComponents(lhs)
+    let right = firebaseKeyComponents(rhs)
+
+    if left.prefix == right.prefix, let leftNumber = left.number, let rightNumber = right.number, leftNumber != rightNumber {
+        return leftNumber < rightNumber
+    }
+
+    return lhs < rhs
+}
+
+private func firebaseKeyComponents(_ key: String) -> (prefix: String, number: Int?) {
+    let reversedDigits = key.reversed().prefix { $0.isNumber }
+    guard !reversedDigits.isEmpty else {
+        return (key, nil)
+    }
+
+    let digits = String(reversedDigits.reversed())
+    let prefix = String(key.dropLast(digits.count))
+    return (prefix, Int(digits))
+}
+
 class Scheda: Codable {
     var dataInizio: Date
     var durata: Int
@@ -183,7 +205,7 @@ class SchedaManager {
                 var giorni: [Giorno] = []
                 
                 // Ordinare giorniData per chiave
-                let giorniOrdinati = giorniData.sorted { $0.key < $1.key }
+                let giorniOrdinati = giorniData.sorted { firebaseKeyHasNumericSuffixOrder($0.key, $1.key) }
                 
                 for (keyGiorno, giornoData) in giorniOrdinati {
                     if let giornoData = giornoData as? [String: Any] {
@@ -193,7 +215,7 @@ class SchedaManager {
                         var gruppiMuscolari: [GruppoMuscolare] = []
                         
                         // Ordinare gruppiMuscolariData per chiave
-                        let gruppiMuscolariOrdinati = gruppiMuscolariData.sorted { $0.key < $1.key }
+                        let gruppiMuscolariOrdinati = gruppiMuscolariData.sorted { firebaseKeyHasNumericSuffixOrder($0.key, $1.key) }
                         
                         for (keyGruppo, gruppoData) in gruppiMuscolariOrdinati {
                             if let gruppoData = gruppoData as? [String: Any] {
@@ -203,7 +225,7 @@ class SchedaManager {
                                 var esercizi: [Esercizio] = []
                                 
                                 // Ordinare eserciziData per chiave
-                                let eserciziOrdinati = eserciziData.sorted { $0.key < $1.key }
+                                let eserciziOrdinati = eserciziData.sorted { firebaseKeyHasNumericSuffixOrder($0.key, $1.key) }
                                 
                                 for (keyEse, esercizioData) in eserciziOrdinati {
                                     if let esercizioData = esercizioData as? [String: Any] {

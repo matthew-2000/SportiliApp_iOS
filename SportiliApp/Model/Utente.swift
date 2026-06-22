@@ -78,7 +78,7 @@ class UserManager {
                     var giorni: [Giorno] = []
                     
                     // Ordinare giorniData per chiave
-                    let giorniOrdinati = giorniData.sorted { $0.key < $1.key }
+                    let giorniOrdinati = giorniData.sorted { firebaseKeyHasNumericSuffixOrder($0.key, $1.key) }
                     
                     for (keyGiorno, giornoData) in giorniOrdinati {
                         if let giornoData = giornoData as? [String: Any] {
@@ -88,7 +88,7 @@ class UserManager {
                             var gruppiMuscolari: [GruppoMuscolare] = []
                             
                             // Ordinare gruppiMuscolariData per chiave
-                            let gruppiMuscolariOrdinati = gruppiMuscolariData.sorted { $0.key < $1.key }
+                            let gruppiMuscolariOrdinati = gruppiMuscolariData.sorted { firebaseKeyHasNumericSuffixOrder($0.key, $1.key) }
                             
                             for (keyGruppo, gruppoData) in gruppiMuscolariOrdinati {
                                 if let gruppoData = gruppoData as? [String: Any] {
@@ -98,7 +98,7 @@ class UserManager {
                                     var esercizi: [Esercizio] = []
                                     
                                     // Ordinare eserciziData per chiave
-                                    let eserciziOrdinati = eserciziData.sorted { $0.key < $1.key }
+                                    let eserciziOrdinati = eserciziData.sorted { firebaseKeyHasNumericSuffixOrder($0.key, $1.key) }
                                     
                                     for (keyEse, esercizioData) in eserciziOrdinati {
                                         if let esercizioData = esercizioData as? [String: Any] {
@@ -141,4 +141,3 @@ class UserManager {
         }
     }
 }
-
