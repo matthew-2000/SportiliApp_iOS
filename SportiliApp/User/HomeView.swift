@@ -105,7 +105,7 @@ struct HomeView: View {
                 systemImage: "calendar.badge.clock"
             )
             .montserrat(size: 16)
-            .foregroundStyle(settimaneRimanenti == 0 ? .red : .secondary)
+            .foregroundStyle(scheda.isScaduta ? .red : .secondary)
         }
         .padding(.vertical, 20)
         .listRowSeparator(.hidden)
@@ -126,7 +126,7 @@ struct HomeView: View {
         guard !isRequesting else { return }
         guard let scheda = schedaViewModel.scheda, scheda.isScaduta else {
             showToast(
-                message: "La nuova scheda può essere richiesta solo quando le settimane rimanenti sono 0.",
+                message: "La nuova scheda può essere richiesta solo dopo la scadenza di quella attuale.",
                 color: .orange
             )
             return

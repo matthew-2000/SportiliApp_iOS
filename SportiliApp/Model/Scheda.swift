@@ -142,7 +142,14 @@ class Scheda: Codable {
     }
 
     var isScaduta: Bool {
-        getDurataScheda() == 0
+        isScaduta(at: Date())
+    }
+
+    func isScaduta(at date: Date, calendar: Calendar = .current) -> Bool {
+        guard let endDate = calendar.date(byAdding: .weekOfYear, value: durata, to: dataInizio) else {
+            return true
+        }
+        return date >= endDate
     }
     
 }
