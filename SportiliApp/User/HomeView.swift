@@ -63,10 +63,9 @@ struct HomeView: View {
 
     @ViewBuilder
     private func homeList(for scheda: Scheda) -> some View {
-        let settimaneRimanenti = scheda.getDurataScheda()
 
         List {
-            header(for: scheda, settimaneRimanenti: settimaneRimanenti)
+            header(for: scheda)
 
             if scheda.isScaduta {
                 ExpiredSchedaBanner(
@@ -88,7 +87,7 @@ struct HomeView: View {
         }
     }
 
-    private func header(for scheda: Scheda, settimaneRimanenti: Int) -> some View {
+    private func header(for scheda: Scheda) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Inizio: \(getDateString(from: scheda))")
@@ -101,7 +100,7 @@ struct HomeView: View {
             }
 
             Label(
-                settimaneRimanenti == 1 ? "1 settimana rimanente" : "\(settimaneRimanenti) settimane rimanenti",
+                scheda.tempoRimanente(),
                 systemImage: "calendar.badge.clock"
             )
             .montserrat(size: 16)

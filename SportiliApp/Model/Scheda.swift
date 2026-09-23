@@ -141,6 +141,19 @@ class Scheda: Codable {
         return max(components.weekOfYear ?? 0, 0)
     }
 
+    func tempoRimanente(at date: Date = Date(), calendar: Calendar = .current) -> String {
+        guard let end = calendar.date(byAdding: .weekOfYear, value: durata, to: dataInizio), date < end else {
+            return "Scheda scaduta"
+        }
+        let days = max(0, calendar.dateComponents([.day], from: date, to: end).day ?? 0)
+        if days >= 7 {
+            let weeks = days / 7
+            return weeks == 1 ? "1 settimana rimanente" : "\(weeks) settimane rimanenti"
+        }
+        if days == 0 { return "Meno di un giorno rimanente" }
+        return days == 1 ? "1 giorno rimanente" : "\(days) giorni rimanenti"
+    }
+
     var isScaduta: Bool {
         isScaduta(at: Date())
     }
@@ -156,6 +169,17 @@ class Scheda: Codable {
 
 
 class SchedaManager {
+    private var observation: (DatabaseReference, DatabaseHandle)?
+    private var generation = UUID()
+
+    func stopObserving() {
+        generation = UUID()
+        if let (ref, handle) = observation { ref.removeObserver(withHandle: handle) }
+        observation = nil
+    }
+
+    deinit { stopObserving() }
+
     
     enum SchedaFetchError: LocalizedError {
         case invalidData
@@ -183,10 +207,13 @@ class SchedaManager {
     }
 
     func getSchedaFromFirebaseResult(code: String, completion: @escaping (Result<Scheda?, Error>) -> Void) {
+        stopObserving()
+        let token = generation
         if Auth.auth().currentUser != nil {
             let ref = Database.database().reference().child("users").child(code).child("scheda")
                         
-            ref.observe(.value, with: { (snapshot) in
+            let handle = ref.observe(.value, with: { [weak self] snapshot in
+                guard let self, self.generation == token else { return }
                 guard snapshot.exists() else {
                     completion(.success(nil))
                     return
@@ -263,9 +290,12 @@ class SchedaManager {
                 let scheda = Scheda(dataInizio: dataInizio, durata: durata, giorni: giorni, cambioRichiesto: cambioRichiesto)
                 
                 completion(.success(scheda))
-            }, withCancel: { error in
+            }, withCancel: { [weak self] error in
+                guard let self, self.generation == token else { return }
+                self.stopObserving()
                 completion(.failure(error))
             })
+            observation = (ref, handle)
         } else {
             completion(.success(nil))
         }

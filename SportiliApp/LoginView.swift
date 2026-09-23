@@ -12,9 +12,8 @@ import FirebaseDatabase
 struct LoginView: View {
     
     @State private var code: String = ""
-    @State private var isLoggedIn: Bool = false
+    @StateObject private var login = LoginSession.firebase()
     @State private var showAlert = false
-    @State private var isLoading = false
     @State private var alertMessage = ""
     @State private var inlineError: String?
     
@@ -46,7 +45,7 @@ struct LoginView: View {
                         inlineError = nil
                     }
 
-                if let inlineError {
+                if let inlineError = inlineError ?? login.errorMessage {
                     Text(inlineError)
                         .montserrat(size: 14)
                         .foregroundStyle(.red)
@@ -59,7 +58,7 @@ struct LoginView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.bottom, 24)
                 
-                if isLoading {
+                if login.isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .accent))
                         .padding()
@@ -92,101 +91,139 @@ struct LoginView: View {
             Spacer()
         }
         .padding()
-        .fullScreenCover(isPresented: $isLoggedIn) {
+        .onDisappear { login.cancel() }
+        .fullScreenCover(isPresented: $login.isLoggedIn) {
             ContentView()
         }
     }
     
     private func attemptLogin() {
-        let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedCode.isEmpty else {
-            inlineError = "Inserisci il codice."
-            return
-        }
-
         inlineError = nil
-        isLoading = true
-        code = trimmedCode
-
-        isAdmin(codice: trimmedCode, completion: { isAdmin in
-            if isAdmin {
-                loginFausto()
-            } else {
-                register()
-            }
-        })
+        code = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        login.start(code: code)
     }
-    
-    func loginFausto() {
-        Auth.auth().signInAnonymously { (authResult, error) in
-            if error != nil {
-                self.alertMessage = "Errore durante l'accesso. Riprova più tardi."
-                self.showAlert.toggle()
-                self.isLoading = false
-            } else {
-                UserDefaults.standard.set(true, forKey: "isAdmin")
-                UserDefaults.standard.set(code, forKey: "code")
-                self.isLoading = false
-                self.isLoggedIn = true
-            }
+}
+
+// Kept independent of Firebase so failures, retries and late callbacks can be tested.
+final class LoginSession: ObservableObject {
+    typealias Read = (String, @escaping (Result<Any?, Error>) -> Void) -> (() -> Void)
+    typealias SignIn = (String?, @escaping (Error?) -> Void) -> Void
+    @Published var isLoading = false
+    @Published var isLoggedIn = false
+    @Published var errorMessage: String?
+    private let read: Read
+    private let signIn: SignIn
+    private let save: (String, Bool) -> Void
+    private var generation = UUID()
+    private var cancelRead: (() -> Void)?
+    private var timeout: DispatchWorkItem?
+
+    init(read: @escaping Read, signIn: @escaping SignIn, save: @escaping (String, Bool) -> Void) {
+        self.read = read
+        self.signIn = signIn
+        self.save = save
+    }
+
+    static func validUserCode(_ code: String) -> Bool {
+        !code.isEmpty && code.utf8.count <= 768 && !code.unicodeScalars.contains {
+            CharacterSet(charactersIn: ".#$[]/").contains($0) || $0.value < 32 || $0.value == 127
         }
     }
-    
-    func register() {
-        let db = Database.database().reference().child("users")
-        db.observeSingleEvent(of: .value) { snapshot in
-            if let authUsers = snapshot.value as? [String: [String: Any]] {
-                if let authorizedUser = authUsers[code] {
-                    Auth.auth().signInAnonymously { (authResult, error) in
-                        if error != nil {
-                            self.alertMessage = "Errore durante l'accesso. Riprova più tardi."
-                            self.showAlert.toggle()
-                            self.isLoading.toggle()
-                        } else {
-                            // Utente registrato con successo
-                            let changeRequest = authResult?.user.createProfileChangeRequest()
-                            changeRequest?.displayName = authorizedUser["nome"] as? String
-                            changeRequest?.commitChanges(completion: { (error) in
-                                if let error = error {
-                                    print("Errore durante l'associazione del nome utente:", error.localizedDescription)
-                                    // Gestisci l'errore
-                                } else {
-                                    print("Nome utente associato con successo:", code)
-                                }
-                            })
-                            UserDefaults.standard.set(code, forKey: "code")
-                            self.isLoading = false
-                            self.isLoggedIn = true
+
+    func cancel() {
+        generation = UUID()
+        cancelRead?()
+        cancelRead = nil
+        timeout?.cancel()
+        timeout = nil
+        isLoading = false
+    }
+
+    deinit { cancelRead?(); timeout?.cancel() }
+
+    func start(code: String, timeoutInterval: TimeInterval = 20) {
+        guard !isLoading else { return }
+        cancel()
+        errorMessage = nil
+        guard !code.isEmpty else { errorMessage = "Inserisci il codice."; return }
+        isLoading = true
+        let token = generation
+        let deadline = DispatchWorkItem { [weak self] in
+            guard let self, self.generation == token else { return }
+            self.fail("Connessione non disponibile. Riprova.")
+        }
+        timeout = deadline
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutInterval, execute: deadline)
+        cancelRead = read("fausto") { [weak self] result in
+            guard let self, self.generation == token else { return }
+            self.cancelRead?(); self.cancelRead = nil
+            switch result {
+            case .failure: self.fail("Errore durante l'accesso. Riprova.")
+            case .success(let value):
+                if let adminCode = value as? String, adminCode == code {
+                    self.authenticate(code: code, admin: true, name: nil, token: token)
+                } else if !Self.validUserCode(code) {
+                    self.fail("Codice non valido.")
+                } else {
+                    self.cancelRead = self.read("users/" + code) { [weak self] result in
+                        guard let self, self.generation == token else { return }
+                        self.cancelRead?(); self.cancelRead = nil
+                        switch result {
+                        case .failure: self.fail("Errore durante il recupero del profilo. Riprova.")
+                        case .success(let value):
+                            guard let profile = value as? [String: Any] else {
+                                self.fail("Codice non autorizzato."); return
+                            }
+                            self.authenticate(code: code, admin: false, name: profile["nome"] as? String, token: token)
                         }
                     }
-                } else {
-                    // Nome e/o cognome non autorizzati
-                    self.alertMessage = "Codice non autorizzato."
-                    self.showAlert.toggle()
-                    self.isLoading.toggle()
                 }
-            } else {
-                // Errore nel recupero degli utenti autorizzati
-                self.alertMessage = "Errore durante il recupero degli utenti. Riprova più tardi."
-                self.showAlert.toggle()
-                self.isLoading.toggle()
             }
         }
     }
-    
-    func isAdmin(codice: String, completion: @escaping (Bool) -> Void) {
-        let ref = Database.database().reference().child("fausto")
-        ref.observeSingleEvent(of: .value) { snapshot in
-            if let valore = snapshot.value as? String {
-                completion(codice == valore)
-            } else {
-                completion(false)
-            }
+
+    private func fail(_ message: String) { cancel(); errorMessage = message }
+
+    private func authenticate(code: String, admin: Bool, name: String?, token: UUID) {
+        signIn(name) { [weak self] error in
+            guard let self, self.generation == token else { return }
+            guard error == nil else { self.fail("Errore durante l'accesso. Riprova."); return }
+            self.save(code, admin)
+            self.cancel()
+            self.isLoggedIn = true
         }
     }
-    
 }
 
-#Preview {
-    LoginView()
+extension LoginSession {
+    static func firebase() -> LoginSession {
+        LoginSession(read: { path, completion in
+            let ref = Database.database().reference().child(path)
+            var finished = false
+            let handle = ref.observe(.value, with: { snapshot in
+                guard !finished else { return }
+                finished = true
+                completion(.success(snapshot.value))
+            }, withCancel: { error in
+                guard !finished else { return }
+                finished = true
+                completion(.failure(error))
+            })
+            return { finished = true; ref.removeObserver(withHandle: handle) }
+        }, signIn: { name, completion in
+            Auth.auth().signInAnonymously { result, error in
+                if error == nil, let name {
+                    let change = result?.user.createProfileChangeRequest()
+                    change?.displayName = name
+                    change?.commitChanges(completion: nil)
+                }
+                completion(error)
+            }
+        }, save: { code, admin in
+            UserDefaults.standard.set(admin, forKey: "isAdmin")
+            UserDefaults.standard.set(code, forKey: "code")
+        })
+    }
 }
+
+#Preview { LoginView() }

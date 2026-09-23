@@ -8,9 +8,9 @@ Dalla root della repository:
 python3 Tests/run_model_tests.py
 ```
 
-Esegue 5 gruppi di asserzioni sui modelli Foundation del sorgente reale: ultima
+Esegue 6 gruppi di asserzioni sui modelli Foundation del sorgente reale: ultima
 settimana, istante esatto di scadenza, cambio dell'ora, date passate e proprietà
-usata dalla UI. Non accede a Firebase e non richiede un target XCTest.
+usata dalla UI, incluse le etichette singolari/plurali e meno di un giorno. Non accede a Firebase e non richiede un target XCTest.
 
 ## Controllo visivo della Home
 
@@ -37,12 +37,37 @@ Gli screenshot **richiedono controllo visivo**, non sono asserzioni automatiche:
 
 | Scenario | Risultato atteso |
 | --- | --- |
-| `last-week` | 6 giorni residui: nessun banner di scadenza o pulsante di richiesta; conteggio non rosso |
+| `last-week` | Meno di 6 giorni residui (5 giorni interi durante la cattura): nessun banner di scadenza o pulsante di richiesta; conteggio non rosso |
 | `expired` | Banner rosso e pulsante “Richiedi nuova scheda” |
 | `requested` | Banner rosso, “Richiesta inviata” e nessun pulsante per inviarla di nuovo |
 
-La UI attuale mostra ancora “0 settimane rimanenti” nell'ultima settimana;
-questa prova conferma che ciò non attiva prematuramente lo stato di scadenza.
+La UI mostra i giorni interi di calendario nell’ultima settimana e “Meno di un
+giorno rimanente” sotto un giorno; scadenza e disponibilità della richiesta
+continuano a usare l’istante effettivo di fine.
 
 Questo host non verifica login, trasmissione di una richiesta o intero percorso
 Firebase. È separato dalla build completa dell'app, che va verificata anch'essa.
+
+## Login e osservatori: regressioni automatiche
+
+```sh
+python3 Tests/run_lifecycle_tests.py
+```
+
+Compila il codice reale di `LoginSession` (incluso l’adattatore Firebase),
+`SchedaManager` e `SchedaViewModel` sostituendo soltanto il confine SDK con
+`FirebaseDoubles.swift`. Copre login valido/admin, codice inesistente e non
+valido, errori di entrambe le letture e Auth, timeout, nuovo tentativo,
+cancellazione e callback tardive; refresh ripetuti, aggiornamenti realtime,
+cambio utente anche tramite UserDefaults, logout e rilascio degli osservatori.
+Il runner verifica la logica e i percorsi, non il networking del vero SDK iOS.
+Non configura Firebase e non accede al backend.
+
+## Esito del 23 settembre 2026
+
+- Entrambi i runner automatici superati.
+- Build Debug Simulator e Release dispositivo con firma disabilitata verificate.
+- Tre schermate Home controllate visivamente su iPhone 17 Pro / iOS 26.2:
+  giorni residui, scheda scaduta e richiesta inviata.
+- Login Auth/rete con il vero SDK iOS e binari già distribuiti non provati.
+  Nessun dato, regola o configurazione Firebase di produzione modificato.

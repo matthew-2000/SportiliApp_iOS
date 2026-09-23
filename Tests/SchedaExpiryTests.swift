@@ -47,6 +47,24 @@ struct SchedaExpiryTests {
             at: date("2026-09-22T12:00:00+02:00"), calendar: calendar))
     }
 
+    func testRemainingLabels() {
+        let scheda = Scheda(dataInizio: date("2026-09-01T12:00:00+02:00"), durata: 4, giorni: [])
+        for (now, label) in [
+            ("2026-09-22T12:00:00+02:00", "1 settimana rimanente"),
+            ("2026-09-23T12:00:00+02:00", "6 giorni rimanenti"),
+            ("2026-09-28T12:00:00+02:00", "1 giorno rimanente"),
+            ("2026-09-29T11:59:59+02:00", "Meno di un giorno rimanente"),
+            ("2026-09-29T12:00:00+02:00", "Scheda scaduta")
+        ] { precondition(scheda.tempoRimanente(at: date(now), calendar: calendar) == label) }
+        for (start, now) in [
+            ("2026-03-22T12:00:00+01:00", "2026-03-28T12:00:00+01:00"),
+            ("2026-10-18T12:00:00+02:00", "2026-10-24T12:00:00+02:00")
+        ] {
+            let card = Scheda(dataInizio: date(start), durata: 1, giorni: [])
+            precondition(card.tempoRimanente(at: date(now), calendar: calendar) == "1 giorno rimanente")
+        }
+    }
+
     func testCurrentPropertyDoesNotUseRoundedWeeks() {
         let start = Calendar.current.date(byAdding: .day, value: -5, to: Date())!
         let scheda = Scheda(dataInizio: start, durata: 1, giorni: [])
@@ -61,4 +79,5 @@ tests.testExactExpirationBoundary()
 tests.testCalendarWeeksAcrossDaylightSavingChanges()
 tests.testZeroDurationAndPastWorkout()
 tests.testCurrentPropertyDoesNotUseRoundedWeeks()
-print("PASS: 5 expiry regression tests (last week, boundary, DST, past dates, current property)")
+tests.testRemainingLabels()
+print("PASS: 6 expiry regression tests (last week, boundary, DST, past dates, current property)")

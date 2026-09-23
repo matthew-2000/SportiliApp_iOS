@@ -15,6 +15,9 @@ final class SchedaViewModel: ObservableObject {
 
     private let schedaManager: SchedaManager
     private let autoFetchOnInit: Bool
+    private var generation = UUID()
+    private var currentCode: String?
+    private var defaultsObserver: NSObjectProtocol?
 
     init(
         schedaManager: SchedaManager = SchedaManager(),
@@ -29,12 +32,27 @@ final class SchedaViewModel: ObservableObject {
         self.hasLoadedOnce = scheda != nil
 
         if autoFetchOnInit {
+            defaultsObserver = NotificationCenter.default.addObserver(
+                forName: UserDefaults.didChangeNotification, object: nil, queue: .main
+            ) { [weak self] _ in
+                guard let self, self.currentCode != UserDefaults.standard.string(forKey: "code") else { return }
+                self.fetchScheda()
+            }
             fetchScheda()
         }
     }
 
+    deinit {
+        if let defaultsObserver { NotificationCenter.default.removeObserver(defaultsObserver) }
+        schedaManager.stopObserving()
+    }
+
     func fetchScheda() {
-        guard let code = UserDefaults.standard.string(forKey: "code") else {
+        generation = UUID()
+        let token = generation
+        schedaManager.stopObserving()
+        guard let code = UserDefaults.standard.string(forKey: "code"), LoginSession.validUserCode(code) else {
+            currentCode = nil
             isLoading = false
             hasLoadedOnce = true
             scheda = nil
@@ -42,11 +60,15 @@ final class SchedaViewModel: ObservableObject {
             return
         }
 
+        if currentCode != code { scheda = nil; hasLoadedOnce = false }
+        currentCode = code
         isLoading = true
         errorMessage = nil
 
-        schedaManager.getSchedaFromFirebaseResult(code: code) { result in
-            DispatchQueue.main.async {
+        schedaManager.getSchedaFromFirebaseResult(code: code) { [weak self] result in
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.generation == token,
+                      UserDefaults.standard.string(forKey: "code") == code else { return }
                 self.isLoading = false
                 self.hasLoadedOnce = true
 
