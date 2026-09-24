@@ -71,3 +71,18 @@ Non configura Firebase e non accede al backend.
   giorni residui, scheda scaduta e richiesta inviata.
 - Login Auth/rete con il vero SDK iOS e binari già distribuiti non provati.
   Nessun dato, regola o configurazione Firebase di produzione modificato.
+
+## Note per parte: regressioni del 24 settembre 2026
+
+```sh
+python3 Tests/run_note_tests.py
+```
+
+Esegue le azioni note estratte dalla View di produzione insieme al vero
+`ExerciseDetailViewModel`, usando doppi SDK in memoria. Verifica una sola
+scrittura in `exerciseData`, parti indipendenti, errore e retry, rimozione della
+nota senza perdita di storico e conservazione delle copie legacy nella scheda.
+La nota iniziale usa anch’essa `exerciseData`; non viene più sincronizzata una
+seconda copia nella scheda. Nessun percorso o formato Firebase è stato cambiato.
+Questa prova non sostituisce un test iOS del networking reale e non è una verifica
+visiva manuale. Build Debug Simulator e Release dispositivo eseguite senza firma.

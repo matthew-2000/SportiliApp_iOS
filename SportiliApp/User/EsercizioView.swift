@@ -10,7 +10,6 @@ import AVFoundation
 import UIKit
 import SwiftToast
 import Charts
-import FirebaseDatabase
 
 // MARK: - Models (UI)
 
@@ -99,7 +98,7 @@ struct EsercizioView: View {
         let initialKey = ExerciseDetailViewModel.makeExerciseKey(from: initialPartName)
         _dialogExerciseKey = State(initialValue: initialKey)
 
-        let initialNote = esercizio.noteUtente ?? ""
+        let initialNote = resolvedViewModel.data(for: initialKey)?.noteUtente ?? ""
         _noteInput = State(initialValue: initialNote)
         _lastSyncedNote = State(initialValue: initialNote)
         _lastSyncedNoteKey = State(initialValue: initialKey)
@@ -505,96 +504,30 @@ struct EsercizioView: View {
         }
     }
 
-    // MARK: - Notes actions (includes scheda sync)
+    // MARK: - Notes actions (exerciseData is authoritative on both platforms)
 
     private func saveNote(for key: String, completion: @escaping (Bool) -> Void) {
         let trimmed = noteInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty {
-            removeNote(for: key, completion: completion)
-            return
-        }
-
-        viewModel.updateUserNote(for: key, note: trimmed) { result in
-            switch result {
-            case .success:
-                let sanitized = trimmed.isEmpty ? "" : trimmed
-                updateSchedaNote(sanitized) { schedaResult in
-                    switch schedaResult {
-                    case .success:
-                        noteInput = sanitized
-                        lastSyncedNote = sanitized
-                        lastSyncedNoteKey = key
-                        showToast(message: "Nota salvata")
-                        completion(true)
-                    case .failure(let message):
-                        showError(message.errorDescription ?? "Errore sconosciuto")
-                        completion(false)
-                    }
-                }
-            case .failure(let message):
-                showError(message.errorDescription ?? "Errore sconosciuto")
-                completion(false)
-            }
-        }
+        persistNote(trimmed.isEmpty ? nil : trimmed, for: key, completion: completion)
     }
 
     private func removeNote(for key: String, completion: @escaping (Bool) -> Void) {
-        viewModel.updateUserNote(for: key, note: nil) { result in
+        persistNote(nil, for: key, completion: completion)
+    }
+
+    private func persistNote(_ note: String?, for key: String, completion: @escaping (Bool) -> Void) {
+        viewModel.updateUserNote(for: key, note: note) { result in
             switch result {
             case .success:
-                updateSchedaNote(nil) { schedaResult in
-                    switch schedaResult {
-                    case .success:
-                        noteInput = ""
-                        lastSyncedNote = ""
-                        lastSyncedNoteKey = key
-                        showToast(message: "Nota rimossa", color: .orange)
-                        completion(true)
-                    case .failure(let message):
-                        showError(message.errorDescription ?? "Errore sconosciuto")
-                        completion(false)
-                    }
-                }
+                noteInput = note ?? ""
+                lastSyncedNote = note ?? ""
+                lastSyncedNoteKey = key
+                showToast(message: note == nil ? "Nota rimossa" : "Nota salvata",
+                          color: note == nil ? .orange : .green)
+                completion(true)
             case .failure(let message):
                 showError(message.errorDescription ?? "Errore sconosciuto")
                 completion(false)
-            }
-        }
-    }
-
-    private func updateSchedaNote(_ note: String?, completion: @escaping (Result<Void, ExerciseDataError>) -> Void) {
-        guard !viewModel.userCode.isEmpty else {
-            completion(.failure(.message("Codice utente non valido")))
-            return
-        }
-
-        let reference = Database.database().reference()
-            .child("users")
-            .child(viewModel.userCode)
-            .child("scheda")
-            .child("giorni")
-            .child(giornoId)
-            .child("gruppiMuscolari")
-            .child(gruppoId)
-            .child("esercizi")
-            .child(esercizioId)
-            .child("noteUtente")
-
-        if let note, !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            reference.setValue(note) { error, _ in
-                if let error {
-                    completion(.failure(.message(error.localizedDescription)))
-                } else {
-                    completion(.success(()))
-                }
-            }
-        } else {
-            reference.removeValue { error, _ in
-                if let error {
-                    completion(.failure(.message(error.localizedDescription)))
-                } else {
-                    completion(.success(()))
-                }
             }
         }
     }
