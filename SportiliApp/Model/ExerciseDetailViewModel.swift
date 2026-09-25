@@ -57,18 +57,39 @@ final class ExerciseDetailViewModel: ObservableObject {
     }
 
     func exerciseKey(from name: String) -> String {
-        Self.makeExerciseKey(from: name)
+        let canonical = Self.makeExerciseKey(from: name)
+        if exerciseData[canonical] != nil { return canonical }
+        let legacy = Self.makeLegacyExerciseKey(from: name)
+        return exerciseData[legacy] != nil ? legacy : canonical
     }
 
     static func makeExerciseKey(from name: String) -> String {
-        let normalized = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let sanitized = normalized.replacingOccurrences(of: "[^a-z0-9]+", with: "_", options: .regularExpression)
+        let normalized = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased(with: Locale(identifier: "en_US_POSIX"))
+            .precomposedStringWithCanonicalMapping
+        let folded = normalized.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en_US_POSIX"))
+        let sanitized = folded.replacingOccurrences(of: "[^a-z0-9]+", with: "_", options: .regularExpression)
             .trimmingCharacters(in: CharacterSet(charactersIn: "_"))
         if !sanitized.isEmpty {
             return sanitized
         }
-        let fallback = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        return "exercise_\(fallback.hashValue)"
+        return "exercise_u_\(fnv1a64(normalized))"
+    }
+
+    private static func makeLegacyExerciseKey(from name: String) -> String {
+        let normalized = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let sanitized = normalized.replacingOccurrences(of: "[^a-z0-9]+", with: "_", options: .regularExpression)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "_"))
+        if !sanitized.isEmpty { return sanitized }
+        return "exercise_\(name.trimmingCharacters(in: .whitespacesAndNewlines).hashValue)"
+    }
+
+    private static func fnv1a64(_ value: String) -> String {
+        var hash: UInt64 = 0xcbf29ce484222325
+        for byte in value.utf8 {
+            hash = (hash ^ UInt64(byte)) &* 0x100000001b3
+        }
+        return String(format: "%016llx", hash)
     }
 
     func data(for key: String) -> UserExerciseData? {

@@ -46,3 +46,12 @@ drain()
 precondition(result == true && model.data(for: "croci")?.noteUtente == nil)
 precondition(db.writes.allSatisfy { $0.contains("/exerciseData/") && $0.hasSuffix("/noteUtente") })
 print("PASS: authoritative per-part notes, one write, error/retry, deletion, preserved history and legacy data")
+
+precondition(ExerciseDetailViewModel.makeExerciseKey(from: " Panca inclinata ") == "panca_inclinata")
+precondition(ExerciseDetailViewModel.makeExerciseKey(from: "Élite") == "elite")
+precondition(ExerciseDetailViewModel.makeExerciseKey(from: "🏋️") == "exercise_u_0a932e41848fbb46")
+let legacyModel = ExerciseDetailViewModel(userCode: "test", autoObserve: false, initialData: [
+    "lite": UserExerciseData(noteUtente: "storica")
+])
+precondition(legacyModel.exerciseKey(from: "Élite") == "lite")
+print("PASS: stable cross-platform exercise keys and legacy-key reuse")

@@ -95,7 +95,7 @@ struct EsercizioView: View {
         _imageLoader = StateObject(wrappedValue: imageLoader)
 
         let initialPartName = EsercizioView.primaryExerciseName(from: esercizio.name)
-        let initialKey = ExerciseDetailViewModel.makeExerciseKey(from: initialPartName)
+        let initialKey = resolvedViewModel.exerciseKey(from: initialPartName)
         _dialogExerciseKey = State(initialValue: initialKey)
 
         let initialNote = resolvedViewModel.data(for: initialKey)?.noteUtente ?? ""
@@ -141,7 +141,7 @@ struct EsercizioView: View {
         let parts = Self.exerciseParts(from: esercizio.name)
         let currentIndex = min(selectedPartIndex, max(parts.count - 1, 0))
         let currentPartName = Self.partName(at: currentIndex, from: parts, fallback: esercizio.name)
-        let currentKey = ExerciseDetailViewModel.makeExerciseKey(from: currentPartName)
+        let currentKey = viewModel.exerciseKey(from: currentPartName)
 
         let currentData = viewModel.data(for: currentKey)
         let sortedLogs = currentData?.sortedWeightLogs ?? []
@@ -395,7 +395,7 @@ struct EsercizioView: View {
         }
         .onChange(of: selectedPartIndex) { newIndex in
             let newPartName = Self.partName(at: newIndex, from: parts, fallback: esercizio.name)
-            let newKey = ExerciseDetailViewModel.makeExerciseKey(from: newPartName)
+            let newKey = viewModel.exerciseKey(from: newPartName)
 
             dialogExerciseKey = newKey
             syncNote(for: newKey, force: true)

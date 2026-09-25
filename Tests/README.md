@@ -86,3 +86,19 @@ La nota iniziale usa anch’essa `exerciseData`; non viene più sincronizzata un
 seconda copia nella scheda. Nessun percorso o formato Firebase è stato cambiato.
 Questa prova non sostituisce un test iOS del networking reale e non è una verifica
 visiva manuale. Build Debug Simulator e Release dispositivo eseguite senza firma.
+
+## Firebase SDK reale su emulatori locali
+
+Con un iOS Simulator avviato, dalla cartella `firebase-compatibility` della repo
+Android:
+
+```sh
+IOS_SIMULATOR_UDID=UDID npm run test:ios-sdk
+```
+
+Il runner copia temporaneamente il progetto, sostituisce il solo punto di avvio
+con `FirebaseSDKHost.swift` e collega il vero SDK iOS agli emulatori Auth e RTDB
+del progetto `demo-sportili-compat`. Copre login valido, codice inesistente e non
+valido, errore Firebase e retry, refresh ripetuti, cambio utente, realtime e note
+con storico/campi sconosciuti preservati. Non accede al progetto di produzione e
+rimuove l'app temporanea dal simulatore al termine.
