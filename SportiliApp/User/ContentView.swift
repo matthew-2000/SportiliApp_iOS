@@ -15,8 +15,8 @@ struct ContentView: View {
                 HomeView()
             }
                 .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Home")
+                    Image(systemName: "list.clipboard.fill")
+                    Text("Scheda")
                         .montserrat(size: 12)
                 }
 

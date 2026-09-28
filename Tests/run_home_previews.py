@@ -62,7 +62,9 @@ def main():
         app = work / "DerivedData/Build/Products/Debug-iphonesimulator/SportiliApp.app"
         run("xcrun", "simctl", "install", args.simulator, str(app))
         try:
-            for scenario in ("last-week", "expired", "requested"):
+            for scenario in (
+                "active", "expiring", "expired", "requested", "empty", "error", "dark"
+            ):
                 subprocess.run(["xcrun", "simctl", "terminate", args.simulator, bundle_id],
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 run("xcrun", "simctl", "launch", args.simulator, bundle_id, f"--scenario={scenario}")

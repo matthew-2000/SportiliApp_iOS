@@ -31,15 +31,19 @@ l'avvio con `HomePreviewHost.swift`, escluso dal target dell'app reale. Usa la
 `HomeView` e i modelli di produzione con dati in memoria e caricamento remoto
 disabilitato; Firebase non viene configurato. Non modifica il progetto originale.
 Installa un'app distinta (`com.sportili.local-home-preview`) e la disinstalla
-alla fine, lasciando log di build e tre screenshot nella cartella indicata.
+alla fine, lasciando log di build e sette screenshot nella cartella indicata.
 
 Gli screenshot **richiedono controllo visivo**, non sono asserzioni automatiche:
 
 | Scenario | Risultato atteso |
 | --- | --- |
-| `last-week` | Meno di 6 giorni residui (5 giorni interi durante la cattura): nessun banner di scadenza o pulsante di richiesta; conteggio non rosso |
-| `expired` | Banner rosso e pulsante “Richiedi nuova scheda” |
-| `requested` | Banner rosso, “Richiesta inviata” e nessun pulsante per inviarla di nuovo |
+| `active` | Status card “Scheda attiva”, riepilogo e giorno principale |
+| `expiring` | Status card “Scheda in scadenza” con data residua leggibile |
+| `expired` | Unica status card “Scheda terminata” con “Richiedi nuova scheda” |
+| `requested` | Status card “Richiesta inviata” e nessun pulsante duplicato |
+| `empty` | Stato vuoto distinto con spiegazione e “Riprova” |
+| `error` | Errore non tecnico con controllo connessione e “Riprova” |
+| `dark` | Stato attivo con palette scura e contrasto semantico |
 
 La UI mostra i giorni interi di calendario nell’ultima settimana e “Meno di un
 giorno rimanente” sotto un giorno; scadenza e disponibilità della richiesta

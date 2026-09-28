@@ -4,20 +4,29 @@ struct DayRow: View {
     let day: Giorno
 
     var body: some View {
-        HStack {
+        HStack(alignment: .top, spacing: SportiliSpacing.small) {
+            Image(systemName: "figure.strengthtraining.traditional")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(SportiliPalette.primary)
+                .frame(width: 28, height: 28)
+                .accessibilityHidden(true)
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(day.name)
-                    .montserrat(size: 20)
-                    .fontWeight(.semibold)
-                Text(gruppiString)
-                    .montserrat(size: 15)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.gray)
-            }
+                    .font(SportiliTypography.title)
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Spacer()
+                if !gruppiString.isEmpty {
+                    Text(gruppiString)
+                        .font(SportiliTypography.bodySmall)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
         }
-        .padding()
+        .padding(.vertical, SportiliSpacing.compact)
+        .contentShape(Rectangle())
     }
 
     private var gruppiString: String {
@@ -27,7 +36,7 @@ struct DayRow: View {
     }
 }
 
-#Preview("Day Row") {
+#Preview("Giorno") {
     DayRow(day: PreviewData.giorno)
-        .previewLayout(.sizeThatFits)
+        .padding()
 }

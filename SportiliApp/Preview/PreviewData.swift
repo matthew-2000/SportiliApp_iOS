@@ -44,6 +44,34 @@ enum PreviewData {
         cambioRichiesto: false
     )
 
+    static let activeScheda = Scheda(
+        dataInizio: Calendar.current.date(byAdding: .day, value: -7, to: Date())!,
+        durata: 6,
+        giorni: [giorno],
+        cambioRichiesto: false
+    )
+
+    static let expiringScheda = Scheda(
+        dataInizio: Calendar.current.date(byAdding: .day, value: -23, to: Date())!,
+        durata: 4,
+        giorni: [giorno],
+        cambioRichiesto: false
+    )
+
+    static let expiredScheda = Scheda(
+        dataInizio: Calendar.current.date(byAdding: .day, value: -29, to: Date())!,
+        durata: 4,
+        giorni: [giorno],
+        cambioRichiesto: false
+    )
+
+    static let requestedScheda = Scheda(
+        dataInizio: Calendar.current.date(byAdding: .day, value: -29, to: Date())!,
+        durata: 4,
+        giorni: [giorno],
+        cambioRichiesto: true
+    )
+
     static let alerts: [UserAlert] = [
         makeAlert(
             id: "alert1",

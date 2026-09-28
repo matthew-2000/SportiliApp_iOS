@@ -8,18 +8,30 @@ struct HomePreviewHost: App {
 
     init() {
         let scenario = ProcessInfo.processInfo.arguments.first { $0.hasPrefix("--scenario=") }
-            .map { String($0.dropFirst("--scenario=".count)) } ?? "last-week"
-        precondition(["last-week", "expired", "requested"].contains(scenario))
-        let calendar = Calendar.current
-        let daysAgo = scenario == "last-week" ? 22 : 29
-        let start = calendar.date(byAdding: .day, value: -daysAgo, to: Date())!
-        let card = Scheda(
-            dataInizio: start,
-            durata: 4,
-            giorni: PreviewData.scheda.giorni,
-            cambioRichiesto: scenario == "requested"
-        )
-        viewModel = SchedaViewModel(autoFetchOnInit: false, scheda: card)
+            .map { String($0.dropFirst("--scenario=".count)) } ?? "active"
+        precondition([
+            "active", "expiring", "expired", "requested", "empty", "error", "dark"
+        ].contains(scenario))
+
+        let model: SchedaViewModel
+        switch scenario {
+        case "empty":
+            model = SchedaViewModel(autoFetchOnInit: false)
+            model.hasLoadedOnce = true
+        case "error":
+            model = SchedaViewModel(autoFetchOnInit: false)
+            model.hasLoadedOnce = true
+            model.errorMessage = "Errore di rete simulato"
+        case "expiring":
+            model = SchedaViewModel(autoFetchOnInit: false, scheda: PreviewData.expiringScheda)
+        case "expired":
+            model = SchedaViewModel(autoFetchOnInit: false, scheda: PreviewData.expiredScheda)
+        case "requested":
+            model = SchedaViewModel(autoFetchOnInit: false, scheda: PreviewData.requestedScheda)
+        default:
+            model = SchedaViewModel(autoFetchOnInit: false, scheda: PreviewData.activeScheda)
+        }
+        viewModel = model
     }
 
     var body: some Scene {
@@ -28,6 +40,9 @@ struct HomePreviewHost: App {
                 HomeView(schedaViewModel: viewModel, previewUserName: "Test locale")
             }
             .montserrat(size: 17)
+            .preferredColorScheme(
+                ProcessInfo.processInfo.arguments.contains("--scenario=dark") ? .dark : .light
+            )
         }
     }
 }
