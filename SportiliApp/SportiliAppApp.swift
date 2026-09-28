@@ -14,31 +14,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
-    if let montserratFont = UIFont(name: "Montserrat-Regular", size: 17) {
-        UILabel.appearance().font = montserratFont
-        UITextField.appearance().font = montserratFont
-        UITextView.appearance().font = montserratFont
-        UIButton.appearance().titleLabel?.font = montserratFont
-    }
-
-    let navigationAppearance = UINavigationBarAppearance()
-    navigationAppearance.titleTextAttributes = [.font: navigationTitleFont]
-    navigationAppearance.largeTitleTextAttributes = [.font: navigationLargeTitleFont]
-
-    let navigationBar = UINavigationBar.appearance()
-    navigationBar.prefersLargeTitles = true
-    navigationBar.standardAppearance = navigationAppearance
-    navigationBar.scrollEdgeAppearance = navigationAppearance
-    navigationBar.compactAppearance = navigationAppearance
     return true
-  }
-
-  private var navigationTitleFont: UIFont {
-      UIFont(name: "Montserrat-SemiBold", size: 18) ?? .systemFont(ofSize: 18, weight: .semibold)
-  }
-
-  private var navigationLargeTitleFont: UIFont {
-      UIFont(name: "Montserrat-Bold", size: 35) ?? .systemFont(ofSize: 35, weight: .bold)
   }
 }
 
@@ -72,5 +48,73 @@ struct MontserratFontModifier: ViewModifier {
 extension View {
     func montserrat(size: CGFloat, relativeTo: Font.TextStyle = .body) -> some View {
         self.modifier(MontserratFontModifier(size: size, relativeTo: relativeTo))
+    }
+}
+
+enum SportiliPalette {
+    static let brandAccent = Color(red: 1, green: 138 / 255, blue: 0)
+    static let primary = adaptive(light: 0x9B4A00, dark: 0xFFB870)
+    static let onPrimary = adaptive(light: 0xFFFFFF, dark: 0x351F08)
+    static let background = adaptive(light: 0xFFFBF7, dark: 0x18120D)
+    static let surface = adaptive(light: 0xFFFFFF, dark: 0x211A15)
+    static let surfaceMuted = adaptive(light: 0xF2E5DA, dark: 0x3C3027)
+    static let outline = adaptive(light: 0x806F62, dark: 0xA99484)
+    static let onSurfaceMuted = adaptive(light: 0x51443A, dark: 0xD8C3B3)
+    static let successContainer = adaptive(light: 0xD7F7DF, dark: 0x154B2A)
+    static let onSuccessContainer = adaptive(light: 0x0A5425, dark: 0xB8F1C9)
+    static let warningContainer = adaptive(light: 0xFFE2B8, dark: 0x593A00)
+    static let onWarningContainer = adaptive(light: 0x633B00, dark: 0xFFDEA5)
+    static let criticalContainer = adaptive(light: 0xFFDAD6, dark: 0x6F2A27)
+    static let onCriticalContainer = adaptive(light: 0x8C1D18, dark: 0xFFDAD6)
+    static let infoContainer = adaptive(light: 0xDCE7FF, dark: 0x173F70)
+    static let onInfoContainer = adaptive(light: 0x174A84, dark: 0xD5E3FF)
+
+    private static func adaptive(light: UInt32, dark: UInt32) -> Color {
+        Color(uiColor: UIColor { traits in
+            UIColor(rgb: traits.userInterfaceStyle == .dark ? dark : light)
+        })
+    }
+}
+
+enum SportiliSpacing {
+    static let compact: CGFloat = 8
+    static let small: CGFloat = 12
+    static let standard: CGFloat = 16
+    static let section: CGFloat = 24
+    static let large: CGFloat = 32
+    static let extraLarge: CGFloat = 48
+}
+
+enum SportiliTypography {
+    static let headline = Font.custom("Montserrat-Bold", size: 26, relativeTo: .title)
+    static let title = Font.custom("Montserrat-SemiBold", size: 18, relativeTo: .title3)
+    static let body = Font.custom("Montserrat-Regular", size: 16, relativeTo: .body)
+    static let bodySmall = Font.custom("Montserrat-Regular", size: 14, relativeTo: .subheadline)
+    static let label = Font.custom("Montserrat-SemiBold", size: 14, relativeTo: .body)
+}
+
+private extension UIColor {
+    convenience init(rgb: UInt32) {
+        self.init(
+            red: CGFloat((rgb >> 16) & 0xFF) / 255,
+            green: CGFloat((rgb >> 8) & 0xFF) / 255,
+            blue: CGFloat(rgb & 0xFF) / 255,
+            alpha: 1
+        )
+    }
+}
+
+struct SportiliPrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(SportiliTypography.title)
+            .foregroundStyle(SportiliPalette.onPrimary)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .padding(.horizontal, SportiliSpacing.standard)
+            .background(SportiliPalette.primary.opacity(isEnabled ? 1 : 0.45))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .opacity(configuration.isPressed ? 0.82 : 1)
     }
 }

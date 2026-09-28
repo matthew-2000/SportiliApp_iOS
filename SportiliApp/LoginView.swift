@@ -10,96 +10,148 @@ import FirebaseAuth
 import FirebaseDatabase
 
 struct LoginView: View {
-    
     @State private var code: String = ""
-    @StateObject private var login = LoginSession.firebase()
-    @State private var showAlert = false
-    @State private var alertMessage = ""
+    @StateObject private var login: LoginSession
+    @State private var showCodeHelp = false
     @State private var inlineError: String?
+    @FocusState private var isCodeFocused: Bool
+    private let initiallyFocused: Bool
+
+    init(login: LoginSession = .firebase(), initiallyFocused: Bool = false) {
+        _login = StateObject(wrappedValue: login)
+        self.initiallyFocused = initiallyFocused
+    }
     
     var body: some View {
-        VStack {
-            Spacer()
-            VStack {
-                Image("icon")
-                    .resizable()
-                    .frame(width: 200, height: 200)
-                Text("SportiliApp")
-                    .montserrat(size: 30)
-                    .bold()
-            }
-            Spacer()
-            
-            VStack {
-                TextField("Codice", text: $code)
-                    .textFieldStyle(.roundedBorder)
-                    .montserrat(size: 20)
-                    .fontWeight(.semibold)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .submitLabel(.go)
-                    .onSubmit {
-                        attemptLogin()
-                    }
-                    .onChange(of: code) { _ in
-                        inlineError = nil
-                    }
+        ZStack {
+            SportiliPalette.background
+                .ignoresSafeArea()
 
-                if let inlineError = inlineError ?? login.errorMessage {
-                    Text(inlineError)
-                        .montserrat(size: 14)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            ScrollView {
+                VStack(spacing: SportiliSpacing.large) {
+                    brand
+                    loginForm
                 }
-                
-                Text("Inserisci il codice fornito dal tuo personal trainer.")
-                    .montserrat(size: 13)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.bottom, 24)
-                
-                if login.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .accent))
-                        .padding()
-                } else {
-                    Button(action: attemptLogin, label: {
-                        Text("Entra")
-                            .frame(maxWidth: .infinity)
-                    })
-                    .alert(isPresented: $showAlert) {
-                        Alert(title: Text("Attenzione"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-                    }
-                    .montserrat(size: 20)
-                    .bold()
-                    .buttonStyle(BorderedProminentButtonStyle())
-                    .controlSize(.large)
-                }
-                
-                Button("Non hai il codice?", action: {
-                    self.alertMessage = "Per accedere è necessario avere un codice fornito dal personal trainer. Ti preghiamo di contattarlo per assistenza."
-                    self.showAlert.toggle()
-                })
-                .alert(isPresented: $showAlert) {
-                    Alert(title: Text("Attenzione!"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-                }
-                .montserrat(size: 15)
-                
+                .frame(maxWidth: 480)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, SportiliSpacing.section)
+                .padding(.vertical, SportiliSpacing.extraLarge)
             }
-            .padding()
-            
-            Spacer()
+            .scrollDismissesKeyboard(.interactively)
         }
-        .padding()
+        .alert("Come ottenere il codice", isPresented: $showCodeHelp) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Per accedere serve il codice fornito dal trainer. Contattalo se non lo hai o non funziona.")
+        }
+        .onAppear {
+            guard initiallyFocused else { return }
+            DispatchQueue.main.async { isCodeFocused = true }
+        }
         .onDisappear { login.cancel() }
         .fullScreenCover(isPresented: $login.isLoggedIn) {
             ContentView()
         }
     }
+
+    private var brand: some View {
+        VStack(spacing: SportiliSpacing.small) {
+            Image("icon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 112, height: 112)
+                .accessibilityHidden(true)
+
+            Text("SportiliApp")
+                .font(SportiliTypography.headline)
+                .multilineTextAlignment(.center)
+
+            Text("Il tuo allenamento, sempre con te.")
+                .font(SportiliTypography.bodySmall)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    private var loginForm: some View {
+        VStack(spacing: SportiliSpacing.section) {
+            VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+                Text("Codice di accesso")
+                    .font(SportiliTypography.label)
+
+                TextField("Inserisci il codice", text: $code)
+                    .font(SportiliTypography.body)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.go)
+                    .focused($isCodeFocused)
+                    .padding(.horizontal, SportiliSpacing.standard)
+                    .padding(.vertical, 14)
+                    .background(SportiliPalette.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(
+                                currentError == nil ? SportiliPalette.outline : SportiliPalette.onCriticalContainer,
+                                lineWidth: currentError == nil ? 1 : 2
+                            )
+                    }
+                    .accessibilityLabel("Codice di accesso")
+                    .accessibilityHint("Inserisci il codice fornito dal trainer")
+                    .onSubmit(attemptLogin)
+                    .onChange(of: code) { _ in inlineError = nil }
+
+                if let currentError {
+                    Label(currentError, systemImage: "exclamationmark.circle.fill")
+                        .font(SportiliTypography.bodySmall)
+                        .foregroundStyle(SportiliPalette.onCriticalContainer)
+                        .accessibilityLabel("Errore: \(currentError)")
+                }
+
+                Text("Inserisci il codice fornito dal trainer.")
+                    .font(SportiliTypography.bodySmall)
+                    .foregroundStyle(.secondary)
+            }
+
+            VStack(spacing: SportiliSpacing.small) {
+                Button(action: attemptLogin) {
+                    ZStack {
+                        Text("Accedi")
+                            .opacity(login.isLoading ? 0 : 1)
+
+                        if login.isLoading {
+                            ProgressView()
+                                .tint(SportiliPalette.onPrimary)
+                        }
+                    }
+                }
+                .buttonStyle(SportiliPrimaryButtonStyle())
+                .disabled(login.isLoading)
+                .accessibilityLabel(login.isLoading ? "Accesso in corso" : "Accedi")
+
+                Button("Non hai il codice?") {
+                    showCodeHelp = true
+                }
+                .font(SportiliTypography.label)
+                .foregroundStyle(SportiliPalette.primary)
+                .frame(minHeight: 44)
+            }
+        }
+    }
+
+    private var currentError: String? {
+        inlineError ?? login.errorMessage
+    }
     
     private func attemptLogin() {
-        inlineError = nil
         code = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !code.isEmpty else {
+            inlineError = "Inserisci il codice."
+            isCodeFocused = true
+            return
+        }
+        inlineError = nil
+        isCodeFocused = false
         login.start(code: code)
     }
 }
@@ -226,4 +278,33 @@ extension LoginSession {
     }
 }
 
-#Preview { LoginView() }
+private extension LoginSession {
+    static func preview(errorMessage: String? = nil) -> LoginSession {
+        let session = LoginSession(
+            read: { _, _ in { } },
+            signIn: { _, completion in completion(nil) },
+            save: { _, _ in }
+        )
+        session.errorMessage = errorMessage
+        return session
+    }
+}
+
+#Preview("Light") {
+    LoginView(login: .preview())
+        .preferredColorScheme(.light)
+}
+
+#Preview("Dark") {
+    LoginView(login: .preview())
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Dynamic Type") {
+    LoginView(login: .preview(errorMessage: "Codice non autorizzato."))
+        .environment(\.dynamicTypeSize, .accessibility3)
+}
+
+#Preview("Keyboard") {
+    LoginView(login: .preview(), initiallyFocused: true)
+}

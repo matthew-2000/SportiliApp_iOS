@@ -63,6 +63,24 @@ cambio utente anche tramite UserDefaults, logout e rilascio degli osservatori.
 Il runner verifica la logica e i percorsi, non il networking del vero SDK iOS.
 Non configura Firebase e non accede al backend.
 
+## Controllo visivo del login
+
+Con un iOS Simulator già avviato:
+
+```sh
+python3 Tests/run_login_previews.py \
+  --simulator UDID_DEL_SIMULATORE \
+  --output /tmp/sportili-login-previews
+```
+
+Come il controllo della Home, il runner usa una copia temporanea e un bundle
+separato, senza configurare Firebase. Produce screenshot light, dark, Dynamic
+Type accessibilità e campo focalizzato per la verifica con tastiera; rimuove
+l'app temporanea al termine. Se il Simulator usa una tastiera hardware, lo
+screenshot `keyboard.png` conferma focus e layout adattato ma la tastiera
+software deve essere verificata interattivamente disattivando “Connect Hardware
+Keyboard”.
+
 ## Esito del 23 settembre 2026
 
 - Entrambi i runner automatici superati.
