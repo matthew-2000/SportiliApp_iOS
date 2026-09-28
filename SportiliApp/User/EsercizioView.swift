@@ -20,7 +20,7 @@ struct UniformLog: Identifiable {
     let weight: Double
 }
 
-private enum WeightDialogMode: Equatable {
+enum WeightDialogMode: Equatable {
     case hidden
     case create
     case edit(WeightLog)
@@ -52,6 +52,7 @@ struct EsercizioView: View {
     @State private var weightDialogMode: WeightDialogMode = .hidden
     @State private var weightInput: String = ""
     @State private var dialogExerciseKey: String
+    @State private var isWeightSaving = false
 
     // Note
     @State private var noteInput: String
@@ -148,8 +149,6 @@ struct EsercizioView: View {
         let recentLogs = Array(sortedLogs.suffix(10))
         let savedNote = currentData?.noteUtente ?? ""
         let isNoteDirty = noteInput != savedNote
-        let latestRecord = sortedLogs.last
-
         let canManageData = !viewModel.userCode.isEmpty
         let heroSubtitle = parts.count > 1 ? currentPartName : nil
 
@@ -164,55 +163,37 @@ struct EsercizioView: View {
 
         return List {
             Section {
-                ExerciseTitleBlock(
-                    title: esercizio.name,
-                    subtitle: heroSubtitle   // oppure nil se non la vuoi
-                )
-                ExerciseHeroHeader(
-                    state: heroState,
+                ExerciseHeader(
                     title: esercizio.name,
                     subtitle: heroSubtitle,
+                    state: heroState,
                     onTap: { showFullScreenImage = true }
                 )
             }
 
             if parts.count > 1 {
-                Section(header: Text("Variazioni").montserrat(size: 17)) {
+                Section(header: Text("Esercizio del superset").font(SportiliTypography.label)) {
                     ExerciseVariationPicker(parts: parts, selectedIndex: $selectedPartIndex)
                 }
             }
 
-            Section(header: Text("Programma").montserrat(size: 17)) {
-                ExerciseSerieRow(serie: esercizio.serie)
+            Section(header: Text("Programma").font(SportiliTypography.label)) {
+                PrescriptionCard(
+                    serie: esercizio.serie,
+                    riposo: esercizio.riposo,
+                    onStartTimer: { showTimerSheet = true }
+                )
+            }
 
-                if let riposo = esercizio.riposo, !riposo.isEmpty {
-                    LabeledContent {
-                        Text(riposo)
-                            .montserrat(size: 17)
-                            .fontWeight(.bold)
-                    } label: {
-                        Label("Recupero", systemImage: "timer")
-                            .montserrat(size: 15)
-                            .fontWeight(.semibold)
-                    }
-                }
-
-                if let notePT = esercizio.notePT, !notePT.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    CoachNotesRow(text: notePT)
+            if let notePT = esercizio.notePT,
+               !notePT.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Section(header: Text("Indicazioni").font(SportiliTypography.label)) {
+                    CoachNotesCard(text: notePT)
                 }
             }
-            
-            Section(header: Text("Note personali").montserrat(size: 17)) {
-                if savedNote.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Text("Nessuna nota salvata.")
-                        .montserrat(size: 15)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text(savedNote)
-                        .lineLimit(10)
-                        .montserrat(size: 17)
-                }
-                NotesPreviewRow(
+
+            Section(header: Text("Note personali").font(SportiliTypography.label)) {
+                PersonalNotesCard(
                     text: savedNote,
                     isDirty: isNoteDirty,
                     onTap: {
@@ -222,11 +203,11 @@ struct EsercizioView: View {
                 )
             }
 
-            Section(header: Text("Progressi").montserrat(size: 17)) {
+            Section(header: Text("Progressi").font(SportiliTypography.label)) {
                 if recentLogs.isEmpty {
                     EmptyStateRow(
                         title: "Nessun peso registrato",
-                        message: "Registra il tuo primo peso cliccando sul + in alto per visualizzare i progressi.",
+                        message: "Registra il primo peso per iniziare a vedere i progressi.",
                         systemImage: "scalemass"
                     )
                     .padding(.vertical, 6)
@@ -234,7 +215,7 @@ struct EsercizioView: View {
                     let chartData = recentLogs.enumerated().map { idx, log in
                         UniformLog(id: idx, index: idx, date: log.date, weight: log.weight)
                     }
-                    WeightChartCard(data: chartData, dateFormatter: Self.logDateFormatter)
+                    WeightProgressCard(data: chartData, dateFormatter: Self.logDateFormatter)
                 }
 
                 if !sortedLogs.isEmpty {
@@ -272,18 +253,7 @@ struct EsercizioView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                // Timer
-                if let riposo = esercizio.riposo, !riposo.isEmpty {
-                    Button {
-                        showTimerSheet = true
-                    } label: {
-                        Image(systemName: "timer")
-                    }
-                    .accessibilityLabel("Avvia timer recupero")
-                }
-
-                // Add weight
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     dialogExerciseKey = currentKey
                     weightDialogMode = .create
@@ -306,6 +276,7 @@ struct EsercizioView: View {
             WeightEntrySheet(
                 mode: weightDialogMode,
                 weightInput: $weightInput,
+                isSaving: isWeightSaving,
                 onConfirm: handleWeightConfirm,
                 onCancel: dismissWeightSheet
             )
@@ -403,6 +374,7 @@ struct EsercizioView: View {
             // reset transiente
             weightDialogMode = .hidden
             weightInput = ""
+            isWeightSaving = false
             deletionContext = nil
 
             loadExerciseImage(for: newPartName)
@@ -448,6 +420,7 @@ struct EsercizioView: View {
     }
 
     private func dismissWeightSheet() {
+        guard !isWeightSaving else { return }
         weightDialogMode = .hidden
         weightInput = ""
     }
@@ -460,12 +433,15 @@ struct EsercizioView: View {
             showError("Inserisci un peso valido")
             return
         }
+        guard !isWeightSaving else { return }
 
         let key = dialogExerciseKey
+        isWeightSaving = true
 
         switch weightDialogMode {
         case .create:
             viewModel.addWeightEntry(for: key, weight: weightValue) { result in
+                isWeightSaving = false
                 switch result {
                 case .success:
                     showToast(message: "Peso salvato")
@@ -477,6 +453,7 @@ struct EsercizioView: View {
 
         case .edit(let record):
             viewModel.updateWeightEntry(for: key, entryId: record.id, weight: weightValue) { result in
+                isWeightSaving = false
                 switch result {
                 case .success:
                     showToast(message: "Peso aggiornato")
@@ -487,6 +464,7 @@ struct EsercizioView: View {
             }
 
         case .hidden:
+            isWeightSaving = false
             break
         }
     }
@@ -571,28 +549,34 @@ struct EsercizioView: View {
     }
 }
 
-private struct ExerciseTitleBlock: View {
+private struct ExerciseHeader: View {
     let title: String
     let subtitle: String?
+    let state: ExerciseHeroState
+    let onTap: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: SportiliSpacing.small) {
             Text(title)
-                .montserrat(size: 28)
-                .fontWeight(.bold)
+                .font(SportiliTypography.headline)
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
-                .lineLimit(nil)
                 .fixedSize(horizontal: false, vertical: true)
 
             if let subtitle, !subtitle.isEmpty {
-                Text(subtitle)
-                    .montserrat(size: 15)
+                Label(subtitle, systemImage: "link")
+                    .font(SportiliTypography.bodySmall)
                     .foregroundStyle(.secondary)
-                    .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            ExerciseHeroHeader(
+                state: state,
+                exerciseName: subtitle ?? title,
+                onTap: onTap
+            )
         }
+        .padding(.vertical, SportiliSpacing.compact)
     }
 }
 
@@ -606,74 +590,46 @@ private enum ExerciseHeroState {
 
 private struct ExerciseHeroHeader: View {
     let state: ExerciseHeroState
-    let title: String
-    let subtitle: String?
+    let exerciseName: String
     let onTap: () -> Void
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            background
-            overlay
-        }
-        .frame(height: 210)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .onTapGesture {
-            if case .loaded = state { onTap() }
-        }
-        .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 8)
-    }
-
-    @ViewBuilder
-    private var background: some View {
-        switch state {
-        case .loaded(let image):
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFill()
-                .overlay(
-                    LinearGradient(
-                        colors: [Color.black.opacity(0.05), Color.black.opacity(0.6)],
-                        startPoint: .top,
-                        endPoint: .bottom
+        Group {
+            switch state {
+            case .loaded(let image):
+                Button(action: onTap) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 210)
+                        .clipped()
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Apri immagine di \(exerciseName) a schermo intero")
+            case .loading:
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(SportiliPalette.surfaceMuted)
+                    .overlay(ProgressView().accessibilityLabel("Caricamento immagine"))
+                    .frame(height: 210)
+            case .failed:
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(SportiliPalette.surfaceMuted)
+                    .overlay(
+                        VStack(spacing: SportiliSpacing.compact) {
+                            Image(systemName: "photo")
+                                .font(.title2)
+                            Text("Immagine non disponibile")
+                                .font(SportiliTypography.bodySmall)
+                        }
+                        .foregroundStyle(SportiliPalette.onSurfaceMuted)
                     )
-                )
-        case .loading:
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.accentColor.opacity(0.12))
-                .overlay(ProgressView())
-        case .failed:
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
-                .overlay(
-                    VStack(spacing: 8) {
-                        Image(systemName: "photo")
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
-                        Text("Immagine non disponibile")
-                            .montserrat(size: 13)
-                            .foregroundStyle(.secondary)
-                    }
-                )
-        }
-    }
-
-    private var overlay: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .montserrat(size: 20)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
-
-            if let subtitle, !subtitle.isEmpty {
-                Text(subtitle)
-                    .montserrat(size: 15)
-                    .foregroundStyle(.white.opacity(0.85))
+                    .frame(height: 160)
+                    .accessibilityElement(children: .combine)
             }
         }
-        .padding(16)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 8)
     }
 }
 
@@ -687,48 +643,74 @@ private struct ExerciseVariationPicker: View {
         Picker("Esercizio", selection: $selectedIndex) {
             ForEach(parts.indices, id: \.self) { idx in
                 Text(parts[idx])
-                    .montserrat(size: 17)
                     .tag(idx)
             }
         }
-        .montserrat(size: 17)
-        .pickerStyle(.segmented)
+        .font(SportiliTypography.body)
+        .pickerStyle(.menu)
+        .accessibilityValue(parts.indices.contains(selectedIndex) ? parts[selectedIndex] : "")
     }
 }
 
-private struct ExerciseSerieRow: View {
+private struct PrescriptionCard: View {
     let serie: String
+    let riposo: String?
+    let onStartTimer: () -> Void
+
+    private var hasRest: Bool {
+        !(riposo?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+    }
 
     var body: some View {
-        HStack(alignment: .center) {
-            Label("Serie", systemImage: "figure.strengthtraining.functional")
-                .montserrat(size: 15)
-                .fontWeight(.semibold)
-            Spacer()
-            Text(serie)
-                .montserrat(size: 20)
-                .bold()
+        VStack(alignment: .leading, spacing: SportiliSpacing.standard) {
+            LabeledContent {
+                Text(serie)
+                    .font(SportiliTypography.title)
+                    .multilineTextAlignment(.trailing)
+            } label: {
+                Label("Serie", systemImage: "figure.strengthtraining.functional")
+                    .font(SportiliTypography.label)
+            }
+
+            if hasRest, let riposo {
+                Divider()
+                LabeledContent {
+                    Text(riposo)
+                        .font(SportiliTypography.title)
+                } label: {
+                    Label("Recupero", systemImage: "timer")
+                        .font(SportiliTypography.label)
+                }
+
+                Button(action: onStartTimer) {
+                    Label("Avvia timer di recupero", systemImage: "play.circle.fill")
+                        .font(SportiliTypography.label)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .tint(SportiliPalette.primary)
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, SportiliSpacing.compact)
     }
 }
 
-private struct CoachNotesRow: View {
+private struct CoachNotesCard: View {
     let text: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label("Note del coach", systemImage: "person.text.rectangle")
-                .montserrat(size: 15)
-                .fontWeight(.semibold)
+            Label("Note del trainer", systemImage: "person.text.rectangle")
+                .font(SportiliTypography.label)
             Text(text)
-                .montserrat(size: 15)
+                .font(SportiliTypography.body)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, SportiliSpacing.compact)
     }
 }
 
-private struct EmptyStateRow: View {
+struct EmptyStateRow: View {
     let title: String
     let message: String
     let systemImage: String
@@ -751,21 +733,68 @@ private struct EmptyStateRow: View {
     }
 }
 
-private struct WeightChartCard: View {
+struct WeightProgressCard: View {
     let data: [UniformLog]
     let dateFormatter: DateFormatter
 
+    private static let valueFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
+        return formatter
+    }()
+
+    private var summary: WeightProgressSummary? {
+        guard let first = data.first, let last = data.last else { return nil }
+        return WeightProgressSummary(
+            latest: last.weight,
+            delta: last.weight - first.weight,
+            minimum: data.map(\.weight).min() ?? last.weight,
+            maximum: data.map(\.weight).max() ?? last.weight
+        )
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: SportiliSpacing.small) {
             Label("Andamento (ultimi 10)", systemImage: "chart.line.uptrend.xyaxis")
-                .montserrat(size: 15)
-                .fontWeight(.semibold)
+                .font(SportiliTypography.label)
+
+            if let summary {
+                VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+                    Text("Ultimo peso: \(format(summary.latest)) kg")
+                        .font(SportiliTypography.title)
+                    Text("Variazione: \(signed(summary.delta)) kg · Minimo \(format(summary.minimum)) kg · Massimo \(format(summary.maximum)) kg")
+                        .font(SportiliTypography.bodySmall)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .accessibilityElement(children: .combine)
+            }
 
             WeightChartView(data: data, dateFormatter: dateFormatter)
                 .frame(height: 220)
+                .accessibilityHidden(true)
         }
         .padding(.vertical, 6)
     }
+
+    private func format(_ value: Double) -> String {
+        Self.valueFormatter.string(from: NSNumber(value: value)) ?? String(format: "%.2f", value)
+    }
+
+    private func signed(_ value: Double) -> String {
+        let formatted = format(abs(value))
+        if value > 0 { return "+\(formatted)" }
+        if value < 0 { return "−\(formatted)" }
+        return formatted
+    }
+}
+
+private struct WeightProgressSummary {
+    let latest: Double
+    let delta: Double
+    let minimum: Double
+    let maximum: Double
 }
 
 private struct WeightLogRow: View {
@@ -776,23 +805,19 @@ private struct WeightLogRow: View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(weight)
-                    .montserrat(size: 17)
-                    .fontWeight(.semibold)
+                    .font(SportiliTypography.title)
                 Text(date)
-                    .montserrat(size: 12)
+                    .font(SportiliTypography.bodySmall)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Image(systemName: "chevron.left.slash.chevron.right") // micro “tech” touch
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
-                .opacity(0.0) // lascia spazio senza rumore visivo
         }
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 }
 
-private struct NotesPreviewRow: View {
+private struct PersonalNotesCard: View {
     let text: String
     let isDirty: Bool
     let onTap: () -> Void
@@ -804,17 +829,16 @@ private struct NotesPreviewRow: View {
                     .foregroundStyle(.tint)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text("Apri editor note")
-                            .montserrat(size: 17)
-                            .fontWeight(.semibold)
-                        if isDirty {
-                            Text("• modifiche")
-                                .montserrat(size: 12)
-                                .foregroundStyle(.orange)
-                        }
+                    Text(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Nessuna nota salvata" : text)
+                        .font(SportiliTypography.body)
+                        .foregroundStyle(text.isEmpty ? .secondary : .primary)
+                        .lineLimit(5)
+                        .multilineTextAlignment(.leading)
+
+                    Text(isDirty ? "Modifiche non salvate" : "Tocca per modificare")
+                        .font(SportiliTypography.bodySmall)
+                        .foregroundStyle(isDirty ? SportiliPalette.onWarningContainer : .secondary)
                     }
-                }
 
                 Spacer()
                 Image(systemName: "chevron.right")
@@ -822,6 +846,7 @@ private struct NotesPreviewRow: View {
                     .foregroundStyle(.tertiary)
             }
         }
+        .accessibilityHint("Apre l’editor delle note personali")
     }
 }
 
@@ -901,11 +926,14 @@ private struct NotesEditorSheet: View {
 
 // MARK: - Weight Entry Sheet
 
-private struct WeightEntrySheet: View {
+struct WeightEntrySheet: View {
     let mode: WeightDialogMode
     @Binding var weightInput: String
+    let isSaving: Bool
     let onConfirm: () -> Void
     let onCancel: () -> Void
+
+    @FocusState private var isWeightFieldFocused: Bool
 
     private var record: WeightLog? {
         if case let .edit(log) = mode { return log }
@@ -920,13 +948,22 @@ private struct WeightEntrySheet: View {
         }
     }
 
+    private var hasValidWeight: Bool {
+        let normalized = weightInput.replacingOccurrences(of: ",", with: ".")
+        return (Double(normalized) ?? 0) > 0
+    }
+
     var body: some View {
         NavigationStack {
             Form {
                 Section(header: Text("Peso").montserrat(size: 17)) {
                     TextField("Peso (kg)", text: $weightInput)
                         .keyboardType(.decimalPad)
-                        .montserrat(size: 17)
+                        .font(SportiliTypography.body)
+                        .focused($isWeightFieldFocused)
+                        .submitLabel(.done)
+                        .onSubmit(onConfirm)
+                        .accessibilityHint("Inserisci il peso in chilogrammi")
                 }
 
                 Section(header: Text("Dettagli").montserrat(size: 17)) {
@@ -957,12 +994,29 @@ private struct WeightEntrySheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Annulla", action: onCancel)
                         .montserrat(size: 17)
+                        .disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Salva", action: onConfirm)
-                        .montserrat(size: 17)
+                    if isSaving {
+                        ProgressView()
+                            .accessibilityLabel("Salvataggio peso")
+                    } else {
+                        Button("Salva", action: onConfirm)
+                            .montserrat(size: 17)
+                            .disabled(!hasValidWeight)
+                    }
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Fine") {
+                        isWeightFieldFocused = false
+                    }
                 }
             }
+        }
+        .interactiveDismissDisabled(isSaving)
+        .onAppear {
+            isWeightFieldFocused = true
         }
     }
 }
@@ -1051,7 +1105,7 @@ struct WeightChartView: View {
 
 struct FullScreenImageView: View {
     var image: UIImage
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ZStack(alignment: .center) {
@@ -1059,17 +1113,19 @@ struct FullScreenImageView: View {
             VStack(spacing: 0) {
                 HStack {
                     Spacer()
-                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                    Button(action: dismiss.callAsFunction) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 30))
                             .foregroundColor(.white)
                             .padding()
                     }
+                    .accessibilityLabel("Chiudi immagine")
                 }
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
                     .padding(.bottom, 24)
+                    .accessibilityLabel("Immagine dell’esercizio")
             }
         }
     }
@@ -1087,7 +1143,8 @@ struct TimerSheet: View {
         let usedFallback: Bool
     }
 
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
+    @ScaledMetric(relativeTo: .largeTitle) private var preferredGaugeSize: CGFloat = 220
     @State private var timeRemaining: Int
     @State private var totalTime: Int
     @State private var showsFallbackWarning: Bool
@@ -1106,78 +1163,117 @@ struct TimerSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                Spacer()
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: SportiliSpacing.section) {
+                        Text("Tempo di recupero")
+                            .font(SportiliTypography.headline)
+                            .multilineTextAlignment(.center)
 
-                Text("Tempo di recupero")
-                    .montserrat(size: 30)
-                    .bold()
-                    .padding(.bottom, 40)
-
-                if showsFallbackWarning {
-                    Text("Formato recupero non riconosciuto, usato 01:00.")
-                        .montserrat(size: 13)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.bottom, 8)
-                }
-
-                ZStack {
-                    Circle()
-                        .trim(from: 0, to: CGFloat(Double(timeRemaining) / Double(max(totalTime, 1))))
-                        .stroke(Color.accentColor, lineWidth: 10)
-                        .frame(width: 200, height: 200)
-                        .rotationEffect(.degrees(-90))
-
-                    Text(formatTime(timeRemaining))
-                        .montserrat(size: 80)
-                        .bold()
-                }
-                .padding()
-
-                Spacer()
-
-                HStack(spacing: 16) {
-                    if timerIsActive {
-                        Button(action: pauseTimer) {
-                            Label("Pausa", systemImage: "pause.circle")
-                                .montserrat(size: 17)
+                        if showsFallbackWarning {
+                            Label("Formato non riconosciuto: timer impostato a 1 minuto.", systemImage: "info.circle")
+                                .font(SportiliTypography.bodySmall)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
 
-                        Button(action: resetTimer) {
-                            Label("Reset", systemImage: "gobackward")
-                                .montserrat(size: 17)
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
-                    } else {
-                        Button(action: startTimer) {
-                            Label(timerPaused ? "Riprendi" : "Inizia", systemImage: "play.circle")
-                                .montserrat(size: 17)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
+                        ZStack {
+                            Gauge(
+                                value: Double(timeRemaining),
+                                in: 0...Double(max(totalTime, 1))
+                            ) {
+                                EmptyView()
+                            }
+                            .gaugeStyle(.accessoryCircularCapacity)
+                            .tint(SportiliPalette.primary)
+                            .labelsHidden()
+                            .scaleEffect(1.45)
+                            .accessibilityHidden(true)
 
-                        Button(action: resetTimer) {
-                            Label("Reset", systemImage: "gobackward")
-                                .montserrat(size: 17)
+                            Text(formatTime(timeRemaining))
+                                .font(.system(.title2, design: .rounded, weight: .bold))
+                                .monospacedDigit()
+                                .minimumScaleFactor(0.65)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
-                        .disabled(timeRemaining == totalTime)
+                        .frame(
+                            width: min(preferredGaugeSize, geometry.size.width - 64),
+                            height: min(preferredGaugeSize, geometry.size.width - 64)
+                        )
+                        .accessibilityLabel("Tempo di recupero rimanente")
+                        .accessibilityValue(formatTime(timeRemaining))
+                        .padding(.vertical, SportiliSpacing.standard)
+
+                        Text(timerStatus)
+                            .font(SportiliTypography.body)
+                            .foregroundStyle(.secondary)
+
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: SportiliSpacing.standard) {
+                                timerButtons
+                            }
+                            VStack(spacing: SportiliSpacing.small) {
+                                timerButtons
+                            }
+                        }
                     }
+                    .frame(maxWidth: 520)
+                    .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .center)
+                    .padding(SportiliSpacing.section)
                 }
+            }
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Chiudi", action: dismiss.callAsFunction)
+                        .font(SportiliTypography.body)
+                }
+            }
+            .onDisappear {
+                timer?.invalidate()
+                timer = nil
+            }
+        }
+    }
 
-                Spacer()
-            }
-            .padding()
-            .navigationBarItems(trailing: Button("Chiudi") {
-                presentationMode.wrappedValue.dismiss()
-            }
-            .montserrat(size: 17))
-            .interactiveDismissDisabled(true)
+    @ViewBuilder
+    private var timerButtons: some View {
+        if timerIsActive {
+            timerButton(title: "Pausa", systemImage: "pause.circle.fill", prominent: true, action: pauseTimer)
+            timerButton(title: "Azzera", systemImage: "gobackward", prominent: false, action: resetTimer)
+        } else {
+            timerButton(
+                title: timerPaused ? "Riprendi" : "Inizia",
+                systemImage: "play.circle.fill",
+                prominent: true,
+                action: startTimer
+            )
+            timerButton(title: "Azzera", systemImage: "gobackward", prominent: false, action: resetTimer)
+                .disabled(timeRemaining == totalTime)
+        }
+    }
+
+    private var timerStatus: String {
+        if timerIsActive { return "Timer in corso" }
+        if timerPaused { return "Timer in pausa" }
+        if timeRemaining == totalTime { return "Pronto per iniziare" }
+        return "Timer completato"
+    }
+
+    @ViewBuilder
+    private func timerButton(
+        title: String,
+        systemImage: String,
+        prominent: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        let button = Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(SportiliTypography.label)
+                .frame(minWidth: 112, minHeight: 44)
+        }
+        if prominent {
+            button.buttonStyle(.borderedProminent).tint(SportiliPalette.primary)
+        } else {
+            button.buttonStyle(.bordered).tint(SportiliPalette.primary)
         }
     }
 
@@ -1189,14 +1285,16 @@ struct TimerSheet: View {
         timerIsActive = true
         timerPaused = false
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if timeRemaining > 0 {
+            if timeRemaining > 1 {
                 timeRemaining -= 1
+                announceTimeIfNeeded()
             } else {
                 timer?.invalidate()
                 timer = nil
                 timerIsActive = false
                 timerPaused = false
-                timeRemaining = totalTime
+                timeRemaining = 0
+                UIAccessibility.post(notification: .announcement, argument: "Recupero terminato")
                 playSound()
                 triggerVibration()
             }
@@ -1216,6 +1314,14 @@ struct TimerSheet: View {
         timeRemaining = totalTime
         timerIsActive = false
         timerPaused = false
+    }
+
+    private func announceTimeIfNeeded() {
+        guard timeRemaining == 10 || timeRemaining == 5 else { return }
+        UIAccessibility.post(
+            notification: .announcement,
+            argument: "\(timeRemaining) secondi rimanenti"
+        )
     }
 
     func formatTime(_ time: Int) -> String {

@@ -124,3 +124,20 @@ del progetto `demo-sportili-compat`. Copre login valido, codice inesistente e no
 valido, errore Firebase e retry, refresh ripetuti, cambio utente, realtime e note
 con storico/campi sconosciuti preservati. Non accede al progetto di produzione e
 rimuove l'app temporanea dal simulatore al termine.
+
+## Controllo visivo giorno ed esercizio
+
+Con un iOS Simulator già avviato:
+
+```sh
+python3 Tests/run_exercise_previews.py \
+  --simulator UDID_DEL_SIMULATORE \
+  --output /tmp/sportili-exercise-previews
+```
+
+Il runner usa una copia temporanea, non configura Firebase e produce gli stati
+giorno con nomi lunghi/superset, esercizio con e senza immagine, storico vuoto e
+popolato, timer, inserimento peso con tastiera, salvataggio, Dynamic Type
+accessibilità e dark mode. Gli screenshot richiedono controllo visivo; se il
+Simulator usa una tastiera hardware, la tastiera numerica software va verificata
+anche interattivamente.

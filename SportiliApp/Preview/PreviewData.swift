@@ -25,6 +25,23 @@ enum PreviewData {
         notePT: "Mantieni il core attivo"
     )
 
+    static let longSupersetExercise = Esercizio(
+        id: "esercizio-lungo",
+        name: "Distensioni con manubri su panca inclinata + Croci ai cavi dal basso in posizione sfalsata",
+        serie: "4 × 10 + 12",
+        riposo: "1:30",
+        notePT: "Mantieni le scapole addotte, controlla la fase eccentrica e interrompi la serie se perdi la posizione.",
+        noteUtente: "Ridurre leggermente il carico nella seconda variante.",
+        weightLogs: weightLogs
+    )
+
+    static let exerciseWithoutHistory = Esercizio(
+        id: "esercizio-vuoto",
+        name: "Squat goblet",
+        serie: "3 × 12",
+        riposo: "60s"
+    )
+
     static let gruppo = GruppoMuscolare(
         id: "gruppo1",
         nome: "Petto e Dorso",
@@ -35,6 +52,18 @@ enum PreviewData {
         id: "giorno1",
         name: "Giorno A",
         gruppiMuscolari: [gruppo]
+    )
+
+    static let longNamesDay = Giorno(
+        id: "giorno-lungo",
+        name: "Giorno forza e controllo",
+        gruppiMuscolari: [
+            GruppoMuscolare(
+                id: "gruppo-lungo",
+                nome: "Petto, dorso e stabilità del tronco",
+                esercizi: [longSupersetExercise, exerciseWithoutHistory]
+            )
+        ]
     )
 
     static let scheda = Scheda(

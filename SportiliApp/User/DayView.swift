@@ -44,7 +44,9 @@ struct GruppoRow: View {
     
     var body: some View {
         Text(gruppo.nome)
-            .montserrat(size: 20)
+            .font(SportiliTypography.title)
+            .textCase(nil)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -80,8 +82,8 @@ struct EsercizioRow: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text(esercizio.name)
-                            .montserrat(size: 18)
-                            .fontWeight(.semibold)
+                            .font(SportiliTypography.title)
+                            .fixedSize(horizontal: false, vertical: true)
 
                         InfoSection(esercizio: esercizio)
                     }
@@ -93,9 +95,10 @@ struct EsercizioRow: View {
             // Info sotto al superset
             if exerciseParts.count > 1 {
                 InfoSection(esercizio: esercizio)
-                    .padding(.leading, 16)
+                    .padding(.leading, SportiliSpacing.standard)
             }
         }
+        .padding(.vertical, SportiliSpacing.compact)
         .fullScreenCover(item: $selectedImage) { selected in
             FullScreenImageView(image: selected.image)
         }
@@ -180,9 +183,7 @@ private struct SupersetItemRow: View {
             }
 
             Text(displayName)
-                .montserrat(size: 17)
-                .fontWeight(.semibold)
-                .lineLimit(2)
+                .font(SportiliTypography.title)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -215,17 +216,22 @@ private struct InfoSection: View {
     let esercizio: Esercizio
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("\(esercizio.serie)")
-                .montserrat(size: 25)
-                .fontWeight(.bold)
-                .foregroundColor(.accentColor)
+        VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+            Label {
+                Text(esercizio.serie)
+                    .font(SportiliTypography.title)
+            } icon: {
+                Image(systemName: "figure.strengthtraining.functional")
+            }
+            .foregroundStyle(SportiliPalette.primary)
 
             if let riposo = esercizio.riposo, !riposo.isEmpty {
-                Text("\(riposo) recupero")
-                    .montserrat(size: 18)
+                Label("Recupero \(riposo)", systemImage: "timer")
+                    .font(SportiliTypography.bodySmall)
+                    .foregroundStyle(.secondary)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -249,7 +255,9 @@ private struct ExerciseThumbnailView: View {
                     .onTapGesture {
                         onImageTap(image)
                     }
-            } else if imageLoader.error != nil {
+                    .accessibilityLabel("Apri immagine di \(name) a schermo intero")
+                    .accessibilityAddTraits(.isButton)
+            } else if imageLoader.error != nil || PreviewContext.isPreview {
                 PlaceholderThumbnail()
                     .frame(width: size, height: size)
             } else {
@@ -291,6 +299,7 @@ private struct PlaceholderThumbnail: View {
                 Image(systemName: "photo")
                     .foregroundColor(.white.opacity(0.7))
             )
+            .accessibilityLabel("Immagine non disponibile")
     }
 }
 
@@ -316,12 +325,10 @@ private func exerciseNameParts(from name: String) -> [String] {
 
 #Preview("Gruppo Row") {
     GruppoRow(gruppo: PreviewData.gruppo)
-        .previewLayout(.sizeThatFits)
         .padding()
 }
 
 #Preview("Esercizio Row") {
     EsercizioRow(esercizio: PreviewData.singleExercise)
-        .previewLayout(.sizeThatFits)
         .padding()
 }
