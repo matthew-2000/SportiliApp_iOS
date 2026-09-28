@@ -141,3 +141,22 @@ popolato, timer, inserimento peso con tastiera, salvataggio, Dynamic Type
 accessibilità e dark mode. Gli screenshot richiedono controllo visivo; se il
 Simulator usa una tastiera hardware, la tastiera numerica software va verificata
 anche interattivamente.
+
+## Controllo visivo avvisi e impostazioni
+
+Con un iOS Simulator già avviato:
+
+```sh
+python3 Tests/run_alerts_settings_previews.py \
+  --simulator UDID_DEL_SIMULATORE \
+  --output /tmp/sportili-alerts-settings-previews
+```
+
+Il runner crea un host temporaneo che non configura Firebase e non osserva il
+database. Produce screenshot degli avvisi caricati, vuoti e in errore, oltre a
+light/dark e Dynamic Type accessibilità per avvisi e impostazioni. Verificare
+visivamente gerarchia delle priorità, assenza di falsi indicatori “nuovo”,
+leggibilità delle sezioni, versione/build e assenza di troncamenti.
+
+La conferma di logout e il feedback quando un link esterno non si apre restano
+controlli interattivi: l'host inietta azioni innocue e non modifica la sessione.

@@ -6,22 +6,24 @@ final class AlertsViewModel: ObservableObject {
     @Published private(set) var isLoading: Bool
     @Published private(set) var errorMessage: String?
 
-    private let reference: DatabaseReference
+    private let reference: DatabaseReference?
     private let autoObserve: Bool
     private var handle: DatabaseHandle?
 
     init(
-        database: DatabaseReference = Database.database().reference(),
+        database: DatabaseReference? = nil,
         autoObserve: Bool = true,
         initialAlerts: [UserAlert] = [],
         initialLoading: Bool = false,
         initialErrorMessage: String? = nil
     ) {
-        self.reference = database.child("alerts")
         self.autoObserve = autoObserve
         self.alerts = initialAlerts
         self.isLoading = initialLoading
         self.errorMessage = initialErrorMessage
+        self.reference = autoObserve
+            ? (database ?? Database.database().reference()).child("alerts")
+            : database?.child("alerts")
 
         if autoObserve {
             observeAlerts()
@@ -29,7 +31,7 @@ final class AlertsViewModel: ObservableObject {
     }
 
     deinit {
-        if let handle {
+        if let reference, let handle {
             reference.removeObserver(withHandle: handle)
         }
     }
@@ -40,6 +42,8 @@ final class AlertsViewModel: ObservableObject {
     }
 
     private func observeAlerts() {
+        guard let reference else { return }
+
         isLoading = true
         errorMessage = nil
 

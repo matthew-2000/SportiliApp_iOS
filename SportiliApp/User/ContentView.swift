@@ -24,7 +24,7 @@ struct ContentView: View {
                 AlertsView()
             }
                 .tabItem {
-                    Image(systemName: "bell.badge.fill")
+                    Image(systemName: "bell.fill")
                     Text("Avvisi")
                         .montserrat(size: 12)
                 }

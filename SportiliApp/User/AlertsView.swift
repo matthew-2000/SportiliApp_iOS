@@ -3,6 +3,8 @@ import SwiftUI
 struct AlertsView: View {
     @StateObject private var viewModel: AlertsViewModel
 
+    private static let urgencyOrder: [UserAlert.Urgency] = [.alta, .media, .bassa, .nessuna]
+
     static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -18,8 +20,7 @@ struct AlertsView: View {
     var body: some View {
         Group {
             if viewModel.isLoading {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle())
+                ProgressView("Caricamento avvisi")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error = viewModel.errorMessage {
                 AlertsErrorState(error: error, onRetry: viewModel.retry)
@@ -27,15 +28,38 @@ struct AlertsView: View {
                 AlertsEmptyState()
             } else {
                 List {
-                    ForEach(viewModel.alerts) { alert in
-                        AlertRow(alert: alert)
-                            .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
-                            .listRowSeparator(.hidden)
+                    ForEach(Self.urgencyOrder, id: \.rawValue) { urgency in
+                        let alerts = viewModel.alerts.filter { $0.urgenza == urgency }
+
+                        if !alerts.isEmpty {
+                            Section {
+                                ForEach(alerts) { alert in
+                                    AlertRow(alert: alert)
+                                        .listRowInsets(
+                                            EdgeInsets(
+                                                top: SportiliSpacing.compact,
+                                                leading: SportiliSpacing.standard,
+                                                bottom: SportiliSpacing.compact,
+                                                trailing: SportiliSpacing.standard
+                                            )
+                                        )
+                                        .listRowSeparator(.hidden)
+                                        .listRowBackground(Color.clear)
+                                }
+                            } header: {
+                                Label(urgency.sectionTitle, systemImage: urgency.iconName)
+                                    .font(SportiliTypography.label)
+                                    .foregroundStyle(urgency.foregroundColor)
+                            }
+                        }
                     }
                 }
-                .listStyle(.plain)
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .background(SportiliPalette.background)
             }
         }
+        .background(SportiliPalette.background)
         .navigationTitle(Text("Avvisi"))
     }
 }
@@ -48,7 +72,7 @@ private struct AlertsErrorState: View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 48))
-                .foregroundColor(.orange)
+                .foregroundStyle(SportiliPalette.onWarningContainer)
 
             Text("Impossibile caricare gli avvisi")
                 .fontWeight(.semibold)
@@ -56,7 +80,7 @@ private struct AlertsErrorState: View {
                 .montserrat(size: 20)
 
             Text(error)
-                .foregroundColor(.gray)
+                .foregroundStyle(SportiliPalette.onSurfaceMuted)
                 .multilineTextAlignment(.center)
                 .montserrat(size: 16)
 
@@ -79,14 +103,14 @@ private struct AlertsEmptyState: View {
         VStack(spacing: 12) {
             Image(systemName: "bell.slash.fill")
                 .font(.system(size: 50))
-                .foregroundColor(.gray)
+                .foregroundStyle(SportiliPalette.onSurfaceMuted)
 
             Text("Nessun avviso")
                 .fontWeight(.semibold)
                 .montserrat(size: 20)
 
             Text("Quando il tuo trainer pubblicherà un avviso lo troverai qui.")
-                .foregroundColor(.gray)
+                .foregroundStyle(SportiliPalette.onSurfaceMuted)
                 .multilineTextAlignment(.center)
                 .montserrat(size: 16)
         }
@@ -97,26 +121,25 @@ private struct AlertsEmptyState: View {
 
 private struct AlertRow: View {
     let alert: UserAlert
+    @Environment(\.sizeCategory) private var sizeCategory
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Label(urgencyLabelText, systemImage: urgencyIconName)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(backgroundColor.opacity(0.2))
-                    .foregroundStyle(backgroundColor)
-                    .clipShape(Capsule())
-                    .montserrat(size: 13)
-
-                Spacer()
-
-                if let scadenza = alert.scadenza {
-                    Text("Scade il \(AlertsView.dateFormatter.string(from: scadenza))")
-                        .foregroundColor(.gray)
-                        .montserrat(size: 13)
+            if let scadenza = alert.scadenza {
+                if sizeCategory.isAccessibilityCategory {
+                    VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+                        urgencyBadge
+                        expiryLabel(for: scadenza)
+                    }
+                } else {
+                    HStack(alignment: .firstTextBaseline, spacing: SportiliSpacing.small) {
+                        urgencyBadge
+                        Spacer()
+                        expiryLabel(for: scadenza)
+                    }
                 }
+            } else {
+                urgencyBadge
             }
 
             Text(alert.titolo)
@@ -130,26 +153,31 @@ private struct AlertRow: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
+                .fill(SportiliPalette.surface)
                 .shadow(color: Color.black.opacity(0.05), radius: 6, x: 0, y: 3)
         )
+        .accessibilityElement(children: .combine)
     }
 
-    private var backgroundColor: Color {
-        switch alert.urgenza {
-        case .nessuna:
-            return .gray
-        case .bassa:
-            return .blue
-        case .media:
-            return .orange
-        case .alta:
-            return .red
-        }
+    private var urgencyBadge: some View {
+        Label(alert.urgenza.displayName, systemImage: urgencyIconName)
+            .fontWeight(.bold)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(alert.urgenza.containerColor)
+            .foregroundStyle(alert.urgenza.foregroundColor)
+            .clipShape(Capsule())
+            .montserrat(size: 13)
+            .accessibilityLabel("Priorità \(alert.urgenza.displayName)")
     }
 
-    private var urgencyLabelText: String {
-        "Priorità \(alert.urgenza.displayName)"
+    private func expiryLabel(for date: Date) -> some View {
+        Label(
+            "Scade il \(AlertsView.dateFormatter.string(from: date))",
+            systemImage: "calendar"
+        )
+        .foregroundStyle(SportiliPalette.onSurfaceMuted)
+        .montserrat(size: 13)
     }
 
     private var urgencyIconName: String {
@@ -162,6 +190,44 @@ private struct AlertRow: View {
             return "exclamationmark.circle"
         case .alta:
             return "exclamationmark.triangle.fill"
+        }
+    }
+}
+
+private extension UserAlert.Urgency {
+    var sectionTitle: String {
+        switch self {
+        case .alta: return "Priorità alta"
+        case .media: return "Priorità media"
+        case .bassa: return "Priorità bassa"
+        case .nessuna: return "Senza priorità"
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .nessuna: return "bell"
+        case .bassa: return "info.circle.fill"
+        case .media: return "exclamationmark.circle.fill"
+        case .alta: return "exclamationmark.triangle.fill"
+        }
+    }
+
+    var containerColor: Color {
+        switch self {
+        case .nessuna: return SportiliPalette.surfaceMuted
+        case .bassa: return SportiliPalette.infoContainer
+        case .media: return SportiliPalette.warningContainer
+        case .alta: return SportiliPalette.criticalContainer
+        }
+    }
+
+    var foregroundColor: Color {
+        switch self {
+        case .nessuna: return SportiliPalette.onSurfaceMuted
+        case .bassa: return SportiliPalette.onInfoContainer
+        case .media: return SportiliPalette.onWarningContainer
+        case .alta: return SportiliPalette.onCriticalContainer
         }
     }
 }
@@ -182,4 +248,22 @@ private struct AlertRow: View {
     AlertsView(
         viewModel: AlertsViewModel(autoObserve: false, initialErrorMessage: "Connessione non disponibile")
     )
+}
+
+#Preview("Alerts - Dark") {
+    NavigationStack {
+        AlertsView(
+            viewModel: AlertsViewModel(autoObserve: false, initialAlerts: PreviewData.alerts)
+        )
+    }
+    .preferredColorScheme(.dark)
+}
+
+#Preview("Alerts - Accessibility text") {
+    NavigationStack {
+        AlertsView(
+            viewModel: AlertsViewModel(autoObserve: false, initialAlerts: PreviewData.alerts)
+        )
+    }
+    .environment(\.sizeCategory, .accessibilityExtraExtraLarge)
 }
