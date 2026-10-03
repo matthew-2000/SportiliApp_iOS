@@ -212,3 +212,18 @@ errore/retry e dati immagine invalidi, compilando ImageLoader reale con doubles.
 `python3 Tests/run_s05_previews.py --simulator <UDID già booted> --output <directory> --packages <SourcePackages> [--derived-data <directory isolata>] [--keep-installed]` costruisce un host separato senza Firebase configurato: grafico 0/1/10/12, editor/sheet reali, tastiera, errore/pending, note vuote/lunghe, timer/fallback, chiaro/scuro/accessibility3. Le environment Dynamic Type sono applicate esplicitamente anche al contenuto delle sheet. La copia temporanea del model riceve solo una funzione locale di aggiornamento fixture; la sorgente produzione e il progetto restano invariati. `ExerciseDetailActions` delega al model in produzione; soltanto la fixture fornisce callback locali.
 
 Gli screenshot sono prove visive, non UI assertions. Verificare manualmente selezione parti, peso vicino allo storico, espansione, bozza/Scarta/Continua, salvataggio riuscito senza badge dirty, valori/date e timer Inizia/Pausa/Azzera. Nessuna prova Firebase/Storage o notifiche/background aggiunta. Disinstallare `com.sportili.local-s05-preview` dopo la verifica.
+
+## S06 — avvisi e impostazioni
+
+`run_alerts_settings_previews.py` accetta `--derived-data`, `--keep-installed` e
+`--scenarios`. Gli scenari predefiniti comprendono tutte le priorità (anche
+nessuna/senza scadenza), testo lungo, loading, vuoto ed errore in chiaro/scuro e
+accessibilityExtraExtraLarge. Le impostazioni mantengono Form/Link e dialoghi
+reali. `settings-link-error[-dark|-accessibility]` inietta OpenURLAction.discarded;
+`settings-logout-error[-dark|-accessibility]` inietta un signOut fallito.
+Gli altri scenari settings usano link gestiti localmente e logout innocuo;
+il login dopo logout usa callback fake sostituite soltanto nella copia temporanea.
+Il log console stampa gli URL ricevuti senza aprire siti. Non vengono configurati
+Firebase, credenziali o sessioni reali. Le azioni e lo scroll sono controlli manuali,
+non assert UI automatici. Disinstallare `com.sportili.local-alerts-settings-preview`
+al termine se si è usato `--keep-installed`.

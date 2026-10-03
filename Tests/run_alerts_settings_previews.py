@@ -19,6 +19,8 @@ def main():
     parser.add_argument("--output", required=True, type=Path, help="Logs and screenshots directory")
     parser.add_argument("--packages", type=Path, help="Existing resolved SourcePackages directory")
     parser.add_argument("--scenarios", nargs="+", help="Capture only these host scenarios")
+    parser.add_argument("--keep-installed", action="store_true", help="Keep the separate fixture for interactive QA")
+    parser.add_argument("--derived-data", type=Path, help="Isolated build directory to reuse")
     args = parser.parse_args()
 
     devices = json.loads(subprocess.check_output(["xcrun", "simctl", "list", "devices", "booted", "--json"]))
@@ -48,11 +50,18 @@ def main():
         host = (root / "Tests/AlertsSettingsPreviewHost.swift").read_text()
         entry.write_text(before + host + modifier_marker + modifiers)
 
+        # The post-logout login also uses local callbacks in this temporary copy.
+        settings = work / "SportiliApp/User/SettingsView.swift"
+        settings.write_text(settings.read_text().replace("LoginView()", """LoginView(login: LoginSession(
+            read: { _, completion in completion(.success(nil)); return {} },
+            signIn: { _, completion in completion(nil) }, save: { _, _ in }
+        ))"""))
+        derived = args.derived_data.resolve() if args.derived_data else work / "DerivedData"
         command = [
             "xcodebuild", "-project", str(work / "SportiliApp.xcodeproj"),
             "-scheme", "SportiliApp", "-configuration", "Debug",
             "-destination", f"platform=iOS Simulator,id={args.simulator}",
-            "-derivedDataPath", str(work / "DerivedData"),
+            "-derivedDataPath", str(derived),
             "-disableAutomaticPackageResolution", "CODE_SIGNING_ALLOWED=NO",
             f"PRODUCT_BUNDLE_IDENTIFIER={bundle_id}", "build",
         ]
@@ -61,13 +70,15 @@ def main():
         with (output / "build.log").open("w") as log:
             run(*command, stdout=log, stderr=subprocess.STDOUT)
 
-        app = work / "DerivedData/Build/Products/Debug-iphonesimulator/SportiliApp.app"
+        app = derived / "Build/Products/Debug-iphonesimulator/SportiliApp.app"
         run("xcrun", "simctl", "install", args.simulator, str(app))
         try:
             scenarios = (
-                "alerts-loaded", "alerts-empty", "alerts-error", "alerts-dark",
-                "alerts-accessibility", "settings-light", "settings-dark",
-                "settings-accessibility",
+                "alerts-loaded", "alerts-dark", "alerts-accessibility", "alerts-loading",
+                "alerts-long", "alerts-long-dark", "alerts-long-accessibility",
+                "alerts-empty", "alerts-empty-dark", "alerts-empty-accessibility",
+                "alerts-error", "alerts-error-dark", "alerts-error-accessibility",
+                "settings-light", "settings-dark", "settings-accessibility",
             )
             for scenario in args.scenarios or scenarios:
                 subprocess.run(
@@ -81,7 +92,8 @@ def main():
                 run("xcrun", "simctl", "io", args.simulator, "screenshot", str(image))
                 print(f"REVIEW: {image}", flush=True)
         finally:
-            run("xcrun", "simctl", "uninstall", args.simulator, bundle_id)
+            if not args.keep_installed:
+                run("xcrun", "simctl", "uninstall", args.simulator, bundle_id)
 
 
 if __name__ == "__main__":

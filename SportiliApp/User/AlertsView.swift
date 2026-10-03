@@ -50,6 +50,8 @@ struct AlertsView: View {
                                 Label(urgency.sectionTitle, systemImage: urgency.iconName)
                                     .font(SportiliTypography.label)
                                     .foregroundStyle(urgency.foregroundColor)
+                                    .textCase(nil)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                         }
                     }
@@ -122,35 +124,25 @@ private struct AlertsEmptyState: View {
 
 private struct AlertRow: View {
     let alert: UserAlert
-    @Environment(\.sizeCategory) private var sizeCategory
 
     var body: some View {
         VStack(alignment: .leading, spacing: SportiliSpacing.small) {
-            if let scadenza = alert.scadenza {
-                if sizeCategory.isAccessibilityCategory {
-                    VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
-                        urgencyBadge
-                        expiryLabel(for: scadenza)
-                    }
-                } else {
-                    HStack(alignment: .firstTextBaseline, spacing: SportiliSpacing.small) {
-                        urgencyBadge
-                        Spacer()
-                        expiryLabel(for: scadenza)
-                    }
-                }
-            } else {
-                urgencyBadge
-            }
-
             Text(alert.titolo)
                 .font(SportiliTypography.titleLarge)
                 .foregroundStyle(SportiliPalette.onSurface)
+                .fixedSize(horizontal: false, vertical: true)
 
             Text(alert.descrizione)
                 .foregroundStyle(SportiliPalette.onSurface)
                 .font(SportiliTypography.body)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let scadenza = alert.scadenza {
+                expiryLabel(for: scadenza)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(SportiliSpacing.standard)
         .background(
             RoundedRectangle(cornerRadius: SportiliShape.container)
@@ -158,17 +150,7 @@ private struct AlertRow: View {
                 .shadow(color: Color.black.opacity(0.05), radius: 6, x: 0, y: 3)
         )
         .accessibilityElement(children: .combine)
-    }
-
-    private var urgencyBadge: some View {
-        Label(alert.urgenza.displayName, systemImage: urgencyIconName)
-            .font(SportiliTypography.labelSmall)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(alert.urgenza.containerColor)
-            .foregroundStyle(alert.urgenza.foregroundColor)
-            .clipShape(Capsule())
-            .accessibilityLabel("Priorità \(alert.urgenza.displayName)")
+        .accessibilityValue(alert.urgenza.sectionTitle)
     }
 
     private func expiryLabel(for date: Date) -> some View {
@@ -178,19 +160,6 @@ private struct AlertRow: View {
         )
         .foregroundStyle(SportiliPalette.onSurfaceMuted)
         .font(SportiliTypography.metadata)
-    }
-
-    private var urgencyIconName: String {
-        switch alert.urgenza {
-        case .nessuna:
-            return "bell"
-        case .bassa:
-            return "bell.badge"
-        case .media:
-            return "exclamationmark.circle"
-        case .alta:
-            return "exclamationmark.triangle.fill"
-        }
     }
 }
 
@@ -210,15 +179,6 @@ private extension UserAlert.Urgency {
         case .bassa: return "info.circle.fill"
         case .media: return "exclamationmark.circle.fill"
         case .alta: return "exclamationmark.triangle.fill"
-        }
-    }
-
-    var containerColor: Color {
-        switch self {
-        case .nessuna: return SportiliPalette.surfaceMuted
-        case .bassa: return SportiliPalette.infoContainer
-        case .media: return SportiliPalette.warningContainer
-        case .alta: return SportiliPalette.criticalContainer
         }
     }
 

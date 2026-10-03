@@ -40,7 +40,22 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Social") {
+            Section {
+                if sizeCategory.isAccessibilityCategory {
+                    VStack(alignment: .leading, spacing: SportiliSpacing.small) {
+                        contactIcon
+                        contactDetails
+                    }
+                    .accessibilityElement(children: .combine)
+                } else {
+                    Label { contactDetails } icon: { contactIcon }
+                        .accessibilityElement(children: .combine)
+                }
+            } header: {
+                sectionHeader("Informazioni e contatti")
+            }
+
+            Section {
                 externalLinkRow(
                     title: "Instagram",
                     icon: "camera.fill",
@@ -64,37 +79,29 @@ struct SettingsView: View {
                     icon: "globe",
                     url: "https://www.palestrasportilia.it"
                 )
+            } header: {
+                sectionHeader("Link esterni")
             }
 
-            Section("Account") {
+            Section {
                 Button(role: .destructive) {
                     isLogoutConfirmationPresented = true
                 } label: {
-                    Label("Esci dall’account", systemImage: "rectangle.portrait.and.arrow.right")
+                    SettingsActionLabel(title: "Esci dall’account", icon: "rectangle.portrait.and.arrow.right")
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
-                        .foregroundStyle(.red)
+                        .foregroundStyle(SportiliPalette.onCriticalContainer)
                 }
                 .accessibilityHint("Richiede conferma prima di terminare la sessione")
+            } header: {
+                sectionHeader("Sessione")
             }
 
-            Section("Informazioni") {
-                Label {
-                    VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
-                        Text("Palestra Sportilia")
-                            .font(SportiliTypography.label)
-                        Text("Via Valle, 22\n83024 Monteforte Irpino (AV)\n338 7731977")
-                            .font(SportiliTypography.bodySmall)
-                            .foregroundStyle(SportiliPalette.onSurfaceMuted)
-                    }
-                } icon: {
-                    Image(systemName: "mappin.and.ellipse")
-                        .foregroundStyle(SportiliPalette.primary)
-                }
-                .accessibilityElement(children: .combine)
-
-                LabeledContent("Versione", value: appVersion)
-                LabeledContent("Build", value: buildNumber)
+            Section {
+                versionRow("Versione", value: appVersion)
+                versionRow("Build", value: buildNumber)
+            } header: {
+                sectionHeader("Versione e build")
             }
 
             Section {
@@ -104,6 +111,7 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
             }
         }
+        .font(SportiliTypography.body)
         .scrollContentBackground(.hidden)
         .background(SportiliPalette.background)
         .navigationTitle("Impostazioni")
@@ -130,36 +138,64 @@ struct SettingsView: View {
         }
     }
 
-    private func externalLinkRow(title: String, icon: String, url: String) -> some View {
-        Button {
-            openLink(url, name: title)
-        } label: {
-            HStack {
-                Label(title, systemImage: icon)
-                Spacer()
-                if !sizeCategory.isAccessibilityCategory {
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(SportiliPalette.onSurfaceMuted)
-                        .accessibilityHidden(true)
-                }
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityHint("Apre \(title) fuori dall’app")
+    private var contactIcon: some View {
+        Image(systemName: "mappin.and.ellipse")
+            .foregroundStyle(SportiliPalette.primary)
+            .accessibilityHidden(true)
     }
 
-    private func openLink(_ urlString: String, name: String) {
-        guard let url = URL(string: urlString) else {
-            showLinkError(for: name)
-            return
+    private var contactDetails: some View {
+        VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+            Text("Palestra Sportilia")
+                .font(SportiliTypography.label)
+            Text("Via Valle, 22\n83024 Monteforte Irpino (AV)\n338 7731977")
+                .font(SportiliTypography.bodySmall)
+                .foregroundStyle(SportiliPalette.onSurfaceMuted)
         }
+        .fixedSize(horizontal: false, vertical: true)
+    }
 
-        openURL(url) { accepted in
-            guard !accepted else { return }
-            DispatchQueue.main.async {
-                showLinkError(for: name)
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(SportiliTypography.label)
+            .foregroundStyle(SportiliPalette.onSurfaceMuted)
+            .textCase(nil)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    @ViewBuilder
+    private func externalLinkRow(title: String, icon: String, url: String) -> some View {
+        if let destination = URL(string: url) {
+            Link(destination: destination) {
+                SettingsActionLabel(title: title, icon: icon, isExternal: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .foregroundStyle(SportiliPalette.primary)
+            .environment(\.openURL, OpenURLAction { destination in
+                openURL(destination) { accepted in
+                    guard !accepted else { return }
+                    DispatchQueue.main.async { showLinkError(for: title) }
+                }
+                return .handled
+            })
+            .accessibilityHint("Apre \(title) fuori dall’app")
+        }
+    }
+
+    @ViewBuilder
+    private func versionRow(_ title: String, value: String) -> some View {
+        if sizeCategory.isAccessibilityCategory {
+            VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+                Text(title)
+                Text(value).foregroundStyle(SportiliPalette.onSurfaceMuted)
+            }
+            .accessibilityElement(children: .combine)
+        } else {
+            LabeledContent {
+                Text(value).foregroundStyle(SportiliPalette.onSurfaceMuted)
+            } label: {
+                Text(title).foregroundStyle(SportiliPalette.onSurface)
             }
         }
     }
@@ -191,6 +227,43 @@ struct SettingsView: View {
     private static func resetSessionDefaults() {
         let defaults = UserDefaults.standard
         ["code", "isAdmin"].forEach(defaults.removeObject(forKey:))
+    }
+}
+
+// At accessibility sizes, give the text the full row width below its symbols.
+private struct SettingsActionLabel: View {
+    let title: String
+    let icon: String
+    var isExternal = false
+    @Environment(\.sizeCategory) private var sizeCategory
+
+    var body: some View {
+        if sizeCategory.isAccessibilityCategory {
+            VStack(alignment: .leading, spacing: SportiliSpacing.small) {
+                HStack {
+                    Image(systemName: icon).accessibilityHidden(true)
+                    Spacer()
+                    externalIndicator
+                }
+                Text(title).fixedSize(horizontal: false, vertical: true)
+            }
+        } else {
+            HStack(alignment: .firstTextBaseline, spacing: SportiliSpacing.small) {
+                Label(title, systemImage: icon)
+                Spacer(minLength: SportiliSpacing.compact)
+                externalIndicator
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var externalIndicator: some View {
+        if isExternal {
+            Image(systemName: "arrow.up.right")
+                .font(SportiliTypography.metadata)
+                .foregroundStyle(SportiliPalette.onSurfaceMuted)
+                .accessibilityHidden(true)
+        }
     }
 }
 
