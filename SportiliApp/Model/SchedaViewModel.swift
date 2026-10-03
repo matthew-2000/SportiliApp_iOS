@@ -77,7 +77,7 @@ final class SchedaViewModel: ObservableObject {
                     self.scheda = scheda
                     self.errorMessage = nil
                 case .failure(let error):
-                    self.scheda = nil
+                    // Keep this user's last loaded workout visible; code changes clear it above.
                     self.errorMessage = error.localizedDescription
                 }
             }

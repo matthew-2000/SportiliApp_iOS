@@ -27,12 +27,12 @@ struct HomeView: View {
 
     var body: some View {
         Group {
-            if schedaViewModel.isLoading || !schedaViewModel.hasLoadedOnce {
+            if let scheda = schedaViewModel.scheda {
+                homeList(for: scheda)
+            } else if schedaViewModel.isLoading || !schedaViewModel.hasLoadedOnce {
                 HomeLoadingState()
             } else if schedaViewModel.errorMessage != nil {
                 HomeErrorState(onRetry: schedaViewModel.fetchScheda)
-            } else if let scheda = schedaViewModel.scheda {
-                homeList(for: scheda)
             } else {
                 HomeEmptyState(onRetry: schedaViewModel.fetchScheda)
             }
@@ -52,6 +52,18 @@ struct HomeView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .accessibilityAddTraits(.isHeader)
+            }
+
+            if schedaViewModel.isLoading {
+                ProgressView("Aggiornamento scheda…")
+                    .font(SportiliTypography.bodySmall)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+            } else if schedaViewModel.errorMessage != nil {
+                HomeRefreshErrorBanner(onRetry: schedaViewModel.fetchScheda)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
             }
 
             SchedaSummary(scheda: scheda)
@@ -74,7 +86,7 @@ struct HomeView: View {
             .listRowInsets(EdgeInsets(
                 top: SportiliSpacing.compact,
                 leading: SportiliSpacing.standard,
-                bottom: SportiliSpacing.section,
+                bottom: SportiliSpacing.compact,
                 trailing: SportiliSpacing.standard
             ))
             .listRowSeparator(.hidden)
@@ -92,6 +104,7 @@ struct HomeView: View {
                             DayRow(day: giorno)
                         }
                         .accessibilityHint("Apre l'allenamento \(giorno.name)")
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                     }
@@ -170,7 +183,7 @@ private enum SchedaDisplayStatus: Equatable {
 
     var message: String {
         switch self {
-        case .active: "Continua dal prossimo allenamento."
+        case .active: "Scegli un allenamento qui sotto."
         case .expiring: "La scheda terminerà a breve."
         case .expired: "Chiedi al trainer una nuova scheda."
         case .requested: "Il trainer ha ricevuto la richiesta."
@@ -209,11 +222,7 @@ private struct SchedaSummary: View {
     let scheda: Scheda
 
     var body: some View {
-        VStack(alignment: .leading, spacing: SportiliSpacing.standard) {
-            Text("Riepilogo")
-                .font(SportiliTypography.label)
-                .foregroundStyle(SportiliPalette.onSurfaceMuted)
-
+        VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: SportiliSpacing.section) {
                     summaryItems
@@ -226,12 +235,12 @@ private struct SchedaSummary: View {
         .padding(SportiliSpacing.standard)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(SportiliPalette.surfaceMuted)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: SportiliShape.container, style: .continuous))
     }
 
     @ViewBuilder
     private var summaryItems: some View {
-        SummaryItem(label: "Data di inizio", value: scheda.dataInizio.formatted(date: .abbreviated, time: .omitted))
+        SummaryItem(label: "Inizio", value: scheda.dataInizio.formatted(date: .abbreviated, time: .omitted))
             .frame(maxWidth: .infinity, alignment: .leading)
         SummaryItem(label: "Durata", value: "\(scheda.durata) \(scheda.durata == 1 ? "settimana" : "settimane")")
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -248,7 +257,7 @@ private struct SummaryItem: View {
                 .font(SportiliTypography.bodySmall)
                 .foregroundStyle(SportiliPalette.onSurfaceMuted)
             Text(value)
-                .font(SportiliTypography.title)
+                .font(SportiliTypography.label)
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -265,14 +274,16 @@ private struct SchedaStatusCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: SportiliSpacing.small) {
             Label(status.title, systemImage: status.icon)
-                .font(SportiliTypography.title)
+                .font(SportiliTypography.label)
                 .foregroundStyle(status.foreground)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(status.message)
-                .font(SportiliTypography.body)
-                .foregroundStyle(status.foreground)
-                .fixedSize(horizontal: false, vertical: true)
+            if status == .expired || status == .requested {
+                Text(status.message)
+                    .font(SportiliTypography.bodySmall)
+                    .foregroundStyle(status.foreground)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             if status == .active || status == .expiring {
                 Text(scheda.tempoRimanente())
@@ -306,8 +317,55 @@ private struct SchedaStatusCard: View {
         .padding(SportiliSpacing.standard)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(status.container)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: SportiliShape.container, style: .continuous))
         .animation(.easeInOut(duration: 0.2), value: isRequesting)
+    }
+}
+
+private struct HomeRefreshErrorBanner: View {
+    let onRetry: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+            if dynamicTypeSize.isAccessibilitySize {
+                message
+                retry
+            } else {
+                HStack(alignment: .top, spacing: SportiliSpacing.small) {
+                    message
+                    retry
+                }
+            }
+        }
+        .padding(SportiliSpacing.small)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(SportiliPalette.warningContainer)
+        .clipShape(RoundedRectangle(cornerRadius: SportiliShape.container, style: .continuous))
+    }
+
+    private var message: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .accessibilityHidden(true)
+                    Text("Aggiornamento non riuscito. Mostriamo gli ultimi dati disponibili.")
+                }
+            } else {
+                Label("Aggiornamento non riuscito. Mostriamo gli ultimi dati disponibili.", systemImage: "exclamationmark.triangle.fill")
+            }
+        }
+        .font(SportiliTypography.bodySmall)
+        .foregroundStyle(SportiliPalette.onWarningContainer)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var retry: some View {
+        Button("Riprova", action: onRetry)
+            .font(SportiliTypography.label)
+            .foregroundStyle(SportiliPalette.primary)
+            .frame(minHeight: 44)
     }
 }
 
@@ -348,7 +406,7 @@ private struct HomeErrorState: View {
     var body: some View {
         HomeUnavailableState(
             icon: "wifi.exclamationmark",
-            title: "Scheda non disponibile",
+            title: "Caricamento non riuscito",
             message: "Controlla la connessione e riprova.",
             actionTitle: "Riprova",
             action: onRetry

@@ -31,7 +31,7 @@ l'avvio con `HomePreviewHost.swift`, escluso dal target dell'app reale. Usa la
 `HomeView` e i modelli di produzione con dati in memoria e caricamento remoto
 disabilitato; Firebase non viene configurato. Non modifica il progetto originale.
 Installa un'app distinta (`com.sportili.local-home-preview`) e la disinstalla
-alla fine, lasciando log di build e sette screenshot nella cartella indicata.
+alla fine, lasciando log di build e gli screenshot selezionati nella cartella indicata.
 
 Gli screenshot **richiedono controllo visivo**, non sono asserzioni automatiche:
 
@@ -64,7 +64,9 @@ Compila il codice reale di `LoginSession` (incluso l’adattatore Firebase),
 valido, errori di entrambe le letture e Auth, timeout, nuovo tentativo,
 cancellazione e callback tardive; refresh ripetuti, aggiornamenti realtime,
 cambio utente anche tramite UserDefaults, logout e rilascio degli osservatori.
-Il runner verifica la logica e i percorsi, non il networking del vero SDK iOS.
+Copre anche il mantenimento della scheda durante refresh/failure, retry, snapshot
+assente e isolamento dopo cambio utente (S03). Il runner verifica la logica e i
+percorsi, non il networking del vero SDK iOS.
 Non configura Firebase e non accede al backend.
 
 ## Controllo visivo del login
@@ -160,3 +162,26 @@ leggibilità delle sezioni, versione/build e assenza di troncamenti.
 
 La conferma di logout e il feedback quando un link esterno non si apre restano
 controlli interattivi: l'host inietta azioni innocue e non modifica la sessione.
+
+## Scenari S03 e controllo interattivo
+
+`run_home_previews.py --scenarios` seleziona gli stati: `active`, `expiring`,
+`expired`, `requested`, `empty`, `error`, `dark`, `accessibility`, `cached-error`,
+`refreshing`, `loading`, `expired-dark`, `error-large`, `empty-large`,
+`cached-error-large`. I due giorni locali conservano nomi/gruppi e non contengono
+esercizi, per aprire la `DayView` reale senza richiedere immagini Storage. Non
+attivare Riprova/richiesta in questo host: i callback Home restano quelli di
+produzione. Il retry del modello è coperto dal runner lifecycle con SDK doubles.
+
+Il login supporta `light`, `dark`, `accessibility`, `keyboard`, `long-code`,
+`error`, `error-large`, `keyboard-large` tramite `--scenarios`; usa `LoginSession`
+con letture fake fallite e nessun salvataggio. Focus iniziale non garantisce
+l'apertura della tastiera software: toccare il campo nel Simulator e verificare
+la tastiera visibile prima di acquisire una prova. Aiuto e submit sono reali,
+con confine Firebase sostituito.
+
+Entrambi i runner accettano `--derived-data /tmp/cartella-isolata` per riusare
+una build di fixture e `--keep-installed` per proseguire con verifiche manuali.
+In questo caso rimuovere poi il bundle con `xcrun simctl uninstall UDID
+com.sportili.local-home-preview` o `com.sportili.local-login-preview`. Le opzioni
+predefinite continuano a disinstallare l'host.

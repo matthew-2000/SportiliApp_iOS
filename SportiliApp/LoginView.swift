@@ -14,10 +14,12 @@ struct LoginView: View {
     @StateObject private var login: LoginSession
     @State private var showCodeHelp = false
     @State private var inlineError: String?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @FocusState private var isCodeFocused: Bool
     private let initiallyFocused: Bool
 
-    init(login: LoginSession = .firebase(), initiallyFocused: Bool = false) {
+    init(login: LoginSession = .firebase(), initiallyFocused: Bool = false, initialCode: String = "") {
+        _code = State(initialValue: initialCode)
         _login = StateObject(wrappedValue: login)
         self.initiallyFocused = initiallyFocused
     }
@@ -27,17 +29,20 @@ struct LoginView: View {
             SportiliPalette.background
                 .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: SportiliSpacing.large) {
-                    brand
-                    loginForm
+            GeometryReader { geometry in
+                let compact = isCodeFocused || geometry.size.height < 600 || dynamicTypeSize.isAccessibilitySize
+                ScrollView {
+                    VStack(spacing: compact ? SportiliSpacing.standard : SportiliSpacing.section) {
+                        brand(compact: compact)
+                        loginForm
+                    }
+                    .frame(maxWidth: 480)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, SportiliSpacing.section)
+                    .padding(.vertical, compact ? SportiliSpacing.standard : SportiliSpacing.large)
                 }
-                .frame(maxWidth: 480)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, SportiliSpacing.section)
-                .padding(.vertical, SportiliSpacing.extraLarge)
+                .scrollDismissesKeyboard(.interactively)
             }
-            .scrollDismissesKeyboard(.interactively)
         }
         .alert("Come ottenere il codice", isPresented: $showCodeHelp) {
             Button("OK", role: .cancel) { }
@@ -54,27 +59,45 @@ struct LoginView: View {
         }
     }
 
-    private var brand: some View {
-        VStack(spacing: SportiliSpacing.small) {
-            Image("icon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 112, height: 112)
-                .accessibilityHidden(true)
-
-            Text("SportiliApp")
-                .font(SportiliTypography.headline)
-                .multilineTextAlignment(.center)
-
-            Text("Il tuo allenamento, sempre con te.")
-                .font(SportiliTypography.bodySmall)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+    private func brand(compact: Bool) -> some View {
+        VStack(spacing: SportiliSpacing.compact) {
+            if compact {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: SportiliSpacing.small) {
+                        brandIcon(size: 48)
+                        Text("SportiliApp")
+                            .font(SportiliTypography.headline)
+                            .fixedSize(horizontal: true, vertical: true)
+                    }
+                    VStack(spacing: SportiliSpacing.compact) {
+                        brandIcon(size: 48)
+                        Text("SportiliApp")
+                            .font(SportiliTypography.headline)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+            } else {
+                brandIcon(size: 88)
+                Text("SportiliApp")
+                    .font(SportiliTypography.headline)
+                Text("Il tuo allenamento, sempre con te.")
+                    .font(SportiliTypography.bodySmall)
+                    .foregroundStyle(SportiliPalette.onSurfaceMuted)
+                    .multilineTextAlignment(.center)
+            }
         }
     }
 
+    private func brandIcon(size: CGFloat) -> some View {
+        Image("icon")
+            .resizable()
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+
     private var loginForm: some View {
-        VStack(spacing: SportiliSpacing.section) {
+        VStack(spacing: SportiliSpacing.standard) {
             VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
                 Text("Codice di accesso")
                     .font(SportiliTypography.label)
@@ -88,9 +111,9 @@ struct LoginView: View {
                     .padding(.horizontal, SportiliSpacing.standard)
                     .padding(.vertical, 14)
                     .background(SportiliPalette.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: SportiliShape.control, style: .continuous))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        RoundedRectangle(cornerRadius: SportiliShape.control, style: .continuous)
                             .stroke(
                                 currentError == nil ? SportiliPalette.outline : SportiliPalette.onCriticalContainer,
                                 lineWidth: currentError == nil ? 1 : 2
@@ -110,7 +133,7 @@ struct LoginView: View {
 
                 Text("Inserisci il codice fornito dal trainer.")
                     .font(SportiliTypography.bodySmall)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(SportiliPalette.onSurfaceMuted)
             }
 
             VStack(spacing: SportiliSpacing.small) {

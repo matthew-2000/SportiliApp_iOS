@@ -137,3 +137,35 @@ do {
     vm = nil
 }
 print("PASS: automatic user change and logout")
+
+// Refresh failures must not replace a loaded workout with the empty state.
+do {
+    defaults.set("S03-A", forKey: "code")
+    var vm: SchedaViewModel? = SchedaViewModel(autoFetchOnInit: false)
+    vm!.fetchScheda()
+    db.emit("users/S03-A/scheda", card)
+    drain()
+    vm!.fetchScheda()
+    check(vm!.isLoading && vm!.scheda?.durata == 4, "refresh keeps loaded workout")
+    db.deny("users/S03-A/scheda")
+    drain()
+    check(vm!.scheda?.durata == 4 && vm!.errorMessage != nil && !vm!.isLoading,
+          "failed refresh retains data and exposes error")
+    vm!.fetchScheda()
+    db.emit("users/S03-A/scheda", card.merging(["durata": 6]) { _, new in new })
+    drain()
+    check(vm!.scheda?.durata == 6 && vm!.errorMessage == nil, "retry updates data and clears error")
+    db.emit("users/S03-A/scheda", nil)
+    drain()
+    check(vm!.scheda == nil && vm!.errorMessage == nil, "successful absent snapshot still clears workout")
+    db.emit("users/S03-A/scheda", card)
+    drain()
+    defaults.set("S03-B", forKey: "code")
+    vm!.fetchScheda()
+    db.deny("users/S03-B/scheda")
+    drain()
+    check(vm!.scheda == nil && vm!.errorMessage != nil, "new user's failure cannot retain previous user's data")
+    vm = nil
+    check(db.listeners.isEmpty, "refresh fixture releases observers")
+}
+print("PASS: S03 refresh/loading/failure/retry, absent snapshot and changed-user isolation")

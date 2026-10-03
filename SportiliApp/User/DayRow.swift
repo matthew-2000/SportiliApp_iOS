@@ -2,14 +2,18 @@ import SwiftUI
 
 struct DayRow: View {
     let day: Giorno
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         HStack(alignment: .top, spacing: SportiliSpacing.small) {
-            Image(systemName: "figure.strengthtraining.traditional")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(SportiliPalette.primary)
-                .frame(width: 28, height: 28)
-                .accessibilityHidden(true)
+            if !dynamicTypeSize.isAccessibilitySize {
+                Image(systemName: "figure.strengthtraining.traditional")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(SportiliPalette.primary)
+                    .frame(minWidth: 28, minHeight: 28)
+                    .fixedSize()
+                    .accessibilityHidden(true)
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(day.name)
@@ -21,11 +25,17 @@ struct DayRow: View {
                     Text(gruppiString)
                         .font(SportiliTypography.bodySmall)
                         .foregroundStyle(SportiliPalette.onSurfaceMuted)
-                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                Text("Apri allenamento")
+                    .font(SportiliTypography.labelSmall)
+                    .foregroundStyle(SportiliPalette.primary)
             }
         }
-        .padding(.vertical, SportiliSpacing.compact)
+        .padding(SportiliSpacing.standard)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(SportiliPalette.surface)
+        .clipShape(RoundedRectangle(cornerRadius: SportiliShape.container, style: .continuous))
         .contentShape(Rectangle())
     }
 

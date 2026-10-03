@@ -22,6 +22,9 @@ def main():
     parser.add_argument("--simulator", required=True, help="Booted simulator UDID")
     parser.add_argument("--output", required=True, type=Path, help="Logs and screenshots directory")
     parser.add_argument("--packages", type=Path, help="Existing resolved SourcePackages directory")
+    parser.add_argument("--scenarios", nargs="+", help="Capture only these host scenarios")
+    parser.add_argument("--keep-installed", action="store_true", help="Keep the separate fixture app for manual UI QA; uninstall it afterwards")
+    parser.add_argument("--derived-data", type=Path, help="Reuse an isolated derived-data directory for fixture rebuilds")
     args = parser.parse_args()
     devices = json.loads(subprocess.check_output(["xcrun", "simctl", "list", "devices", "booted", "--json"]))
     if not any(device["udid"] == args.simulator for group in devices["devices"].values() for device in group):
@@ -53,7 +56,7 @@ def main():
             "xcodebuild", "-project", str(work / "SportiliApp.xcodeproj"),
             "-scheme", "SportiliApp", "-configuration", "Debug",
             "-destination", f"platform=iOS Simulator,id={args.simulator}",
-            "-derivedDataPath", str(work / "DerivedData"),
+            "-derivedDataPath", str(args.derived_data.resolve() if args.derived_data else work / "DerivedData"),
             "-disableAutomaticPackageResolution", "CODE_SIGNING_ALLOWED=NO",
             f"PRODUCT_BUNDLE_IDENTIFIER={bundle_id}", "build",
         ]
@@ -62,10 +65,10 @@ def main():
         with (output / "build.log").open("w") as log:
             run(*command, stdout=log, stderr=subprocess.STDOUT)
 
-        app = work / "DerivedData/Build/Products/Debug-iphonesimulator/SportiliApp.app"
+        app = (args.derived_data.resolve() if args.derived_data else work / "DerivedData") / "Build/Products/Debug-iphonesimulator/SportiliApp.app"
         run("xcrun", "simctl", "install", args.simulator, str(app))
         try:
-            for scenario in ("light", "dark", "accessibility", "keyboard"):
+            for scenario in args.scenarios or ("light", "dark", "accessibility", "keyboard", "long-code", "error", "error-large", "keyboard-large"):
                 subprocess.run(
                     ["xcrun", "simctl", "terminate", args.simulator, bundle_id],
                     stdout=subprocess.DEVNULL,
@@ -77,7 +80,8 @@ def main():
                 run("xcrun", "simctl", "io", args.simulator, "screenshot", str(image))
                 print(f"REVIEW: {image}", flush=True)
         finally:
-            run("xcrun", "simctl", "uninstall", args.simulator, bundle_id)
+            if not args.keep_installed:
+                run("xcrun", "simctl", "uninstall", args.simulator, bundle_id)
 
 
 if __name__ == "__main__":
