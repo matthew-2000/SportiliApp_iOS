@@ -25,7 +25,7 @@ struct SportiliAppApp: App {
     var body: some Scene {
         WindowGroup {
             rootView
-            .montserrat(size: 17)
+            .sportiliTheme()
         }
     }
 
@@ -99,6 +99,12 @@ struct MontserratFontModifier: ViewModifier {
 }
 
 extension View {
+    /// Apply at an app or local preview root; keep native controls and Dynamic Type.
+    func sportiliTheme() -> some View {
+        self.font(SportiliTypography.bodyLarge)
+            .tint(SportiliPalette.primary)
+    }
+
     func montserrat(size: CGFloat, relativeTo: Font.TextStyle = .body) -> some View {
         self.modifier(MontserratFontModifier(size: size, relativeTo: relativeTo))
     }
@@ -110,6 +116,7 @@ enum SportiliPalette {
     static let onPrimary = adaptive(light: 0xFFFFFF, dark: 0x351F08)
     static let background = adaptive(light: 0xFFFBF7, dark: 0x18120D)
     static let surface = adaptive(light: 0xFFFFFF, dark: 0x211A15)
+    static let onSurface = adaptive(light: 0x211A15, dark: 0xF1E8E0)
     static let surfaceMuted = adaptive(light: 0xF2E5DA, dark: 0x3C3027)
     static let outline = adaptive(light: 0x806F62, dark: 0xA99484)
     static let onSurfaceMuted = adaptive(light: 0x51443A, dark: 0xD8C3B3)
@@ -130,6 +137,7 @@ enum SportiliPalette {
 }
 
 enum SportiliSpacing {
+    static let extraSmall: CGFloat = 4
     static let compact: CGFloat = 8
     static let small: CGFloat = 12
     static let standard: CGFloat = 16
@@ -138,12 +146,22 @@ enum SportiliSpacing {
     static let extraLarge: CGFloat = 48
 }
 
+enum SportiliShape {
+    static let control: CGFloat = 14
+    static let container: CGFloat = 16
+    static let sheet: CGFloat = 24
+}
+
 enum SportiliTypography {
     static let headline = Font.custom("Montserrat-Bold", size: 26, relativeTo: .title)
+    static let titleLarge = Font.custom("Montserrat-SemiBold", size: 20, relativeTo: .title2)
     static let title = Font.custom("Montserrat-SemiBold", size: 18, relativeTo: .title3)
+    static let bodyLarge = Font.custom("Montserrat-Regular", size: 17, relativeTo: .body)
     static let body = Font.custom("Montserrat-Regular", size: 16, relativeTo: .body)
     static let bodySmall = Font.custom("Montserrat-Regular", size: 14, relativeTo: .subheadline)
     static let label = Font.custom("Montserrat-SemiBold", size: 14, relativeTo: .body)
+    static let labelSmall = Font.custom("Montserrat-SemiBold", size: 13, relativeTo: .caption)
+    static let metadata = Font.custom("Montserrat-Regular", size: 13, relativeTo: .caption)
 }
 
 private extension UIColor {
@@ -167,7 +185,7 @@ struct SportiliPrimaryButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity, minHeight: 52)
             .padding(.horizontal, SportiliSpacing.standard)
             .background(SportiliPalette.primary.opacity(isEnabled ? 1 : 0.45))
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: SportiliShape.control, style: .continuous))
             .opacity(configuration.isPressed ? 0.82 : 1)
     }
 }

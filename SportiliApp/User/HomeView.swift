@@ -48,7 +48,7 @@ struct HomeView: View {
             if let nomeUtente {
                 Text("Ciao, \(nomeUtente)")
                     .font(SportiliTypography.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(SportiliPalette.onSurfaceMuted)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .accessibilityAddTraits(.isHeader)
@@ -84,7 +84,7 @@ struct HomeView: View {
                 if scheda.giorni.isEmpty {
                     Label("Nessun allenamento inserito", systemImage: "figure.strengthtraining.traditional")
                         .font(SportiliTypography.body)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(SportiliPalette.onSurfaceMuted)
                         .padding(.vertical, SportiliSpacing.standard)
                 } else {
                     ForEach(scheda.giorni, id: \.id) { giorno in
@@ -391,13 +391,14 @@ private struct HomeUnavailableState: View {
 
                 Text(message)
                     .font(SportiliTypography.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(SportiliPalette.onSurfaceMuted)
                     .multilineTextAlignment(.center)
 
                 Button(actionTitle, action: action)
                     .font(SportiliTypography.label)
                     .buttonStyle(.borderedProminent)
                     .tint(SportiliPalette.primary)
+                    .foregroundStyle(SportiliPalette.onPrimary)
                     .controlSize(.large)
             }
             .padding(SportiliSpacing.section)

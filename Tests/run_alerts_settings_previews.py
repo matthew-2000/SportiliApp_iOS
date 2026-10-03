@@ -18,6 +18,7 @@ def main():
     parser.add_argument("--simulator", required=True, help="Booted simulator UDID")
     parser.add_argument("--output", required=True, type=Path, help="Logs and screenshots directory")
     parser.add_argument("--packages", type=Path, help="Existing resolved SourcePackages directory")
+    parser.add_argument("--scenarios", nargs="+", help="Capture only these host scenarios")
     args = parser.parse_args()
 
     devices = json.loads(subprocess.check_output(["xcrun", "simctl", "list", "devices", "booted", "--json"]))
@@ -68,7 +69,7 @@ def main():
                 "alerts-accessibility", "settings-light", "settings-dark",
                 "settings-accessibility",
             )
-            for scenario in scenarios:
+            for scenario in args.scenarios or scenarios:
                 subprocess.run(
                     ["xcrun", "simctl", "terminate", args.simulator, bundle_id],
                     stdout=subprocess.DEVNULL,

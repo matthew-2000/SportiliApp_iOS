@@ -10,7 +10,7 @@ struct HomePreviewHost: App {
         let scenario = ProcessInfo.processInfo.arguments.first { $0.hasPrefix("--scenario=") }
             .map { String($0.dropFirst("--scenario=".count)) } ?? "active"
         precondition([
-            "active", "expiring", "expired", "requested", "empty", "error", "dark"
+            "active", "expiring", "expired", "requested", "empty", "error", "dark", "accessibility"
         ].contains(scenario))
 
         let model: SchedaViewModel
@@ -37,9 +37,10 @@ struct HomePreviewHost: App {
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                HomeView(schedaViewModel: viewModel, previewUserName: "Test locale")
+                HomeView(schedaViewModel: viewModel, previewUserName: "Matteo")
             }
-            .montserrat(size: 17)
+            .sportiliTheme()
+            .environment(\.sizeCategory, ProcessInfo.processInfo.arguments.contains("--scenario=accessibility") ? .accessibilityExtraExtraLarge : .large)
             .preferredColorScheme(
                 ProcessInfo.processInfo.arguments.contains("--scenario=dark") ? .dark : .light
             )

@@ -12,7 +12,7 @@ struct AlertsSettingsPreviewHost: App {
 
         precondition([
             "alerts-loaded", "alerts-empty", "alerts-error", "alerts-dark",
-            "alerts-accessibility", "settings-light", "settings-dark",
+            "alerts-accessibility", "alerts-error-dark", "alerts-error-accessibility", "settings-light", "settings-dark",
             "settings-accessibility"
         ].contains(scenario))
     }
@@ -31,7 +31,7 @@ struct AlertsSettingsPreviewHost: App {
                     )
                 }
             }
-            .montserrat(size: 17)
+            .sportiliTheme()
             .preferredColorScheme(scenario.hasSuffix("dark") ? .dark : .light)
             .environment(
                 \.sizeCategory,
@@ -44,7 +44,7 @@ struct AlertsSettingsPreviewHost: App {
         switch scenario {
         case "alerts-empty":
             return AlertsViewModel(autoObserve: false)
-        case "alerts-error":
+        case "alerts-error", "alerts-error-dark", "alerts-error-accessibility":
             return AlertsViewModel(
                 autoObserve: false,
                 initialErrorMessage: "Connessione non disponibile. Controlla la rete e riprova."

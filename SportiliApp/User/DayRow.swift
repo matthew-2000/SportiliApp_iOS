@@ -20,7 +20,7 @@ struct DayRow: View {
                 if !gruppiString.isEmpty {
                     Text(gruppiString)
                         .font(SportiliTypography.bodySmall)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(SportiliPalette.onSurfaceMuted)
                         .lineLimit(2)
                 }
             }

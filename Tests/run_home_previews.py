@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--simulator", required=True, help="Booted simulator UDID")
     parser.add_argument("--output", required=True, type=Path, help="Logs and screenshots directory")
     parser.add_argument("--packages", type=Path, help="Existing resolved SourcePackages directory")
+    parser.add_argument("--scenarios", nargs="+", help="Capture only these host scenarios")
     args = parser.parse_args()
     devices = json.loads(subprocess.check_output(["xcrun", "simctl", "list", "devices", "booted", "--json"]))
     if not any(device["udid"] == args.simulator for group in devices["devices"].values() for device in group):
@@ -62,7 +63,7 @@ def main():
         app = work / "DerivedData/Build/Products/Debug-iphonesimulator/SportiliApp.app"
         run("xcrun", "simctl", "install", args.simulator, str(app))
         try:
-            for scenario in (
+            for scenario in args.scenarios or (
                 "active", "expiring", "expired", "requested", "empty", "error", "dark"
             ):
                 subprocess.run(["xcrun", "simctl", "terminate", args.simulator, bundle_id],
