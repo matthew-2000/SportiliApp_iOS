@@ -24,17 +24,70 @@ struct SportiliAppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            Group {
-                if Auth.auth().currentUser != nil {
-                    ContentView()
-                } else {
-                    LoginView()
-                }
-            }
+            rootView
             .montserrat(size: 17)
         }
     }
+
+    @ViewBuilder
+    private var rootView: some View {
+#if DEBUG
+        if let preview = QA01Preview.current {
+            preview.view
+        } else if Auth.auth().currentUser != nil {
+            ContentView()
+        } else {
+            LoginView()
+        }
+#else
+        if Auth.auth().currentUser != nil {
+            ContentView()
+        } else {
+            LoginView()
+        }
+#endif
+    }
 }
+
+#if DEBUG
+private enum QA01Preview: String {
+    case active
+    case expired
+    case requested
+
+    static var current: QA01Preview? {
+        let prefix = "--qa-screen="
+        guard let argument = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix(prefix) }) else {
+            return nil
+        }
+        return QA01Preview(rawValue: String(argument.dropFirst(prefix.count)))
+    }
+
+    @ViewBuilder
+    var view: some View {
+        NavigationStack {
+            HomeView(
+                schedaViewModel: SchedaViewModel(
+                    autoFetchOnInit: false,
+                    scheda: workout
+                ),
+                previewUserName: "Matteo"
+            )
+        }
+    }
+
+    private var workout: Scheda {
+        switch self {
+        case .active:
+            PreviewData.activeScheda
+        case .expired:
+            PreviewData.expiredScheda
+        case .requested:
+            PreviewData.requestedScheda
+        }
+    }
+}
+#endif
 
 struct MontserratFontModifier: ViewModifier {
     let size: CGFloat
