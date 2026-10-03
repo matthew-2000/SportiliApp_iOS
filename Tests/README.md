@@ -185,3 +185,22 @@ una build di fixture e `--keep-installed` per proseguire con verifiche manuali.
 In questo caso rimuovere poi il bundle con `xcrun simctl uninstall UDID
 com.sportili.local-home-preview` o `com.sportili.local-login-preview`. Le opzioni
 predefinite continuano a disinstallare l'host.
+
+
+## Sprint S04 — giorno e dettaglio
+
+`python3 Tests/run_s04_previews.py --simulator UDID --output /tmp/s04-ios`
+usa un host separato senza Firebase. Supporta `--packages`, `--derived-data`,
+`--scenarios` e `--keep-installed` come il runner Home. Scenari predefiniti:
+giorno e dettaglio 1/2/3 parti, nome lungo singolo, success/loading/error,
+light/dark e accessibility3. DayView/EsercizioView e navigazione sono reali;
+immagini locali e ExerciseDetailViewModel(autoObserve: false, userCode: "")
+eviteranno accessi e salvataggi al backend. I dati per parte sono distinti:
+10/20/30 kg, note 1/2/3; Élite risolve la chiave legacy `lite`.
+
+Controllare scroll, apertura giorno→dettaglio, cambio parte, timer e fullscreen.
+Non trattare le acquisizioni automatiche come test UI. Al termine disinstallare
+`com.sportili.local-s04-preview` se si è usato `--keep-installed`.
+`python3 Tests/run_image_loader_tests.py` controlla reset, callback tardive,
+errore/retry e dati immagine invalidi, compilando ImageLoader reale con doubles.
+`python3 Tests/run_note_tests.py` copre note per parte e chiavi canoniche/legacy.

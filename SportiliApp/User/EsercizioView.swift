@@ -150,7 +150,6 @@ struct EsercizioView: View {
         let savedNote = currentData?.noteUtente ?? ""
         let isNoteDirty = noteInput != savedNote
         let canManageData = !viewModel.userCode.isEmpty
-        let heroSubtitle = parts.count > 1 ? currentPartName : nil
 
         let heroState: ExerciseHeroState
         if let image = imageLoader.image {
@@ -163,17 +162,18 @@ struct EsercizioView: View {
 
         return List {
             Section {
-                ExerciseHeader(
-                    title: esercizio.name,
-                    subtitle: heroSubtitle,
-                    state: heroState,
-                    onTap: { showFullScreenImage = true }
-                )
-            }
-
-            if parts.count > 1 {
-                Section(header: Text("Esercizio del superset").font(SportiliTypography.label)) {
+                if parts.count > 1 {
+                    Label("Superset · \(parts.count) parti", systemImage: "link")
+                        .font(SportiliTypography.label)
+                        .foregroundStyle(SportiliPalette.primary)
+                    Text("Esegui tutte le parti in combinazione.")
+                        .font(SportiliTypography.bodySmall)
+                        .foregroundStyle(SportiliPalette.onSurfaceMuted)
                     ExerciseVariationPicker(parts: parts, selectedIndex: $selectedPartIndex)
+                } else {
+                    Text(currentPartName)
+                        .font(SportiliTypography.headline)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
 
@@ -183,6 +183,11 @@ struct EsercizioView: View {
                     riposo: esercizio.riposo,
                     onStartTimer: { showTimerSheet = true }
                 )
+            }
+
+            Section {
+                ExerciseHeroHeader(state: heroState, exerciseName: currentPartName,
+                    onTap: { showFullScreenImage = true })
             }
 
             if let notePT = esercizio.notePT,
@@ -549,37 +554,6 @@ struct EsercizioView: View {
     }
 }
 
-private struct ExerciseHeader: View {
-    let title: String
-    let subtitle: String?
-    let state: ExerciseHeroState
-    let onTap: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: SportiliSpacing.small) {
-            Text(title)
-                .font(SportiliTypography.headline)
-                .foregroundStyle(.primary)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-
-            if let subtitle, !subtitle.isEmpty {
-                Label(subtitle, systemImage: "link")
-                    .font(SportiliTypography.bodySmall)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            ExerciseHeroHeader(
-                state: state,
-                exerciseName: subtitle ?? title,
-                onTap: onTap
-            )
-        }
-        .padding(.vertical, SportiliSpacing.compact)
-    }
-}
-
 // MARK: - Hero
 
 private enum ExerciseHeroState {
@@ -640,15 +614,32 @@ private struct ExerciseVariationPicker: View {
     @Binding var selectedIndex: Int
 
     var body: some View {
-        Picker("Esercizio", selection: $selectedIndex) {
-            ForEach(parts.indices, id: \.self) { idx in
-                Text(parts[idx])
-                    .tag(idx)
+        VStack(alignment: .leading, spacing: SportiliSpacing.small) {
+            ForEach(parts.indices, id: \.self) { index in
+                Button { selectedIndex = index } label: {
+                    HStack(alignment: .top, spacing: SportiliSpacing.small) {
+                        Image(systemName: selectedIndex == index ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Parte \(index + 1) di \(parts.count)" + (selectedIndex == index ? " · Attiva" : ""))
+                                .font(SportiliTypography.labelSmall)
+                            Text(parts[index])
+                                .font(SportiliTypography.title)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(SportiliSpacing.small)
+                    .foregroundStyle(selectedIndex == index ? SportiliPalette.primary : .primary)
+                    .background(selectedIndex == index ? SportiliPalette.surfaceMuted : Color.clear)
+                    .clipShape(RoundedRectangle(cornerRadius: SportiliShape.control))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selectedIndex == index ? .isSelected : [])
             }
         }
-        .font(SportiliTypography.body)
-        .pickerStyle(.menu)
-        .accessibilityValue(parts.indices.contains(selectedIndex) ? parts[selectedIndex] : "")
     }
 }
 
@@ -663,32 +654,45 @@ private struct PrescriptionCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: SportiliSpacing.standard) {
-            LabeledContent {
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Serie e ripetizioni", systemImage: "figure.strengthtraining.functional")
+                    .font(SportiliTypography.label)
                 Text(serie)
                     .font(SportiliTypography.title)
-                    .multilineTextAlignment(.trailing)
-            } label: {
-                Label("Serie", systemImage: "figure.strengthtraining.functional")
-                    .font(SportiliTypography.label)
+                    .foregroundStyle(SportiliPalette.primary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             if hasRest, let riposo {
                 Divider()
-                LabeledContent {
-                    Text(riposo)
-                        .font(SportiliTypography.title)
-                } label: {
+                VStack(alignment: .leading, spacing: 6) {
                     Label("Recupero", systemImage: "timer")
                         .font(SportiliTypography.label)
+                    Text(riposo)
+                        .font(SportiliTypography.title)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Button(action: onStartTimer) {
-                    Label("Avvia timer di recupero", systemImage: "play.circle.fill")
-                        .font(SportiliTypography.label)
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                    HStack(alignment: .top, spacing: SportiliSpacing.compact) {
+                        Image(systemName: "play.circle.fill")
+                            .accessibilityHidden(true)
+                        Text("Avvia timer di recupero")
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .font(SportiliTypography.label)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .multilineTextAlignment(.leading)
                 }
                 .buttonStyle(.bordered)
                 .tint(SportiliPalette.primary)
+            } else {
+                Button(action: onStartTimer) {
+                    Text("Apri timer di recupero")
+                        .font(SportiliTypography.label)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .buttonStyle(.bordered)
             }
         }
         .padding(.vertical, SportiliSpacing.compact)

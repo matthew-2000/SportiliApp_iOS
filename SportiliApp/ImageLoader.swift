@@ -13,24 +13,22 @@ class ImageLoader: ObservableObject {
     @Published var image: UIImage?
     @Published var error: Error?
 
+    private var requestID = UUID()
+
     func loadImage(from storagePath: String) {
-        let storage = Storage.storage()
-        let storageRef = storage.reference(forURL: storagePath)
-        
-        storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
-            if let error = error {
-                // Aggiorna la variabile error con l'errore rilevato
-                self.error = error
-                print("Errore nel caricamento dell'immagine:", error)
-                // Se c'è un errore, prova a caricare l'immagine in formato PNG
-            } else {
-                if let imageData = data {
-                    if let uiImage = UIImage(data: imageData) {
-                        DispatchQueue.main.async {
-                            self.image = uiImage
-                        }
-                    }
-                }
+        // A part change must not retain the previous image or accept its late callback.
+        let request = UUID()
+        requestID = request
+        image = nil
+        error = nil
+        let storageRef = Storage.storage().reference(forURL: storagePath)
+        storageRef.getData(maxSize: 5 * 1024 * 1024) { [weak self] data, error in
+            let loadedImage = data.flatMap(UIImage.init(data:))
+            DispatchQueue.main.async {
+                guard let self, self.requestID == request else { return }
+                self.image = loadedImage
+                self.error = error ?? (loadedImage == nil ? NSError(domain: "ExerciseImage", code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Immagine non disponibile"]) : nil)
             }
         }
     }

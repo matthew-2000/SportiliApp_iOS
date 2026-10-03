@@ -9,6 +9,9 @@ import SwiftUI
 
 struct DayView: View {
     @State var day: Giorno
+    var detailViewModel: ExerciseDetailViewModel? = nil
+    var imageLoaderFactory: () -> ImageLoader = { ImageLoader() }
+    var autoLoadImages: Bool = true
     
     var body: some View {
         VStack(spacing: 0) {
@@ -22,10 +25,13 @@ struct DayView: View {
                                     giornoId: day.id,
                                     gruppoId: gruppo.id,
                                     esercizioId: esercizio.id,
-                                    esercizio: esercizio
+                                    esercizio: esercizio,
+                                    viewModel: detailViewModel,
+                                    imageLoader: imageLoaderFactory(),
+                                    autoLoadImage: autoLoadImages
                                 )
                             ) {
-                                EsercizioRow(esercizio: esercizio)
+                                EsercizioRow(esercizio: esercizio, imageLoaderFactory: imageLoaderFactory, autoLoadImages: autoLoadImages)
                             }
                             .listRowSeparator(.hidden)
                         }
@@ -45,6 +51,7 @@ struct GruppoRow: View {
     var body: some View {
         Text(gruppo.nome)
             .font(SportiliTypography.title)
+            .foregroundStyle(SportiliPalette.onSurfaceMuted)
             .textCase(nil)
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -53,6 +60,9 @@ struct GruppoRow: View {
 struct EsercizioRow: View {
 
     var esercizio: Esercizio
+    var imageLoaderFactory: () -> ImageLoader = { ImageLoader() }
+    var autoLoadImages: Bool = true
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private struct IdentifiableImage: Identifiable {
         let id = UUID()
@@ -67,35 +77,26 @@ struct EsercizioRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Se il nome dell'esercizio contiene più parti (separate da "+") lo mostriamo come superset
             if exerciseParts.count > 1 {
-                SupersetLinkedRows(names: exerciseParts) { image in
+                Label("Superset · \(exerciseParts.count) parti", systemImage: "link")
+                    .font(SportiliTypography.label)
+                    .foregroundStyle(SportiliPalette.primary)
+                InfoSection(esercizio: esercizio)
+                SupersetLinkedRows(names: exerciseParts, imageLoaderFactory: imageLoaderFactory, autoLoadImages: autoLoadImages) { image in
                     selectedImage = IdentifiableImage(image: image)
                 }
             } else {
-                // Altrimenti layout singolo
-                HStack(alignment: .center, spacing: 16) {
-                    SingleExercisePreview(name: exerciseParts.first) { image in
-                        selectedImage = IdentifiableImage(image: image)
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SportiliSpacing.small) {
+                        singleTitle
+                        thumbnail
                     }
-                    .frame(width: 104, height: 104)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(esercizio.name)
-                            .font(SportiliTypography.title)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        InfoSection(esercizio: esercizio)
+                } else {
+                    HStack(alignment: .top, spacing: SportiliSpacing.small) {
+                        singleTitle
+                        thumbnail
                     }
-
-                    Spacer()
                 }
-            }
-
-            // Info sotto al superset
-            if exerciseParts.count > 1 {
-                InfoSection(esercizio: esercizio)
-                    .padding(.leading, SportiliSpacing.standard)
             }
         }
         .padding(.vertical, SportiliSpacing.compact)
@@ -104,31 +105,31 @@ struct EsercizioRow: View {
         }
     }
 
+    private var singleTitle: some View {
+        VStack(alignment: .leading, spacing: SportiliSpacing.small) {
+            Text(esercizio.name)
+                .font(SportiliTypography.title)
+                .fixedSize(horizontal: false, vertical: true)
+            InfoSection(esercizio: esercizio)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var thumbnail: some View {
+        ExerciseThumbnailView(name: exerciseParts.first ?? "", size: 88,
+            imageLoader: imageLoaderFactory(), autoLoadImage: autoLoadImages) { image in
+            selectedImage = IdentifiableImage(image: image)
+        }
+    }
+
 }
 
 // MARK: - Componenti private
 
-private struct SingleExercisePreview: View {
-    let name: String?
-    let onImageTap: (UIImage) -> Void
-
-    private var trimmedName: String {
-        name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-    }
-
-    var body: some View {
-        Group {
-            if trimmedName.isEmpty {
-                PlaceholderThumbnail()
-            } else {
-                ExerciseThumbnailView(name: trimmedName, size: 104, onImageTap: onImageTap)
-            }
-        }
-    }
-}
-
 private struct SupersetLinkedRows: View {
     let names: [String]
+    let imageLoaderFactory: () -> ImageLoader
+    let autoLoadImages: Bool
     let onImageTap: (UIImage) -> Void
 
     var body: some View {
@@ -141,7 +142,7 @@ private struct SupersetLinkedRows: View {
 
             VStack(spacing: 0) {
                 ForEach(Array(names.enumerated()), id: \.offset) { index, name in
-                    SupersetItemRow(name: name, onImageTap: onImageTap)
+                    SupersetItemRow(name: name, index: index, count: names.count, imageLoaderFactory: imageLoaderFactory, autoLoadImages: autoLoadImages, onImageTap: onImageTap)
 
                     if index < names.count - 1 {
                         SupersetConnector()
@@ -162,7 +163,12 @@ private struct SupersetLinkedRows: View {
 
 private struct SupersetItemRow: View {
     let name: String
+    let index: Int
+    let count: Int
+    let imageLoaderFactory: () -> ImageLoader
+    let autoLoadImages: Bool
     let onImageTap: (UIImage) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var trimmedName: String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -174,24 +180,39 @@ private struct SupersetItemRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            if trimmedName.isEmpty {
-                PlaceholderThumbnail()
-                    .frame(width: 88, height: 88)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SportiliSpacing.small) {
+                    partLabel
+                    partThumbnail
+                }
             } else {
-                ExerciseThumbnailView(name: trimmedName, size: 88, onImageTap: onImageTap)
+                HStack(alignment: .center, spacing: SportiliSpacing.small) {
+                    partThumbnail
+                    partLabel
+                }
             }
-
-            Text(displayName)
-                .font(SportiliTypography.title)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
     }
+    private var partLabel: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Parte \(index + 1) di \(count)")
+                .font(SportiliTypography.labelSmall)
+                .foregroundStyle(SportiliPalette.onSurfaceMuted)
+            Text(displayName)
+                .font(SportiliTypography.title)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var partThumbnail: some View {
+        ExerciseThumbnailView(name: trimmedName, size: 64, imageLoader: imageLoaderFactory(),
+            autoLoadImage: autoLoadImages, onImageTap: onImageTap)
+    }
+
 }
 
 private struct SupersetConnector: View {
@@ -218,7 +239,7 @@ private struct InfoSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
             Label {
-                Text(esercizio.serie)
+                Text("Serie e ripetizioni: \(esercizio.serie)")
                     .font(SportiliTypography.title)
             } icon: {
                 Image(systemName: "figure.strengthtraining.functional")
@@ -228,9 +249,10 @@ private struct InfoSection: View {
             if let riposo = esercizio.riposo, !riposo.isEmpty {
                 Label("Recupero \(riposo)", systemImage: "timer")
                     .font(SportiliTypography.bodySmall)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(SportiliPalette.onSurfaceMuted)
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .combine)
     }
 }
@@ -240,7 +262,17 @@ private struct ExerciseThumbnailView: View {
     let size: CGFloat
     let onImageTap: (UIImage) -> Void
 
-    @StateObject private var imageLoader = ImageLoader()
+    @StateObject private var imageLoader: ImageLoader
+    let autoLoadImage: Bool
+
+    init(name: String, size: CGFloat, imageLoader: ImageLoader = ImageLoader(),
+         autoLoadImage: Bool = true, onImageTap: @escaping (UIImage) -> Void) {
+        self.name = name
+        self.size = size
+        self.autoLoadImage = autoLoadImage
+        self.onImageTap = onImageTap
+        _imageLoader = StateObject(wrappedValue: imageLoader)
+    }
     @State private var lastRequestedName: String = ""
 
     var body: some View {
@@ -257,7 +289,7 @@ private struct ExerciseThumbnailView: View {
                     }
                     .accessibilityLabel("Apri immagine di \(name) a schermo intero")
                     .accessibilityAddTraits(.isButton)
-            } else if imageLoader.error != nil || PreviewContext.isPreview {
+            } else if imageLoader.error != nil || (autoLoadImage && PreviewContext.isPreview) {
                 PlaceholderThumbnail()
                     .frame(width: size, height: size)
             } else {
@@ -279,7 +311,7 @@ private struct ExerciseThumbnailView: View {
     }
 
     private func loadImageIfNeeded() {
-        guard !PreviewContext.isPreview else { return }
+        guard autoLoadImage, !PreviewContext.isPreview else { return }
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
 
@@ -294,10 +326,10 @@ private struct ExerciseThumbnailView: View {
 private struct PlaceholderThumbnail: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 5)
-            .fill(Color.cardGray)
+            .fill(SportiliPalette.surfaceMuted)
             .overlay(
                 Image(systemName: "photo")
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundStyle(SportiliPalette.onSurfaceMuted)
             )
             .accessibilityLabel("Immagine non disponibile")
     }
