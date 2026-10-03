@@ -55,3 +55,14 @@ let legacyModel = ExerciseDetailViewModel(userCode: "test", autoObserve: false, 
 ])
 precondition(legacyModel.exerciseKey(from: "Élite") == "lite")
 print("PASS: stable cross-platform exercise keys and legacy-key reuse")
+
+// Simulate @Published's willSet delivery: the model still holds its earlier snapshot.
+actions.noteInput = "nota confermata"; actions.lastSyncedNote = "nota confermata"; actions.lastSyncedNoteKey = "panca"
+actions.syncNote(for: "panca", force: false, remoteNote: "nota confermata")
+precondition(actions.noteInput == "nota confermata", "A successful note must not be replaced by a stale model read")
+actions.noteInput = "bozza non salvata"
+actions.syncNote(for: "panca", force: false, remoteNote: "nota remota")
+precondition(actions.noteInput == "bozza non salvata", "Remote delivery must preserve a dirty draft")
+actions.syncNote(for: "croci", force: true)
+precondition(actions.noteInput == "" && actions.lastSyncedNoteKey == "croci")
+print("PASS: emitted note snapshot, successful-save synchronization and draft isolation")

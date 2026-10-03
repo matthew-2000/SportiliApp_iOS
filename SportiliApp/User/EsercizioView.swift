@@ -37,6 +37,30 @@ private struct ErrorAlert: Identifiable {
     let message: String
 }
 
+// Feature-local callbacks; production delegates to the existing model.
+struct ExerciseDetailActions {
+    var addWeight: (String, Double, @escaping (Result<WeightLog, ExerciseDataError>) -> Void) -> Void
+    var updateWeight: (String, String, Double, @escaping (Result<WeightLog, ExerciseDataError>) -> Void) -> Void
+    var updateNote: (String, String?, @escaping (Result<Void, ExerciseDataError>) -> Void) -> Void
+}
+
+extension ExerciseDetailActions {
+    init(model: ExerciseDetailViewModel) {
+        addWeight = { model.addWeightEntry(for: $0, weight: $1, completion: $2) }
+        updateWeight = { model.updateWeightEntry(for: $0, entryId: $1, weight: $2, completion: $3) }
+        updateNote = { model.updateUserNote(for: $0, note: $1, completion: $2) }
+    }
+}
+
+// Decimal input accepts either separator, never non-finite or scientific notation.
+func parsedWeightInput(_ input: String) -> Double? {
+    let value = input.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard value.range(of: "^[0-9]+([.,][0-9]+)?$", options: .regularExpression) != nil,
+          let weight = Double(value.replacingOccurrences(of: ",", with: ".")),
+          weight.isFinite, weight > 0 else { return nil }
+    return weight
+}
+
 // MARK: - Main View
 
 struct EsercizioView: View {
@@ -53,6 +77,7 @@ struct EsercizioView: View {
     @State private var weightInput: String = ""
     @State private var dialogExerciseKey: String
     @State private var isWeightSaving = false
+    @State private var weightError: String?
 
     // Note
     @State private var noteInput: String
@@ -60,6 +85,7 @@ struct EsercizioView: View {
     @State private var lastSyncedNoteKey: String
     @State private var showNotesSheet = false
     @State private var isNotesSaving = false
+    @State private var noteError: String?
 
     // UI
     @State private var showTimerSheet = false
@@ -73,6 +99,7 @@ struct EsercizioView: View {
     @StateObject private var imageLoader: ImageLoader
     @StateObject private var viewModel: ExerciseDetailViewModel
     private let autoLoadImage: Bool
+    private let actions: ExerciseDetailActions
 
     init(
         giornoId: String,
@@ -82,7 +109,8 @@ struct EsercizioView: View {
         userCode: String? = nil,
         viewModel: ExerciseDetailViewModel? = nil,
         imageLoader: ImageLoader = ImageLoader(),
-        autoLoadImage: Bool = true
+        autoLoadImage: Bool = true,
+        actions: ExerciseDetailActions? = nil
     ) {
         self.giornoId = giornoId
         self.gruppoId = gruppoId
@@ -92,6 +120,7 @@ struct EsercizioView: View {
 
         let resolvedCode = userCode ?? UserDefaults.standard.string(forKey: "code") ?? ""
         let resolvedViewModel = viewModel ?? ExerciseDetailViewModel(userCode: resolvedCode)
+        self.actions = actions ?? ExerciseDetailActions(model: resolvedViewModel)
         _viewModel = StateObject(wrappedValue: resolvedViewModel)
         _imageLoader = StateObject(wrappedValue: imageLoader)
 
@@ -118,7 +147,7 @@ struct EsercizioView: View {
     static let summaryDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd MMM yyyy HH:mm"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.locale = Locale(identifier: "it_IT")
         return formatter
     }()
 
@@ -203,12 +232,29 @@ struct EsercizioView: View {
                     isDirty: isNoteDirty,
                     onTap: {
                         isNotesSaving = false
+                        noteError = nil
                         showNotesSheet = true
                     }
                 )
+                .id(currentKey)
             }
 
-            Section(header: Text("Progressi").font(SportiliTypography.label)) {
+            Section(header: Text("Pesi e progressi").font(SportiliTypography.label)) {
+                if let latest = sortedLogs.last {
+                    WeightLogRow(date: Self.summaryDateFormatter.string(from: latest.date),
+                                 weight: "Ultimo peso: \(formattedWeight(latest.weight)) kg")
+                }
+                Button {
+                    dialogExerciseKey = currentKey
+                    weightDialogMode = .create
+                    weightInput = ""
+                    weightError = nil
+                } label: {
+                    Label("Registra peso", systemImage: "plus.circle.fill")
+                        .font(SportiliTypography.label)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .disabled(!canManageData)
                 if recentLogs.isEmpty {
                     EmptyStateRow(
                         title: "Nessun peso registrato",
@@ -242,6 +288,7 @@ struct EsercizioView: View {
                                 dialogExerciseKey = currentKey
                                 weightDialogMode = .edit(log)
                                 weightInput = editingString(for: log.weight)
+                                weightError = nil
                             } label: {
                                 Label("Modifica", systemImage: "pencil")
                                     .montserrat(size: 17)
@@ -257,19 +304,6 @@ struct EsercizioView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    dialogExerciseKey = currentKey
-                    weightDialogMode = .create
-                    weightInput = ""
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("Registra peso")
-                .disabled(!canManageData)
-            }
-        }
         .fullScreenCover(isPresented: $showFullScreenImage) {
             Group {
                 if let image = imageLoader.image {
@@ -282,6 +316,7 @@ struct EsercizioView: View {
                 mode: weightDialogMode,
                 weightInput: $weightInput,
                 isSaving: isWeightSaving,
+                errorMessage: weightError,
                 onConfirm: handleWeightConfirm,
                 onCancel: dismissWeightSheet
             )
@@ -297,8 +332,10 @@ struct EsercizioView: View {
                 canManage: canManageData,
                 isSaving: isNotesSaving,
                 isDirty: isNoteDirty,
+                errorMessage: noteError,
                 onSave: {
                     guard !isNotesSaving else { return }
+                    noteError = nil
                     isNotesSaving = true
                     saveNote(for: currentKey) { isSuccess in
                         isNotesSaving = false
@@ -307,9 +344,10 @@ struct EsercizioView: View {
                         }
                     }
                 },
-                onRevert: { noteInput = savedNote },
+                onRevert: { noteInput = savedNote; noteError = nil },
                 onDelete: {
                     guard !isNotesSaving else { return }
+                    noteError = nil
                     isNotesSaving = true
                     removeNote(for: currentKey) { isSuccess in
                         isNotesSaving = false
@@ -366,8 +404,9 @@ struct EsercizioView: View {
             let initialPartName = Self.primaryExerciseName(from: esercizio.name)
             loadExerciseImage(for: initialPartName)
         }
-        .onReceive(viewModel.$exerciseData) { _ in
-            syncNote(for: currentKey, force: false)
+        .onReceive(viewModel.$exerciseData) { data in
+            // @Published emits before the model setter completes. Use the emitted snapshot.
+            syncNote(for: currentKey, force: false, remoteNote: data[currentKey]?.noteUtente ?? "")
         }
         .onChange(of: selectedPartIndex) { newIndex in
             let newPartName = Self.partName(at: newIndex, from: parts, fallback: esercizio.name)
@@ -380,6 +419,8 @@ struct EsercizioView: View {
             weightDialogMode = .hidden
             weightInput = ""
             isWeightSaving = false
+            weightError = nil
+            noteError = nil
             deletionContext = nil
 
             loadExerciseImage(for: newPartName)
@@ -433,38 +474,38 @@ struct EsercizioView: View {
     // MARK: - Weight actions
 
     private func handleWeightConfirm() {
-        let normalized = weightInput.replacingOccurrences(of: ",", with: ".")
-        guard let weightValue = Double(normalized), weightValue > 0 else {
-            showError("Inserisci un peso valido")
+        guard !isWeightSaving else { return }
+        guard let weightValue = parsedWeightInput(weightInput) else {
+            weightError = "Inserisci un peso maggiore di zero, con virgola o punto."
             return
         }
-        guard !isWeightSaving else { return }
+        weightError = nil
 
         let key = dialogExerciseKey
         isWeightSaving = true
 
         switch weightDialogMode {
         case .create:
-            viewModel.addWeightEntry(for: key, weight: weightValue) { result in
+            actions.addWeight(key, weightValue) { result in
                 isWeightSaving = false
                 switch result {
                 case .success:
                     showToast(message: "Peso salvato")
                     dismissWeightSheet()
                 case .failure(let message):
-                    showError(message.errorDescription ?? "Errore sconosciuto")
+                    weightError = message.errorDescription ?? "Errore sconosciuto"
                 }
             }
 
         case .edit(let record):
-            viewModel.updateWeightEntry(for: key, entryId: record.id, weight: weightValue) { result in
+            actions.updateWeight(key, record.id, weightValue) { result in
                 isWeightSaving = false
                 switch result {
                 case .success:
                     showToast(message: "Peso aggiornato")
                     dismissWeightSheet()
                 case .failure(let message):
-                    showError(message.errorDescription ?? "Errore sconosciuto")
+                    weightError = message.errorDescription ?? "Errore sconosciuto"
                 }
             }
 
@@ -499,7 +540,7 @@ struct EsercizioView: View {
     }
 
     private func persistNote(_ note: String?, for key: String, completion: @escaping (Bool) -> Void) {
-        viewModel.updateUserNote(for: key, note: note) { result in
+        actions.updateNote(key, note) { result in
             switch result {
             case .success:
                 noteInput = note ?? ""
@@ -509,14 +550,14 @@ struct EsercizioView: View {
                           color: note == nil ? .orange : .green)
                 completion(true)
             case .failure(let message):
-                showError(message.errorDescription ?? "Errore sconosciuto")
+                noteError = message.errorDescription ?? "Errore sconosciuto"
                 completion(false)
             }
         }
     }
 
-    private func syncNote(for key: String, force: Bool) {
-        let remoteNote = viewModel.data(for: key)?.noteUtente ?? ""
+    private func syncNote(for key: String, force: Bool, remoteNote: String? = nil) {
+        let remoteNote = remoteNote ?? viewModel.data(for: key)?.noteUtente ?? ""
         if force {
             noteInput = remoteNote
             lastSyncedNote = remoteNote
@@ -748,26 +789,29 @@ struct WeightProgressCard: View {
         return formatter
     }()
 
+    private var samples: [UniformLog] { Array(data.sorted { $0.date < $1.date }.suffix(10)) }
+
     private var summary: WeightProgressSummary? {
-        guard let first = data.first, let last = data.last else { return nil }
+        guard let first = samples.first, let last = samples.last else { return nil }
         return WeightProgressSummary(
             latest: last.weight,
             delta: last.weight - first.weight,
-            minimum: data.map(\.weight).min() ?? last.weight,
-            maximum: data.map(\.weight).max() ?? last.weight
+            minimum: samples.map(\.weight).min() ?? last.weight,
+            maximum: samples.map(\.weight).max() ?? last.weight
         )
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: SportiliSpacing.small) {
-            Label("Andamento (ultimi 10)", systemImage: "chart.line.uptrend.xyaxis")
+            Label("Ultime 10 registrazioni", systemImage: "chart.line.uptrend.xyaxis")
                 .font(SportiliTypography.label)
 
             if let summary {
                 VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
                     Text("Ultimo peso: \(format(summary.latest)) kg")
                         .font(SportiliTypography.title)
-                    Text("Variazione: \(signed(summary.delta)) kg · Minimo \(format(summary.minimum)) kg · Massimo \(format(summary.maximum)) kg")
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Variazione tra primo e ultimo campione: \(signed(summary.delta)) kg · Minimo \(format(summary.minimum)) kg · Massimo \(format(summary.maximum)) kg")
                         .font(SportiliTypography.bodySmall)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -775,9 +819,19 @@ struct WeightProgressCard: View {
                 .accessibilityElement(children: .combine)
             }
 
-            WeightChartView(data: data, dateFormatter: dateFormatter)
+            WeightChartView(data: samples.enumerated().map { UniformLog(id: $0.offset, index: $0.offset + 1, date: $0.element.date, weight: $0.element.weight) }, dateFormatter: dateFormatter)
                 .frame(height: 220)
                 .accessibilityHidden(true)
+            Text("Campioni in ordine di registrazione. Gli intervalli tra le date possono variare.")
+                .font(SportiliTypography.bodySmall)
+                .foregroundStyle(SportiliPalette.onSurfaceMuted)
+            DisclosureGroup("Valori e date dei campioni") {
+                ForEach(Array(samples.enumerated()), id: \.offset) { index, log in
+                    WeightLogRow(date: dateFormatter.string(from: log.date),
+                                 weight: "Campione \(index + 1): \(format(log.weight)) kg")
+                }
+            }
+            .font(SportiliTypography.bodySmall)
         }
         .padding(.vertical, 6)
     }
@@ -810,8 +864,10 @@ private struct WeightLogRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(weight)
                     .font(SportiliTypography.title)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(date)
                     .font(SportiliTypography.bodySmall)
+                    .fixedSize(horizontal: false, vertical: true)
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -821,53 +877,53 @@ private struct WeightLogRow: View {
     }
 }
 
-private struct PersonalNotesCard: View {
+struct PersonalNotesCard: View {
     let text: String
     let isDirty: Bool
     let onTap: () -> Void
+    @State private var expanded = false
 
     var body: some View {
-        Button(action: onTap) {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "square.and.pencil")
-                    .foregroundStyle(.tint)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Nessuna nota salvata" : text)
-                        .font(SportiliTypography.body)
-                        .foregroundStyle(text.isEmpty ? .secondary : .primary)
-                        .lineLimit(5)
-                        .multilineTextAlignment(.leading)
-
-                    Text(isDirty ? "Modifiche non salvate" : "Tocca per modificare")
-                        .font(SportiliTypography.bodySmall)
-                        .foregroundStyle(isDirty ? SportiliPalette.onWarningContainer : .secondary)
-                    }
-
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+        VStack(alignment: .leading, spacing: SportiliSpacing.small) {
+            Text(text.isEmpty ? "Nessuna nota salvata" : text)
+                .font(SportiliTypography.body)
+                .foregroundStyle(text.isEmpty ? SportiliPalette.onSurfaceMuted : SportiliPalette.onSurface)
+                .lineLimit(expanded ? nil : 4)
+                .fixedSize(horizontal: false, vertical: true)
+            if !text.isEmpty {
+                Button(expanded ? "Riduci nota" : "Mostra tutta la nota") { expanded.toggle() }
+                    .font(SportiliTypography.bodySmall)
+            }
+            if isDirty {
+                Label("Modifiche non salvate", systemImage: "pencil")
+                    .font(SportiliTypography.bodySmall)
+            }
+            Button(action: onTap) {
+                Label(text.isEmpty ? "Aggiungi nota personale" : "Modifica nota personale", systemImage: "square.and.pencil")
+                    .font(SportiliTypography.label)
             }
         }
-        .accessibilityHint("Apre l’editor delle note personali")
+        .buttonStyle(.borderless)
+        .onChange(of: text) { _ in expanded = false }
     }
 }
 
 // MARK: - Notes Sheet (Pro)
 
-private struct NotesEditorSheet: View {
+struct NotesEditorSheet: View {
     let title: String
     @Binding var text: String
     let savedText: String
     let canManage: Bool
     let isSaving: Bool
     let isDirty: Bool
+    var errorMessage: String? = nil
     let onSave: () -> Void
     let onRevert: () -> Void
     let onDelete: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var confirmsDiscard = false
 
     var body: some View {
         NavigationStack {
@@ -876,7 +932,9 @@ private struct NotesEditorSheet: View {
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $text)
                             .frame(minHeight: 220)
-                            .montserrat(size: 17)
+                            .font(SportiliTypography.body)
+                            .disabled(!canManage || isSaving)
+                            .accessibilityLabel("Nota personale")
 
                         if text.isEmpty {
                             Text("Aggiungi una nota per questo esercizio…")
@@ -888,6 +946,9 @@ private struct NotesEditorSheet: View {
                     }
                 }
 
+                if isSaving { Section { ProgressView("Salvataggio nota…") } }
+                if let errorMessage { Section { Label(errorMessage, systemImage: "exclamationmark.triangle")
+                    .font(SportiliTypography.bodySmall).foregroundStyle(SportiliPalette.onCriticalContainer) } }
                 if !savedText.isEmpty {
                     Section {
                         Button(role: .destructive) {
@@ -905,8 +966,8 @@ private struct NotesEditorSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Chiudi") {
-                        onRevert()
-                        dismiss()
+                        if isDirty { confirmsDiscard = true }
+                        else { dismiss() }
                     }
                     .montserrat(size: 17)
                     .disabled(isSaving)
@@ -924,7 +985,11 @@ private struct NotesEditorSheet: View {
                 }
             }
         }
-        .interactiveDismissDisabled(isSaving)
+        .interactiveDismissDisabled(isSaving || isDirty)
+        .alert("Scartare le modifiche alla nota?", isPresented: $confirmsDiscard) {
+            Button("Scarta modifiche", role: .destructive) { onRevert(); dismiss() }
+            Button("Continua a modificare", role: .cancel) {}
+        }
     }
 }
 
@@ -934,6 +999,7 @@ struct WeightEntrySheet: View {
     let mode: WeightDialogMode
     @Binding var weightInput: String
     let isSaving: Bool
+    var errorMessage: String? = nil
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
@@ -953,42 +1019,38 @@ struct WeightEntrySheet: View {
     }
 
     private var hasValidWeight: Bool {
-        let normalized = weightInput.replacingOccurrences(of: ",", with: ".")
-        return (Double(normalized) ?? 0) > 0
+        parsedWeightInput(weightInput) != nil
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Peso").montserrat(size: 17)) {
+                Section(header: Text("Peso (kg)").font(SportiliTypography.label), footer: Text("Usa la virgola o il punto, ad esempio 47,5.").font(SportiliTypography.bodySmall)) {
                     TextField("Peso (kg)", text: $weightInput)
                         .keyboardType(.decimalPad)
                         .font(SportiliTypography.body)
                         .focused($isWeightFieldFocused)
                         .submitLabel(.done)
-                        .onSubmit(onConfirm)
+                        .onSubmit { if !isSaving { onConfirm() } }
+                        .disabled(isSaving)
                         .accessibilityHint("Inserisci il peso in chilogrammi")
                 }
 
-                Section(header: Text("Dettagli").montserrat(size: 17)) {
-                    if let record {
-                        LabeledContent {
-                            Text(EsercizioView.sheetDateFormatter.string(from: record.date))
-                                .foregroundStyle(.secondary)
-                                .montserrat(size: 15)
-                        } label: {
-                            Text("Ultimo aggiornamento")
-                                .montserrat(size: 15)
-                        }
-                    } else {
-                        LabeledContent {
-                            Text(EsercizioView.sheetDateFormatter.string(from: Date()))
-                                .foregroundStyle(.secondary)
-                                .montserrat(size: 15)
-                        } label: {
-                            Text("Data")
-                                .montserrat(size: 15)
-                        }
+                if isSaving { Section { ProgressView("Salvataggio peso…") } }
+                if let errorMessage { Section { Label(errorMessage, systemImage: "exclamationmark.triangle")
+                    .font(SportiliTypography.bodySmall).foregroundStyle(SportiliPalette.onCriticalContainer) } }
+                else if !weightInput.isEmpty && !hasValidWeight {
+                    Text("Inserisci un peso maggiore di zero, con virgola o punto.")
+                        .font(SportiliTypography.bodySmall).foregroundStyle(SportiliPalette.onCriticalContainer)
+                }
+                Section(header: Text("Dettagli").font(SportiliTypography.label)) {
+                    VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
+                        Text(record == nil ? "Data" : "Data della registrazione")
+                            .font(SportiliTypography.label)
+                        Text(EsercizioView.sheetDateFormatter.string(from: record?.date ?? Date()))
+                            .font(SportiliTypography.body)
+                            .foregroundStyle(SportiliPalette.onSurfaceMuted)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
@@ -1007,7 +1069,7 @@ struct WeightEntrySheet: View {
                     } else {
                         Button("Salva", action: onConfirm)
                             .montserrat(size: 17)
-                            .disabled(!hasValidWeight)
+                            .disabled(weightInput.isEmpty)
                     }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
@@ -1031,23 +1093,6 @@ struct WeightChartView: View {
     let data: [UniformLog]
     let dateFormatter: DateFormatter
 
-    private static let compactAxisFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM"
-        formatter.locale = Locale(identifier: "it_IT")
-        return formatter
-    }()
-
-    private var lineGradient: AnyShapeStyle {
-        AnyShapeStyle(
-            LinearGradient(
-                colors: [Color.blue, Color.purple],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
-    }
-
     private var xAxisIndices: [Int] {
         guard !data.isEmpty else { return [] }
         if data.count <= 4 {
@@ -1066,16 +1111,16 @@ struct WeightChartView: View {
         Chart {
             ForEach(data) { item in
                 LineMark(
-                    x: .value("Index", item.index),
+                    x: .value("Campione", item.index),
                     y: .value("Peso", item.weight)
                 )
-                .interpolationMethod(.catmullRom)
-                .foregroundStyle(lineGradient)
+                .interpolationMethod(.linear)
+                .foregroundStyle(SportiliPalette.primary)
             }
 
             ForEach(data) { item in
                 PointMark(
-                    x: .value("Index", item.index),
+                    x: .value("Campione", item.index),
                     y: .value("Peso", item.weight)
                 )
                 .symbolSize(55)
@@ -1088,8 +1133,8 @@ struct WeightChartView: View {
                 if let idx = value.as(Int.self),
                    let item = data.first(where: { $0.index == idx }) {
                     AxisValueLabel {
-                        Text(Self.compactAxisFormatter.string(from: item.date))
-                            .montserrat(size: 11)
+                        Text("\(item.index)")
+                            .font(SportiliTypography.bodySmall)
                             .foregroundStyle(.secondary)
                             .accessibilityLabel(dateFormatter.string(from: item.date))
                     }
@@ -1148,6 +1193,7 @@ struct TimerSheet: View {
     }
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .largeTitle) private var preferredGaugeSize: CGFloat = 220
     @State private var timeRemaining: Int
     @State private var totalTime: Int
@@ -1182,20 +1228,15 @@ struct TimerSheet: View {
                         }
 
                         ZStack {
-                            Gauge(
-                                value: Double(timeRemaining),
-                                in: 0...Double(max(totalTime, 1))
-                            ) {
-                                EmptyView()
-                            }
-                            .gaugeStyle(.accessoryCircularCapacity)
-                            .tint(SportiliPalette.primary)
-                            .labelsHidden()
-                            .scaleEffect(1.45)
-                            .accessibilityHidden(true)
+                            Circle().stroke(SportiliPalette.surfaceMuted, lineWidth: 12)
+                            Circle()
+                                .trim(from: 0, to: CGFloat(timeRemaining) / CGFloat(max(totalTime, 1)))
+                                .stroke(SportiliPalette.primary, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                                .rotationEffect(.degrees(-90))
+                                .accessibilityHidden(true)
 
                             Text(formatTime(timeRemaining))
-                                .font(.system(.title2, design: .rounded, weight: .bold))
+                                .font(SportiliTypography.headline)
                                 .monospacedDigit()
                                 .minimumScaleFactor(0.65)
                         }
@@ -1211,12 +1252,12 @@ struct TimerSheet: View {
                             .font(SportiliTypography.body)
                             .foregroundStyle(.secondary)
 
-                        ViewThatFits(in: .horizontal) {
-                            HStack(spacing: SportiliSpacing.standard) {
-                                timerButtons
-                            }
-                            VStack(spacing: SportiliSpacing.small) {
-                                timerButtons
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(spacing: SportiliSpacing.small) { timerButtons }
+                        } else {
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: SportiliSpacing.standard) { timerButtons }
+                                VStack(spacing: SportiliSpacing.small) { timerButtons }
                             }
                         }
                     }
@@ -1272,6 +1313,7 @@ struct TimerSheet: View {
         let button = Button(action: action) {
             Label(title, systemImage: systemImage)
                 .font(SportiliTypography.label)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(minWidth: 112, minHeight: 44)
         }
         if prominent {

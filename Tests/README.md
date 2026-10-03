@@ -204,3 +204,11 @@ Non trattare le acquisizioni automatiche come test UI. Al termine disinstallare
 `python3 Tests/run_image_loader_tests.py` controlla reset, callback tardive,
 errore/retry e dati immagine invalidi, compilando ImageLoader reale con doubles.
 `python3 Tests/run_note_tests.py` copre note per parte e chiavi canoniche/legacy.
+
+## S05 — pesi, note, progressi e timer
+
+`python3 Tests/run_s05_tests.py` compila parser, handler peso, finestra campioni e parser timer reali con doubles SDK. Verifica virgola/punto, invalido/non-finito, pending/duplicati/cancel, failure/retry/edit, chiave legacy, payload/history e 0/1/10/>10 campioni con date irregolari. `python3 Tests/run_note_tests.py` include snapshot emesso da @Published (willSet), bozza durante refresh e isolamento delle parti.
+
+`python3 Tests/run_s05_previews.py --simulator <UDID già booted> --output <directory> --packages <SourcePackages> [--derived-data <directory isolata>] [--keep-installed]` costruisce un host separato senza Firebase configurato: grafico 0/1/10/12, editor/sheet reali, tastiera, errore/pending, note vuote/lunghe, timer/fallback, chiaro/scuro/accessibility3. Le environment Dynamic Type sono applicate esplicitamente anche al contenuto delle sheet. La copia temporanea del model riceve solo una funzione locale di aggiornamento fixture; la sorgente produzione e il progetto restano invariati. `ExerciseDetailActions` delega al model in produzione; soltanto la fixture fornisce callback locali.
+
+Gli screenshot sono prove visive, non UI assertions. Verificare manualmente selezione parti, peso vicino allo storico, espansione, bozza/Scarta/Continua, salvataggio riuscito senza badge dirty, valori/date e timer Inizia/Pausa/Azzera. Nessuna prova Firebase/Storage o notifiche/background aggiunta. Disinstallare `com.sportili.local-s05-preview` dopo la verifica.
