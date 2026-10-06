@@ -227,3 +227,33 @@ Il log console stampa gli URL ricevuti senza aprire siti. Non vengono configurat
 Firebase, credenziali o sessioni reali. Le azioni e lo scroll sono controlli manuali,
 non assert UI automatici. Disinstallare `com.sportili.local-alerts-settings-preview`
 al termine se si è usato `--keep-installed`.
+
+## S11 — shell completa e QA comparativa locale
+
+`run_s11_qa.py` genera una copia temporanea del progetto, sostituisce soltanto le
+dipendenze con `S11Fixture` e aggiunge un target XCTest alla copia tramite la gem
+Ruby `xcodeproj` già installata. Il progetto di produzione non viene modificato;
+Firebase non viene configurato. LoginSession, ContentView/TabView, HomeView,
+DayView, EsercizioView e SettingsView mantengono il loro controllo di flusso reale.
+Le scritture di peso/nota aggiornano soltanto il model fixture in memoria. I link
+sono gestiti localmente; logout e retry sono fake. Non premere Richiedi nuova
+scheda: quell'operazione non è simulata dal runner.
+
+```sh
+python3 Tests/run_s11_qa.py --simulator <UDID-booted> --output <cartella> \
+  --packages <SourcePackages> --derived-data <DerivedData-isolata> --keep-installed
+```
+
+`--build-only` esegue `build-for-testing` e conserva il `.xctestrun` per ripetere
+la stessa suite con `xcodebuild test-without-building` dopo aver cambiato
+appearance/content_size del Simulator. `--only-testing <target/classe/metodo>`
+può essere ripetuto per limitare una nuova esecuzione ai casi pertinenti.
+La fixture segue le impostazioni reali
+di sistema, comprese quelle delle sheet. `S11UITests` verifica percorso completo,
+ritorno/cambio tab, errore/aiuto/retry, navigazione da scheda terminata,
+peso con virgola, nota con scarto/continua e timer. Gli attachment contengono
+screenshot nativi e gerarchie; non equivalgono a un giro VoiceOver. Quest'ultimo
+richiede un dispositivo fisico. Il runner disabilita soltanto la raccolta
+sysdiagnose sui failure (`-collect-test-diagnostics never`), conservando i risultati
+XCTest. Disinstallare `com.sportili.local-s11-preview` e
+`com.sportili.local-s11-uitests.xctrunner` al termine.
