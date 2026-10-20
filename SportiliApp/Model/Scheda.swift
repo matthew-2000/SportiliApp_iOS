@@ -226,7 +226,7 @@ class SchedaManager {
                 
                 let dataInizioString = schedaData["dataInizio"] as? String ?? ""
                 let durata = schedaData["durata"] as? Int ?? 0
-                var giorniData = schedaData["giorni"] as? [String: Any] ?? [:]
+                let giorniData = schedaData["giorni"] as? [String: Any] ?? [:]
                 
                 // Converti la data di inizio da stringa a oggetto Date
                 let dateFormatter = DateFormatter()
@@ -244,7 +244,7 @@ class SchedaManager {
                 for (keyGiorno, giornoData) in giorniOrdinati {
                     if let giornoData = giornoData as? [String: Any] {
                         let nome = giornoData["name"] as? String ?? ""
-                        var gruppiMuscolariData = giornoData["gruppiMuscolari"] as? [String: Any] ?? [:]
+                        let gruppiMuscolariData = giornoData["gruppiMuscolari"] as? [String: Any] ?? [:]
                         
                         var gruppiMuscolari: [GruppoMuscolare] = []
                         

@@ -239,7 +239,7 @@ private struct InfoSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
             Label {
-                Text("Serie e ripetizioni: \(esercizio.serie)")
+                Text("\(esercizio.serie)")
                     .font(SportiliTypography.title)
             } icon: {
                 Image(systemName: "figure.strengthtraining.functional")
