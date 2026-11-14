@@ -78,6 +78,7 @@ struct EsercizioView: View {
     @State private var dialogExerciseKey: String
     @State private var isWeightSaving = false
     @State private var weightError: String?
+    @State private var sessionEditor: WeightSessionEditorContext?
 
     // Note
     @State private var noteInput: String
@@ -172,10 +173,19 @@ struct EsercizioView: View {
         let currentIndex = min(selectedPartIndex, max(parts.count - 1, 0))
         let currentPartName = Self.partName(at: currentIndex, from: parts, fallback: esercizio.name)
         let currentKey = viewModel.exerciseKey(from: currentPartName)
+        let sessionKey = ExerciseDetailViewModel.makeExerciseKey(from: currentPartName)
 
         let currentData = viewModel.data(for: currentKey)
         let sortedLogs = currentData?.sortedWeightLogs ?? []
         let recentLogs = Array(sortedLogs.suffix(10))
+        let sessions = viewModel.weightSessions[sessionKey] ?? []
+        let singleHistory: [WorkoutWeightHistoryEntry] = sortedLogs.map { .single($0) }
+        let sessionHistory: [WorkoutWeightHistoryEntry] = sessions.map { .session($0) }
+        let history: [WorkoutWeightHistoryEntry] = (singleHistory + sessionHistory).sorted { left, right in
+            if left.date == right.date { return left.id > right.id }
+            return left.date > right.date
+        }
+        let prescribedReps = Self.exerciseParts(from: esercizio.name).count == 1 ? workoutRepetitions(from: esercizio.serie) : []
         let savedNote = currentData?.noteUtente ?? ""
         let isNoteDirty = noteInput != savedNote
         let canManageData = !viewModel.userCode.isEmpty
@@ -242,36 +252,74 @@ struct EsercizioView: View {
             Section(header: Text("Pesi e progressi").font(SportiliTypography.label)) {
                 if let latest = sortedLogs.last {
                     WeightLogRow(date: Self.summaryDateFormatter.string(from: latest.date),
-                                 weight: "Ultimo peso: \(formattedWeight(latest.weight)) kg")
+                                 weight: "\(sessions.isEmpty ? "Ultimo peso" : "Ultimo peso singolo"): \(formattedWeight(latest.weight)) kg")
                 }
                 Button {
-                    dialogExerciseKey = currentKey
-                    weightDialogMode = .create
-                    weightInput = ""
-                    weightError = nil
+                    if !prescribedReps.isEmpty {
+                        sessionEditor = WeightSessionEditorContext(key: sessionKey, name: currentPartName, reps: prescribedReps)
+                    } else {
+                        dialogExerciseKey = currentKey
+                        weightDialogMode = .create
+                        weightInput = ""
+                        weightError = nil
+                    }
                 } label: {
-                    Label("Registra peso", systemImage: "plus.circle.fill")
+                    Label(prescribedReps.isEmpty ? "Registra peso" : "Registra pesi per serie", systemImage: "plus.circle.fill")
                         .font(SportiliTypography.label)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .disabled(!canManageData)
-                if recentLogs.isEmpty {
+                Button(prescribedReps.isEmpty ? "Registra pesi per serie" : "Registra un peso singolo") {
+                    if prescribedReps.isEmpty {
+                        sessionEditor = WeightSessionEditorContext(key: sessionKey, name: currentPartName, reps: [])
+                    } else {
+                        dialogExerciseKey = currentKey
+                        weightDialogMode = .create
+                        weightInput = ""
+                        weightError = nil
+                    }
+                }
+                .disabled(!canManageData)
+                if let error = viewModel.weightSessionsError {
+                    Text(error).foregroundStyle(SportiliPalette.onCriticalContainer)
+                    Button("Riprova", action: viewModel.retryWeightSessions)
+                }
+                if history.isEmpty {
                     EmptyStateRow(
                         title: "Nessun peso registrato",
                         message: "Registra il primo peso per iniziare a vedere i progressi.",
                         systemImage: "scalemass"
                     )
                     .padding(.vertical, 6)
-                } else {
+                } else if !recentLogs.isEmpty {
+                    Text("Progressi dei pesi singoli")
+                        .font(SportiliTypography.label)
                     let chartData = recentLogs.enumerated().map { idx, log in
                         UniformLog(id: idx, index: idx, date: log.date, weight: log.weight)
                     }
                     WeightProgressCard(data: chartData, dateFormatter: Self.logDateFormatter)
                 }
 
-                if !sortedLogs.isEmpty {
-                    // lista pesi (più recente in alto)
-                    ForEach(sortedLogs.reversed()) { log in
+                if !history.isEmpty {
+                    ForEach(history) { entry in
+                        switch entry {
+                        case .session(let session):
+                            WeightSessionHistoryRow(
+                                session: session,
+                                previous: sessions.last { $0.timestamp < session.timestamp && $0.matches(reps: session.sets.map(\.reps)) },
+                                onEdit: {
+                                    sessionEditor = WeightSessionEditorContext(key: sessionKey, name: currentPartName, reps: [], session: session)
+                                },
+                                onDelete: { completion in
+                                    viewModel.deleteWeightSession(for: sessionKey, id: session.id) { result in
+                                        // RTDB can remove the row optimistically before a denied write rolls back.
+                                        if case .failure(let failure) = result { showError(failure.localizedDescription) }
+                                        completion(result)
+                                    }
+                                }
+                            )
+                            .disabled(!canManageData)
+                        case .single(let log):
                         WeightLogRow(
                             date: Self.summaryDateFormatter.string(from: log.date),
                             weight: "\(formattedWeight(log.weight)) kg"
@@ -296,6 +344,7 @@ struct EsercizioView: View {
                             .tint(.blue)
                         }
                         .disabled(!canManageData)
+                        }
                     }
                 }
             }
@@ -318,8 +367,12 @@ struct EsercizioView: View {
                 isSaving: isWeightSaving,
                 errorMessage: weightError,
                 onConfirm: handleWeightConfirm,
-                onCancel: dismissWeightSheet
+                onCancel: dismissWeightSheet,
+                lastWeight: sortedLogs.last?.weight
             )
+        }
+        .sheet(item: $sessionEditor) { context in
+            WeightSessionEditor(context: context, model: viewModel)
         }
         .sheet(isPresented: $showTimerSheet) {
             TimerSheet(riposo: esercizio.riposo ?? "")
@@ -422,6 +475,7 @@ struct EsercizioView: View {
             weightError = nil
             noteError = nil
             deletionContext = nil
+            sessionEditor = nil
 
             loadExerciseImage(for: newPartName)
         }
@@ -1002,6 +1056,7 @@ struct WeightEntrySheet: View {
     var errorMessage: String? = nil
     let onConfirm: () -> Void
     let onCancel: () -> Void
+    var lastWeight: Double? = nil
 
     @FocusState private var isWeightFieldFocused: Bool
 
@@ -1026,6 +1081,11 @@ struct WeightEntrySheet: View {
         NavigationStack {
             Form {
                 Section(header: Text("Peso (kg)").font(SportiliTypography.label), footer: Text("Usa la virgola o il punto, ad esempio 47,5.").font(SportiliTypography.bodySmall)) {
+                    if record == nil, let lastWeight {
+                        Button("Usa l'ultimo peso (\(lastWeight.formatted()) kg)") {
+                            weightInput = String(lastWeight)
+                        }.disabled(isSaving)
+                    }
                     TextField("Peso (kg)", text: $weightInput)
                         .keyboardType(.decimalPad)
                         .font(SportiliTypography.body)
@@ -1488,6 +1548,193 @@ struct TimerSheet: View {
     return WeightChartView(data: chartData, dateFormatter: EsercizioView.summaryDateFormatter)
         .frame(height: 240)
         .padding()
+}
+
+private struct WeightSessionEditorContext: Identifiable {
+    let id = UUID()
+    let createdAt = (Date().timeIntervalSince1970 * 1000).rounded(.down)
+    let key: String
+    let name: String
+    let reps: [Int]
+    var session: WorkoutWeightSession? = nil
+}
+
+private struct WeightSetDraft: Identifiable, Equatable {
+    let id = UUID()
+    var reps: String
+    var weight: String
+    static func == (left: Self, right: Self) -> Bool { left.reps == right.reps && left.weight == right.weight }
+    var value: WorkoutWeightSet? {
+        guard let reps = Int(reps), let weight = parsedWeightInput(weight) else { return nil }
+        let set = WorkoutWeightSet(reps: reps, weight: weight)
+        return set.isValid ? set : nil
+    }
+}
+
+private struct WeightSessionEditor: View {
+    let context: WeightSessionEditorContext
+    @ObservedObject var model: ExerciseDetailViewModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var rows: [WeightSetDraft]
+    @State private var isSaving = false
+    @State private var error: String?
+    @State private var confirmsDiscard = false
+    private let initialRows: [WeightSetDraft]
+    private let sessionID: String
+    private let timestamp: Double
+
+    init(context: WeightSessionEditorContext, model: ExerciseDetailViewModel) {
+        self.context = context
+        self.model = model
+        let drafts = context.session?.sets.map { WeightSetDraft(reps: String($0.reps), weight: String($0.weight)) }
+            ?? (context.reps.isEmpty ? [WeightSetDraft(reps: "", weight: "")] : context.reps.map { WeightSetDraft(reps: String($0), weight: "") })
+        initialRows = drafts
+        _rows = State(initialValue: drafts)
+        sessionID = context.session?.id ?? context.id.uuidString
+        timestamp = context.session?.timestamp ?? context.createdAt
+    }
+
+    private var lastCompatible: WorkoutWeightSession? {
+        let reps = rows.compactMap { Int($0.reps) }
+        guard reps.count == rows.count else { return nil }
+        return model.weightSessions[context.key]?.last { $0.matches(reps: reps) && $0.id != sessionID }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text(context.name).font(SportiliTypography.headline)
+                    Text("Inserisci ripetizioni e kg per ogni serie. Tutte le serie vengono salvate insieme.")
+                        .font(SportiliTypography.bodySmall)
+                    if context.session == nil {
+                        if let previous = lastCompatible {
+                            Button("Usa gli ultimi pesi") {
+                                for index in rows.indices { rows[index].weight = String(previous.sets[index].weight) }
+                                error = nil
+                            }
+                            Text("Ultimo allenamento con le stesse ripetizioni: \(EsercizioView.summaryDateFormatter.string(from: previous.date))")
+                                .font(SportiliTypography.bodySmall)
+                        } else {
+                            Text("Nessun allenamento precedente con queste ripetizioni. I vecchi pesi singoli restano nello storico.")
+                                .font(SportiliTypography.bodySmall)
+                        }
+                    }
+                }.disabled(isSaving)
+
+                ForEach($rows) { $row in
+                    let index = rows.firstIndex { $0.id == row.id } ?? 0
+                    Section("Serie \(index + 1)") {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("Ripetizioni").font(SportiliTypography.bodySmall)
+                                TextField("Ripetizioni", text: $row.reps).keyboardType(.numberPad)
+                                    .accessibilityLabel("Ripetizioni serie \(index + 1)")
+                            }
+                            VStack(alignment: .leading) {
+                                Text("Peso (kg)").font(SportiliTypography.bodySmall)
+                                TextField("Peso (kg)", text: $row.weight).keyboardType(.decimalPad)
+                                    .accessibilityLabel("Peso in kg serie \(index + 1)")
+                            }
+                        if rows.count > 1 {
+                            Button(role: .destructive) { rows.removeAll { $0.id == row.id } } label: {
+                                Image(systemName: "minus.circle").frame(minWidth: 44, minHeight: 44)
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Rimuovi serie \(index + 1)")
+                        }
+                        }
+                    }.disabled(isSaving)
+                }
+                if rows.count < 20 {
+                    Button("Aggiungi serie") { rows.append(WeightSetDraft(reps: "", weight: "")) }.disabled(isSaving)
+                }
+                Text("Pesi maggiori di zero; usa la virgola o il punto. Ripetizioni da 1 a 1000.")
+                    .font(SportiliTypography.bodySmall)
+                if let error { Text(error).foregroundStyle(SportiliPalette.onCriticalContainer) }
+                if isSaving { ProgressView("Salvataggio allenamento…") }
+            }
+            .navigationTitle(context.session == nil ? "Registra pesi per serie" : "Modifica allenamento")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Annulla") {
+                        if rows != initialRows { confirmsDiscard = true } else { dismiss() }
+                    }.disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Salva allenamento") {
+                        guard !isSaving else { return }
+                        let sets = rows.compactMap(\.value)
+                        guard sets.count == rows.count else {
+                            error = "Controlla ripetizioni e pesi di tutte le serie."; return
+                        }
+                        error = nil
+                        isSaving = true
+                        model.saveWeightSession(for: context.key, session: WorkoutWeightSession(id: sessionID, timestamp: timestamp, sets: sets)) { result in
+                            isSaving = false
+                            switch result {
+                            case .success: dismiss()
+                            case .failure(let failure): error = failure.localizedDescription
+                            }
+                        }
+                    }.disabled(isSaving)
+                }
+            }
+            .interactiveDismissDisabled(isSaving || rows != initialRows)
+            .alert("Scartare i pesi inseriti?", isPresented: $confirmsDiscard) {
+                Button("Scarta modifiche", role: .destructive) { dismiss() }
+                Button("Continua a modificare", role: .cancel) { }
+            }
+        }
+    }
+}
+
+private struct WeightSessionHistoryRow: View {
+    let session: WorkoutWeightSession
+    let previous: WorkoutWeightSession?
+    let onEdit: () -> Void
+    let onDelete: (@escaping (Result<Void, ExerciseDataError>) -> Void) -> Void
+    @State private var expanded = false
+    @State private var confirmsDelete = false
+    @State private var deleting = false
+    @State private var error: String?
+
+    var body: some View {
+        DisclosureGroup(isExpanded: $expanded) {
+            ForEach(Array(session.sets.enumerated()), id: \.offset) { index, set in
+                VStack(alignment: .leading) {
+                    Text("Serie \(index + 1): \(set.reps) rip. × \(set.weight.formatted()) kg")
+                    if let previous {
+                        Text("Precedente: \(previous.sets[index].weight.formatted()) kg · \(EsercizioView.sheetDateFormatter.string(from: previous.date))")
+                            .font(SportiliTypography.bodySmall).foregroundStyle(SportiliPalette.onSurfaceMuted)
+                    }
+                }
+            }
+            Button("Modifica allenamento", action: onEdit).disabled(deleting)
+            Button("Elimina allenamento", role: .destructive) { confirmsDelete = true }.disabled(deleting)
+            if deleting { ProgressView("Eliminazione…") }
+            if let error { Text(error).foregroundStyle(SportiliPalette.onCriticalContainer) }
+        } label: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(EsercizioView.summaryDateFormatter.string(from: session.date)).font(SportiliTypography.label)
+                Text(session.sets.map { "\($0.reps) × \($0.weight.formatted()) kg" }.joined(separator: " · "))
+                    .font(SportiliTypography.bodySmall)
+            }
+        }
+        .confirmationDialog("Eliminare tutte le serie di questo allenamento?", isPresented: $confirmsDelete, titleVisibility: .visible) {
+            Button("Elimina allenamento", role: .destructive) {
+                guard !deleting else { return }
+                deleting = true
+                error = nil
+                onDelete { result in
+                    deleting = false
+                    if case .failure(let failure) = result { error = failure.localizedDescription }
+                }
+            }
+            Button("Annulla", role: .cancel) { }
+        }
+    }
 }
 
 #Preview("Full Screen Image") {

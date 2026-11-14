@@ -31,12 +31,17 @@ struct UserExerciseData {
 
 final class ExerciseDetailViewModel: ObservableObject {
     @Published private(set) var exerciseData: [String: UserExerciseData]
+    @Published private(set) var weightSessions: [String: [WorkoutWeightSession]] = [:]
+    @Published private(set) var weightSessionsError: String?
 
     let userCode: String
 
     private let autoObserve: Bool
     private var reference: DatabaseReference?
     private var handle: DatabaseHandle?
+    private var sessionsReference: DatabaseReference?
+    private var sessionsHandle: DatabaseHandle?
+    private var sessionsGeneration = 0
 
     init(
         userCode: String,
@@ -49,11 +54,13 @@ final class ExerciseDetailViewModel: ObservableObject {
 
         if autoObserve, !userCode.isEmpty {
             startObservingExerciseData()
+            observeWeightSessions()
         }
     }
 
     deinit {
         stopObservingExerciseData()
+        if let sessionsHandle { sessionsReference?.removeObserver(withHandle: sessionsHandle) }
     }
 
     func exerciseKey(from name: String) -> String {
@@ -94,6 +101,79 @@ final class ExerciseDetailViewModel: ObservableObject {
 
     func data(for key: String) -> UserExerciseData? {
         exerciseData[key]
+    }
+
+    func retryWeightSessions() {
+        guard autoObserve, !userCode.isEmpty else { return }
+        observeWeightSessions()
+    }
+
+    private func observeWeightSessions() {
+        sessionsGeneration += 1
+        let generation = sessionsGeneration
+        if let sessionsHandle { sessionsReference?.removeObserver(withHandle: sessionsHandle) }
+        let ref = Database.database().reference().child("users").child(userCode).child("weightSessions")
+        sessionsReference = ref
+        weightSessionsError = nil
+        sessionsHandle = ref.observe(.value, with: { [weak self] snapshot in
+            var result: [String: [WorkoutWeightSession]] = [:]
+            for case let exercise as DataSnapshot in snapshot.children {
+                let sessions = exercise.children.compactMap { child -> WorkoutWeightSession? in
+                    guard let child = child as? DataSnapshot else { return nil }
+                    return WorkoutWeightSession.parse(id: child.key, value: child.value)
+                }.sorted { $0.timestamp == $1.timestamp ? $0.id < $1.id : $0.timestamp < $1.timestamp }
+                if !sessions.isEmpty { result[exercise.key] = sessions }
+            }
+            DispatchQueue.main.async {
+                guard let self, self.sessionsGeneration == generation else { return }
+                self.weightSessions = result
+                self.weightSessionsError = nil
+            }
+        }, withCancel: { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self, self.sessionsGeneration == generation else { return }
+                self.weightSessionsError = "Impossibile aggiornare gli allenamenti con serie. Riprova."
+            }
+        })
+    }
+
+    func saveWeightSession(for key: String, session: WorkoutWeightSession,
+                           completion: @escaping (Result<Void, ExerciseDataError>) -> Void) {
+        guard !userCode.isEmpty, Self.isValidFirebaseKey(key), Self.isValidFirebaseKey(session.id), session.isValid else {
+            completion(.failure(.message("Controlla ripetizioni e pesi di tutte le serie.")))
+            return
+        }
+        let ref = Database.database().reference().child("users").child(userCode)
+            .child("weightSessions").child(key).child(session.id)
+        ref.setValue(session.firebaseValue) { [weak self] error, _ in
+            DispatchQueue.main.async {
+                if let error { completion(.failure(.message(error.localizedDescription))); return }
+                var sessions = self?.weightSessions[key] ?? []
+                sessions.removeAll { $0.id == session.id }
+                sessions.append(session)
+                self?.weightSessions[key] = sessions.sorted { $0.timestamp == $1.timestamp ? $0.id < $1.id : $0.timestamp < $1.timestamp }
+                completion(.success(()))
+            }
+        }
+    }
+
+    func deleteWeightSession(for key: String, id: String,
+                             completion: @escaping (Result<Void, ExerciseDataError>) -> Void) {
+        guard !userCode.isEmpty, Self.isValidFirebaseKey(key), Self.isValidFirebaseKey(id) else {
+            completion(.failure(.message("Impossibile identificare l'allenamento."))); return
+        }
+        Database.database().reference().child("users").child(userCode).child("weightSessions")
+            .child(key).child(id).removeValue { [weak self] error, _ in
+                DispatchQueue.main.async {
+                    if let error { completion(.failure(.message(error.localizedDescription))); return }
+                    self?.weightSessions[key]?.removeAll { $0.id == id }
+                    completion(.success(()))
+                }
+            }
+    }
+
+    private static func isValidFirebaseKey(_ key: String) -> Bool {
+        !key.isEmpty && key.rangeOfCharacter(from: CharacterSet(charactersIn: ".#$[]/").union(.controlCharacters)) == nil
     }
 
     func addWeightEntry(for key: String, weight: Double, completion: @escaping (Result<WeightLog, ExerciseDataError>) -> Void) {
