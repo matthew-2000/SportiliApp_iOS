@@ -14,6 +14,7 @@ struct HomeView: View {
     @State private var isRequesting = false
     @State private var requestWasSent = false
     @State private var requestErrorMessage: String?
+    @State private var showOutsideWindowConfirmation = false
 
     private let previewUserName: String?
 
@@ -41,6 +42,12 @@ struct HomeView: View {
         .navigationTitle("Scheda")
         .navigationBarTitleDisplayMode(.large)
         .onAppear(perform: updateUserName)
+        .alert("Richiesta fuori orario", isPresented: $showOutsideWindowConfirmation) {
+            Button("Annulla", role: .cancel) { }
+            Button("Invia comunque", action: sendSchedaUpdateRequest)
+        } message: {
+            Text(SchedaChangeRequestSchedule.outsideWindowMessage)
+        }
     }
 
     private func homeList(for scheda: Scheda) -> some View {
@@ -144,7 +151,20 @@ struct HomeView: View {
 
     private func requestSchedaUpdate() {
         guard !isRequesting else { return }
-        guard let scheda = schedaViewModel.scheda, scheda.isScaduta else { return }
+        guard let scheda = schedaViewModel.scheda,
+              scheda.isScaduta, !scheda.cambioRichiesto, !requestWasSent else { return }
+        if SchedaChangeRequestSchedule.isWithinWindow() {
+            sendSchedaUpdateRequest()
+        } else {
+            showOutsideWindowConfirmation = true
+        }
+    }
+
+    private func sendSchedaUpdateRequest() {
+        guard !isRequesting else { return }
+        // Recheck after confirmation: the card may have refreshed in the meantime.
+        guard let scheda = schedaViewModel.scheda,
+              scheda.isScaduta, !scheda.cambioRichiesto, !requestWasSent else { return }
         guard let code = UserDefaults.standard.string(forKey: "code") else {
             requestErrorMessage = "Non riusciamo a inviare la richiesta. Effettua di nuovo l'accesso."
             return
@@ -186,7 +206,7 @@ private enum SchedaDisplayStatus: Equatable {
         case .active: "Scegli un allenamento qui sotto."
         case .expiring: "La scheda terminerà a breve."
         case .expired: "Chiedi al trainer una nuova scheda."
-        case .requested: "Il trainer ha ricevuto la richiesta."
+        case .requested: SchedaChangeRequestSchedule.sentMessage
         }
     }
 

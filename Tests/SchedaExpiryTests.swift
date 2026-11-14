@@ -71,6 +71,33 @@ struct SchedaExpiryTests {
         precondition(scheda.getDurataScheda() == 0)
         precondition(!scheda.isScaduta)
     }
+
+    func testChangeRequestWindow() {
+        for (instant, expected) in [
+            ("2026-11-13T18:59:59Z", false),
+            ("2026-11-13T19:00:00Z", true),
+            ("2026-11-13T23:00:00Z", true),
+            ("2026-11-14T08:59:59Z", true),
+            ("2026-11-14T09:00:00Z", false),
+            ("2026-11-15T08:00:00Z", false),
+            ("2026-11-16T08:00:00Z", false),
+            ("2026-07-10T17:59:59Z", false),
+            ("2026-07-10T18:00:00Z", true),
+            ("2026-07-11T07:59:59Z", true),
+            ("2026-07-11T08:00:00Z", false)
+        ] {
+            precondition(SchedaChangeRequestSchedule.isWithinWindow(at: date(instant)) == expected, instant)
+        }
+    }
+
+    func testChangeRequestWindowIgnoresDeviceTimeZone() {
+        let original = NSTimeZone.default
+        defer { NSTimeZone.default = original }
+        for zone in ["America/Los_Angeles", "Asia/Tokyo", "UTC"] {
+            NSTimeZone.default = TimeZone(identifier: zone)!
+            testChangeRequestWindow()
+        }
+    }
 }
 
 let tests = SchedaExpiryTests()
@@ -80,4 +107,6 @@ tests.testCalendarWeeksAcrossDaylightSavingChanges()
 tests.testZeroDurationAndPastWorkout()
 tests.testCurrentPropertyDoesNotUseRoundedWeeks()
 tests.testRemainingLabels()
-print("PASS: 6 expiry regression tests (last week, boundary, DST, past dates, current property)")
+tests.testChangeRequestWindow()
+tests.testChangeRequestWindowIgnoresDeviceTimeZone()
+print("PASS: 8 regression tests (expiry and request window boundaries, summer/winter time, device time zone)")

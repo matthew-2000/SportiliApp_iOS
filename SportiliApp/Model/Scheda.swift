@@ -8,6 +8,21 @@
 import Foundation
 import Firebase
 
+/// Informational only: requests keep using the existing Firebase flag.
+enum SchedaChangeRequestSchedule {
+    static let outsideWindowMessage = "Dopo la scadenza della scheda, invia la richiesta tra venerdì alle 20:00 e sabato alle 10:00 (ora italiana). Il personal trainer si occupa dei cambi la domenica. Puoi inviare comunque la richiesta: il cambio non è immediato e l'invio fuori orario non lo anticipa."
+    static let sentMessage = "Il trainer ha ricevuto la richiesta. I cambi scheda vengono gestiti la domenica."
+
+    static func isWithinWindow(at date: Date = Date()) -> Bool {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Rome")!
+        let components = calendar.dateComponents([.weekday, .hour], from: date)
+        // Friday 20:00 inclusive, Saturday 10:00 exclusive.
+        return (components.weekday == 6 && (components.hour ?? 0) >= 20)
+            || (components.weekday == 7 && (components.hour ?? 0) < 10)
+    }
+}
+
 let dateFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
