@@ -56,10 +56,26 @@
 		3BAFD00E2EB8CE0700960E7F /* ExerciseDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BAFD00D2EB8CE0700960E7F /* ExerciseDetailViewModel.swift */; };
 		3BE03C692D8C1C860090918F /* SwiftToast in Frameworks */ = {isa = PBXBuildFile; productRef = 3BE03C682D8C1C860090918F /* SwiftToast */; };
 		3BF2C8EF2C20451000179D37 /* GymViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF2C8EE2C20451000179D37 /* GymViewModel.swift */; };
+		55741886B97F82EFD4BB426C /* SportiliWidgets.appex in Embed SportiliWidgets */ = {isa = PBXBuildFile; fileRef = 0F6CCE129DD15EE92C567A12 /* SportiliWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		84629935D66B4BB991225B32 /* SportiliWatchWidgets.appex in Embed SportiliWatchWidgets */ = {isa = PBXBuildFile; fileRef = 635F1769E246AC3003ACC81D /* SportiliWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9D9DB4AD2D7BF64C047255C3 /* SportiliWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E20C96BD3D3716AB546CCCDB /* SportiliWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3486F532B62DF5F26E763A8A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3B9337552C09CC8500057838 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6976BA603C979985391656B0;
+			remoteInfo = SportiliWidgets;
+		};
+		A9FA459EFDE54E565A7A2B2C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3B9337552C09CC8500057838 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9AEA50FD5879C5F382BAE709;
+			remoteInfo = SportiliWatchWidgets;
+		};
 		E0D3D72604A1280D0CE59CB8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3B9337552C09CC8500057838 /* Project object */;
@@ -70,6 +86,26 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		5B87161F3DF5AC72B7435F6F /* Embed SportiliWatchWidgets */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstSubfolderSpec = 13;
+			files = (
+				84629935D66B4BB991225B32 /* SportiliWatchWidgets.appex in Embed SportiliWatchWidgets */,
+			);
+			name = "Embed SportiliWatchWidgets";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		680EC935D3F9B2BC6BBBDEAB /* Embed SportiliWidgets */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstSubfolderSpec = 13;
+			files = (
+				55741886B97F82EFD4BB426C /* SportiliWidgets.appex in Embed SportiliWidgets */,
+			);
+			name = "Embed SportiliWidgets";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A4B1D3B1F7ADC5E1C5A40FA7 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -84,6 +120,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0F6CCE129DD15EE92C567A12 /* SportiliWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SportiliWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B08CDC72C0DADF3001980B2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3B08CDD32C0DAF89001980B2 /* Esercizio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Esercizio.swift; sourceTree = "<group>"; };
 		3B08CDD52C0DAFEE001980B2 /* GruppoMuscolare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GruppoMuscolare.swift; sourceTree = "<group>"; };
@@ -130,16 +167,73 @@
 		3B9337672C09CC8600057838 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3BAFD00D2EB8CE0700960E7F /* ExerciseDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailViewModel.swift; sourceTree = "<group>"; };
 		3BF2C8EE2C20451000179D37 /* GymViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymViewModel.swift; sourceTree = "<group>"; };
+		635F1769E246AC3003ACC81D /* SportiliWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SportiliWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E20C96BD3D3716AB546CCCDB /* SportiliWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SportiliWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		0D77FD5F9FAA2FB4DC579ABC /* SportiliWatch */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SportiliWatch; sourceTree = "<group>"; };
-		0F81DDD637352CAA90851DB5 /* CompanionShared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CompanionShared; sourceTree = "<group>"; };
-		4A4E65C714625A9BFE04CBAE /* PhoneCompanion */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PhoneCompanion; sourceTree = "<group>"; };
+		0D77FD5F9FAA2FB4DC579ABC /* SportiliWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = SportiliWatch;
+			sourceTree = "<group>";
+		};
+		0F81DDD637352CAA90851DB5 /* CompanionShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = CompanionShared;
+			sourceTree = "<group>";
+		};
+		4A4E65C714625A9BFE04CBAE /* PhoneCompanion */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = PhoneCompanion;
+			sourceTree = "<group>";
+		};
+		8D1CC2AEB074D007D62DBC35 /* SportiliWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = SportiliWidgets;
+			sourceTree = "<group>";
+		};
+		CDAD89111EF168F74F9001FB /* SurfaceShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = SurfaceShared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0664803E86796CDC3A838DD4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0F2426C69544F62710D322F2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3B93375A2C09CC8500057838 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -236,6 +330,8 @@
 				0F81DDD637352CAA90851DB5 /* CompanionShared */,
 				4A4E65C714625A9BFE04CBAE /* PhoneCompanion */,
 				0D77FD5F9FAA2FB4DC579ABC /* SportiliWatch */,
+				CDAD89111EF168F74F9001FB /* SurfaceShared */,
+				8D1CC2AEB074D007D62DBC35 /* SportiliWidgets */,
 			);
 			sourceTree = "<group>";
 		};
@@ -244,6 +340,8 @@
 			children = (
 				3B93375D2C09CC8500057838 /* SportiliApp.app */,
 				E20C96BD3D3716AB546CCCDB /* SportiliWatch.app */,
+				0F6CCE129DD15EE92C567A12 /* SportiliWidgets.appex */,
+				635F1769E246AC3003ACC81D /* SportiliWatchWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -285,15 +383,18 @@
 				3B93375A2C09CC8500057838 /* Frameworks */,
 				3B93375B2C09CC8500057838 /* Resources */,
 				A4B1D3B1F7ADC5E1C5A40FA7 /* Embed Watch Content */,
+				680EC935D3F9B2BC6BBBDEAB /* Embed SportiliWidgets */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				9314221EC04CC1F4B6B557E0 /* PBXTargetDependency */,
+				4482B379682C642FD2BFA547 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				0F81DDD637352CAA90851DB5 /* CompanionShared */,
 				4A4E65C714625A9BFE04CBAE /* PhoneCompanion */,
+				CDAD89111EF168F74F9001FB /* SurfaceShared */,
 			);
 			name = SportiliApp;
 			packageProductDependencies = (
@@ -307,6 +408,52 @@
 			productReference = 3B93375D2C09CC8500057838 /* SportiliApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		6976BA603C979985391656B0 /* SportiliWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0E35CC9482E617C28E63526F /* Build configuration list for PBXNativeTarget "SportiliWidgets" */;
+			buildPhases = (
+				56C2B716200E7818BF38EA42 /* Sources */,
+				0F2426C69544F62710D322F2 /* Frameworks */,
+				E5DF30F76BDA53030F769514 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				CDAD89111EF168F74F9001FB /* SurfaceShared */,
+				8D1CC2AEB074D007D62DBC35 /* SportiliWidgets */,
+			);
+			name = SportiliWidgets;
+			packageProductDependencies = (
+			);
+			productName = SportiliWidgets;
+			productReference = 0F6CCE129DD15EE92C567A12 /* SportiliWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		9AEA50FD5879C5F382BAE709 /* SportiliWatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7B30D58A826DB5562C886596 /* Build configuration list for PBXNativeTarget "SportiliWatchWidgets" */;
+			buildPhases = (
+				72889AC1EAB81A6A6EDA7846 /* Sources */,
+				0664803E86796CDC3A838DD4 /* Frameworks */,
+				8B805E53F3C81304207E989D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				CDAD89111EF168F74F9001FB /* SurfaceShared */,
+				8D1CC2AEB074D007D62DBC35 /* SportiliWidgets */,
+			);
+			name = SportiliWatchWidgets;
+			packageProductDependencies = (
+			);
+			productName = SportiliWatchWidgets;
+			productReference = 635F1769E246AC3003ACC81D /* SportiliWatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		E4878F064CB658D03CE1DC35 /* SportiliWatch */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 52139C20EDB9F9B0A89E1D01 /* Build configuration list for PBXNativeTarget "SportiliWatch" */;
@@ -314,14 +461,17 @@
 				E20B8EF6913909F7252E6A00 /* Sources */,
 				C0ACF3542748EE019F0C06BF /* Frameworks */,
 				B2E439FE985DB279CDE55E40 /* Resources */,
+				5B87161F3DF5AC72B7435F6F /* Embed SportiliWatchWidgets */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				9B3BF4960CF0136F64659783 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				0D77FD5F9FAA2FB4DC579ABC /* SportiliWatch */,
 				0F81DDD637352CAA90851DB5 /* CompanionShared */,
+				CDAD89111EF168F74F9001FB /* SurfaceShared */,
 			);
 			name = SportiliWatch;
 			packageProductDependencies = (
@@ -365,6 +515,8 @@
 			targets = (
 				3B93375C2C09CC8500057838 /* SportiliApp */,
 				E4878F064CB658D03CE1DC35 /* SportiliWatch */,
+				6976BA603C979985391656B0 /* SportiliWidgets */,
+				9AEA50FD5879C5F382BAE709 /* SportiliWatchWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -398,7 +550,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8B805E53F3C81304207E989D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B2E439FE985DB279CDE55E40 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E5DF30F76BDA53030F769514 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -438,6 +604,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		56C2B716200E7818BF38EA42 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		72889AC1EAB81A6A6EDA7846 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E20B8EF6913909F7252E6A00 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -448,11 +628,23 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		4482B379682C642FD2BFA547 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SportiliWidgets;
+			target = 6976BA603C979985391656B0 /* SportiliWidgets */;
+			targetProxy = 3486F532B62DF5F26E763A8A /* PBXContainerItemProxy */;
+		};
 		9314221EC04CC1F4B6B557E0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = SportiliWatch;
 			target = E4878F064CB658D03CE1DC35 /* SportiliWatch */;
 			targetProxy = E0D3D72604A1280D0CE59CB8 /* PBXContainerItemProxy */;
+		};
+		9B3BF4960CF0136F64659783 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SportiliWatchWidgets;
+			target = 9AEA50FD5879C5F382BAE709 /* SportiliWatchWidgets */;
+			targetProxy = A9FA459EFDE54E565A7A2B2C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -587,6 +779,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Phone.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_ASSET_PATHS = "\"SportiliApp/Preview Content\"";
@@ -625,6 +818,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Phone.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_ASSET_PATHS = "\"SportiliApp/Preview Content\"";
@@ -658,10 +852,65 @@
 			};
 			name = Release;
 		};
+		6133CF0B34A3C4C3E2A03AA6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = WatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 16;
+				DEVELOPMENT_TEAM = W5F66P2G2K;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WidgetInfo.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.matthew.SportiliApp.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		61F30F140F26F3F7A1D67D89 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Widgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 16;
+				DEVELOPMENT_TEAM = W5F66P2G2K;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WidgetInfo.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.matthew.SportiliApp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		632E800FC40E25C5EE43BAE5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Watch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_TEAM = W5F66P2G2K;
@@ -688,10 +937,65 @@
 			};
 			name = Debug;
 		};
+		713EA05B458339C2E0E93CA3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Widgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 16;
+				DEVELOPMENT_TEAM = W5F66P2G2K;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WidgetInfo.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.matthew.SportiliApp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A7669C341367CCB4B8526237 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = WatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 16;
+				DEVELOPMENT_TEAM = W5F66P2G2K;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WidgetInfo.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.matthew.SportiliApp.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
 		B96513B88E8C87B7AB68ACA0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Watch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_TEAM = W5F66P2G2K;
@@ -721,6 +1025,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0E35CC9482E617C28E63526F /* Build configuration list for PBXNativeTarget "SportiliWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61F30F140F26F3F7A1D67D89 /* Debug */,
+				713EA05B458339C2E0E93CA3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3B9337582C09CC8500057838 /* Build configuration list for PBXProject "SportiliApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -744,6 +1057,15 @@
 			buildConfigurations = (
 				632E800FC40E25C5EE43BAE5 /* Debug */,
 				B96513B88E8C87B7AB68ACA0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7B30D58A826DB5562C886596 /* Build configuration list for PBXNativeTarget "SportiliWatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A7669C341367CCB4B8526237 /* Debug */,
+				6133CF0B34A3C4C3E2A03AA6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

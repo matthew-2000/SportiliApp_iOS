@@ -14,6 +14,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
+    SurfaceSession.shared.start()
+#if DEBUG
+    if ProcessInfo.processInfo.arguments.contains("--qa-native-checks") { Task { await runNativeSurfaceChecks() } }
+#endif
     // UI fixture launches never connect the companion bridge to production.
     if !ProcessInfo.processInfo.arguments.contains(where: { $0.hasPrefix("--qa-") }) {
         PhoneWatchBridge.shared.start()
@@ -25,11 +29,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct SportiliAppApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some Scene {
         WindowGroup {
             rootView
             .sportiliTheme()
+            .onOpenURL { SurfaceRoute.shared.url = $0 }
+            .onChange(of: scenePhase) { phase in
+                if phase == .active { SurfaceSession.shared.refresh(); PhoneRestTimer.shared.reconcile(); PhoneRestTimer.shared.refreshAuthorization() }
+            }
         }
     }
 

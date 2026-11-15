@@ -49,6 +49,8 @@ struct SportiliWatchApp: App {
 }
 struct WatchHomeView: View {
     @EnvironmentObject private var store: WatchWorkoutStore
+    @State private var linkedDay: WatchDay?
+    @State private var missingDay = false
     @State private var confirmReset = false
     var body: some View {
         NavigationStack {
@@ -103,6 +105,16 @@ struct WatchHomeView: View {
                     Button("Annulla", role: .cancel) {}
                 } message: { Text("Azzera spunte, pesi non registrati e timer. I pesi già registrati restano disponibili.") }
         }
+        .onOpenURL { url in
+            let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            let id = items.first { $0.name == "id" }?.value
+            let session = items.first { $0.name == "session" }?.value
+            if session == WorkoutSurface.current?.session, let day = store.state.sync.snapshot?.days.first(where: { $0.id == id }) { linkedDay = day }
+            else { missingDay = true }
+        }
+        .sheet(item: $linkedDay) { day in NavigationStack { WatchDayView(day: day) } }
+        .alert("Giorno non disponibile", isPresented: $missingDay) { Button("Torna alla scheda") {} }
+
     }
     private func emptyWorkout(_ title: String, message: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -137,7 +149,9 @@ struct WatchDayView: View {
                     }.watchCard()
                 }
             } header: { WatchSectionTitle(text: "\(day.exercises.count) esercizi") }
-        }.navigationTitle(day.name)
+        }
+        .onAppear { WorkoutSurface.save(id: day.id, name: day.name, count: day.exercises.count) }
+        .navigationTitle(day.name)
     }
     private func isComplete(_ exercise: WatchExercise) -> Bool {
         let draft = store.draft(for: exercise)

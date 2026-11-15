@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AVFoundation
 import UIKit
 import SwiftToast
 import Charts
@@ -1258,11 +1257,10 @@ struct TimerSheet: View {
     @State private var timeRemaining: Int
     @State private var totalTime: Int
     @State private var showsFallbackWarning: Bool
+    @ObservedObject private var rest = PhoneRestTimer.shared
     @State private var timerIsActive = false
     @State private var timerPaused = false
     @State private var timer: Timer?
-
-    @State private var audioPlayer: AVAudioPlayer?
 
     init(riposo: String) {
         let parsed = TimerSheet.parseRiposoResult(riposo)
@@ -1308,6 +1306,8 @@ struct TimerSheet: View {
                         .accessibilityValue(formatTime(timeRemaining))
                         .padding(.vertical, SportiliSpacing.standard)
 
+                        Text(rest.message).font(.caption)
+                        Text("Il recupero continua fuori dall’app.").font(.caption)
                         Text(timerStatus)
                             .font(SportiliTypography.body)
                             .foregroundStyle(.secondary)
@@ -1328,8 +1328,15 @@ struct TimerSheet: View {
             }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(timerIsActive || timerPaused ? "Interrompi" : "Chiudi", action: dismiss.callAsFunction)
+                    Button("Chiudi", action: dismiss.callAsFunction)
                         .font(SportiliTypography.body)
+                }
+            }
+            .onAppear {
+                rest.refreshAuthorization()
+                if rest.remaining > 0 {
+                    timeRemaining = rest.remaining; totalTime = rest.duration
+                    timerIsActive = true; observeDeadline()
                 }
             }
             .onDisappear {
@@ -1385,41 +1392,29 @@ struct TimerSheet: View {
 
     func startTimer() {
         guard !timerIsActive else { return }
-
         if timeRemaining == 0 { timeRemaining = totalTime }
-
-        timerIsActive = true
-        timerPaused = false
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if timeRemaining > 1 {
-                timeRemaining -= 1
-                announceTimeIfNeeded()
-            } else {
-                timer?.invalidate()
-                timer = nil
-                timerIsActive = false
-                timerPaused = false
-                timeRemaining = 0
-                UIAccessibility.post(notification: .announcement, argument: "Recupero terminato")
-                playSound()
-                triggerVibration()
+        rest.start(seconds: timeRemaining, total: totalTime)
+        timerIsActive = true; timerPaused = false
+        observeDeadline()
+    }
+    private func observeDeadline() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { _ in
+            Task { @MainActor in
+            let next = rest.remaining
+            if next != timeRemaining { timeRemaining = next; announceTimeIfNeeded() }
+            if next == 0 { timer?.invalidate(); timer = nil; timerIsActive = false; rest.reconcile() }
             }
         }
     }
-
     func pauseTimer() {
-        timer?.invalidate()
-        timer = nil
-        timerIsActive = false
-        timerPaused = true
+        timeRemaining = rest.remaining
+        rest.stop(); timer?.invalidate(); timer = nil
+        timerIsActive = false; timerPaused = true
     }
-
     func resetTimer() {
-        timer?.invalidate()
-        timer = nil
-        timeRemaining = totalTime
-        timerIsActive = false
-        timerPaused = false
+        rest.stop(); timer?.invalidate(); timer = nil
+        timeRemaining = totalTime; timerIsActive = false; timerPaused = false
     }
 
     private func announceTimeIfNeeded() {
@@ -1511,14 +1506,6 @@ struct TimerSheet: View {
         return Int(value[matchRange])
     }
 
-    func playSound() {
-        AudioServicesPlaySystemSound(SystemSoundID(1022))
-    }
-
-    func triggerVibration() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-    }
 }
 
 #Preview("Esercizio View") {

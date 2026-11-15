@@ -210,6 +210,8 @@ struct SettingsView: View {
     private func performLogout() {
         do {
             try signOut()
+            WorkoutSurface.clear()
+            PhoneRestTimer.shared.stop()
             clearSessionDefaults()
             isLoggedOut = true
         } catch {

@@ -19,7 +19,7 @@ final class WatchWorkoutStore: NSObject, ObservableObject, UNUserNotificationCen
     private let transport = CompanionTransport()
     private var healthy = true
     private let fixture: Bool
-    private let restID = "sportili-rest"
+    private var restID: String { UserDefaults.standard.string(forKey: "watch.rest.request") ?? "sportili-rest" }
     init(fixture: Bool = false) {
         self.fixture = fixture
         disk = CompanionDisk(url: CompanionDisk<WatchAppState>.applicationFile("watch.json"))
@@ -65,7 +65,13 @@ final class WatchWorkoutStore: NSObject, ObservableObject, UNUserNotificationCen
         var next = state; change(&next)
         do {
             if !fixture { try disk.save(next) }
+            if state.sync.snapshot?.binding != next.sync.snapshot?.binding { WorkoutSurface.clear() }
             state = next
+            if let selected = WorkoutSurface.current {
+                if let day = next.sync.snapshot?.days.first(where: { $0.id == selected.dayID }) {
+                    WorkoutSurface.save(id: day.id, name: day.name, count: day.exercises.count)
+                } else { WorkoutSurface.clear() }
+            }
             return true
         } catch { self.error = "Modifica non salvata. Controlla lo spazio libero sul Watch e riprova."; return false }
     }
@@ -146,6 +152,8 @@ final class WatchWorkoutStore: NSObject, ObservableObject, UNUserNotificationCen
         guard update({ $0.sync.restDeadline = deadline }) else { return }
         cancelNotification()
         let center = UNUserNotificationCenter.current()
+        let scheduledID = "sportili-rest." + UUID().uuidString
+        UserDefaults.standard.set(scheduledID, forKey: "watch.rest.request")
         center.requestAuthorization(options: [.alert, .sound]) { [weak self] allowed, authError in
             DispatchQueue.main.async {
                 guard let self, self.state.sync.restDeadline == deadline else { return }
@@ -158,10 +166,10 @@ final class WatchWorkoutStore: NSObject, ObservableObject, UNUserNotificationCen
                 content.body = "Puoi iniziare la prossima serie."
                 content.sound = .default
                 let remaining = max(1, deadline.timeIntervalSinceNow)
-                center.add(UNNotificationRequest(identifier: self.restID, content: content,
+                center.add(UNNotificationRequest(identifier: scheduledID, content: content,
                     trigger: UNTimeIntervalNotificationTrigger(timeInterval: remaining, repeats: false))) { error in
                         DispatchQueue.main.async {
-                            if self.state.sync.restDeadline == nil { self.cancelNotification() }
+                            if self.state.sync.restDeadline != deadline { center.removePendingNotificationRequests(withIdentifiers: [scheduledID]) }
                             else if error != nil, self.state.sync.restDeadline == deadline {
                                 self.error = "Avviso di fine recupero non impostato. Controlla il timer sullo schermo."
                             }
@@ -172,12 +180,11 @@ final class WatchWorkoutStore: NSObject, ObservableObject, UNUserNotificationCen
     }
     func stopRest() { if update({ $0.sync.restDeadline = nil }) { cancelNotification() } }
     private func cancelNotification() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [restID])
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [restID])
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [restID, "sportili-rest"])
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [restID, "sportili-rest"])
     }
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        WKInterfaceDevice.current().play(.notification)
         completionHandler([.banner, .sound])
     }
 }

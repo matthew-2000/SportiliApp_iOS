@@ -75,6 +75,11 @@ final class SchedaViewModel: ObservableObject {
                 switch result {
                 case .success(let scheda):
                     self.scheda = scheda
+                    if let selected = WorkoutSurface.current {
+                        if let day = scheda?.giorni.first(where: { $0.id == selected.dayID }) {
+                            WorkoutSurface.save(id: day.id, name: day.name, count: day.gruppiMuscolari.reduce(0) { $0 + $1.esercizi.count })
+                        } else { WorkoutSurface.clear() }
+                    }
                     self.errorMessage = nil
                 case .failure(let error):
                     // Keep this user's last loaded workout visible; code changes clear it above.

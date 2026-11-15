@@ -9,11 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
     
+    @State private var selected = 0
     var body: some View {
-        TabView {
+        TabView(selection: $selected) {
             NavigationStack {
                 HomeView()
             }
+                .tag(0)
                 .tabItem {
                     Image(systemName: "list.clipboard.fill")
                     Text("Scheda")
@@ -23,6 +25,7 @@ struct ContentView: View {
             NavigationStack {
                 AlertsView()
             }
+                .tag(1)
                 .tabItem {
                     Image(systemName: "bell.fill")
                     Text("Avvisi")
@@ -32,12 +35,14 @@ struct ContentView: View {
             NavigationStack {
                 SettingsView()
             }
+                .tag(2)
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Impostazioni")
                         .montserrat(size: 12)
                 }
         }
+        .onReceive(SurfaceRoute.shared.$url) { if $0 != nil { selected = 0 } }
     }
 }
 

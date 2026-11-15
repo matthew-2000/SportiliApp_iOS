@@ -9,6 +9,9 @@ import SwiftUI
 import FirebaseAuth
 
 struct HomeView: View {
+    @State private var linkedDay: Giorno?
+    @State private var linkUnavailable = false
+    @State private var showRest = false
     @State private var nomeUtente: String?
     @StateObject private var schedaViewModel: SchedaViewModel
     @State private var isRequesting = false
@@ -42,12 +45,31 @@ struct HomeView: View {
         .navigationTitle("Scheda")
         .navigationBarTitleDisplayMode(.large)
         .onAppear(perform: updateUserName)
+        .onReceive(SurfaceRoute.shared.$url) { url in openSurfaceURL(url) }
+        .onChange(of: schedaViewModel.isLoading) { _ in openSurfaceURL(SurfaceRoute.shared.url) }
+        .sheet(isPresented: $showRest) { TimerSheet(riposo: "") }
+        .navigationDestination(isPresented: Binding(get: { linkedDay != nil }, set: { if !$0 { linkedDay = nil } })) {
+            if let day = linkedDay { DayView(day: day) }
+        }
+        .alert("Giorno non disponibile", isPresented: $linkUnavailable) { Button("Torna alla scheda") {} } message: { Text("Scegli un giorno dalla scheda aggiornata.") }
         .alert("Richiesta fuori orario", isPresented: $showOutsideWindowConfirmation) {
             Button("Annulla", role: .cancel) { }
             Button("Invia comunque", action: sendSchedaUpdateRequest)
         } message: {
             Text(SchedaChangeRequestSchedule.outsideWindowMessage)
         }
+    }
+
+    private func openSurfaceURL(_ url: URL?) {
+        guard let url, url.scheme == "sportiliapp" else { return }
+        if url.host == "rest" { PhoneRestTimer.shared.reconcile(); showRest = true; SurfaceRoute.shared.url = nil; return }
+        guard schedaViewModel.hasLoadedOnce, !schedaViewModel.isLoading else { return }
+        SurfaceRoute.shared.url = nil
+        let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        let id = items.first { $0.name == "id" }?.value
+        let session = items.first { $0.name == "session" }?.value
+        if session == WorkoutSurface.current?.session, let day = schedaViewModel.scheda?.giorni.first(where: { $0.id == id }) { linkedDay = day }
+        else { linkUnavailable = true }
     }
 
     private func homeList(for scheda: Scheda) -> some View {

@@ -8,6 +8,49 @@ let project = try XcodeProj(path: path)
 let pbx = project.pbxproj
 let root = try pbx.rootProject()!
 let phone = pbx.nativeTargets.first { $0.name == "SportiliApp" }!
+if CommandLine.arguments.contains("--surfaces") {
+    func group(_ name: String) -> PBXFileSystemSynchronizedRootGroup {
+        if let found = root.mainGroup?.children.compactMap { $0 as? PBXFileSystemSynchronizedRootGroup }.first(where: { $0.path == name }) { return found }
+        let g = PBXFileSystemSynchronizedRootGroup(sourceTree: .group, path: name)
+        pbx.add(object: g); root.mainGroup?.children.append(g); return g
+    }
+    let shared = group("SurfaceShared")
+    let widget = group("SportiliWidgets")
+    let watch = pbx.nativeTargets.first { $0.name == "SportiliWatch" }!
+    for (target, entitlement) in [(phone, "Phone"), (watch, "Watch")] {
+        if !(target.fileSystemSynchronizedGroups ?? []).contains(shared) { target.fileSystemSynchronizedGroups = (target.fileSystemSynchronizedGroups ?? []) + [shared] }
+        for config in target.buildConfigurationList?.buildConfigurations ?? [] { config.buildSettings["CODE_SIGN_ENTITLEMENTS"] = entitlement + ".entitlements" }
+    }
+    for (name, host, isWatch, entitlement) in [("SportiliWidgets", phone, false, "Widgets"), ("SportiliWatchWidgets", watch, true, "WatchWidgets")] {
+        if pbx.nativeTargets.contains(where: { $0.name == name }) { continue }
+        let configs = ["Debug", "Release"].map { name -> XCBuildConfiguration in
+            var settings: [String: Any] = [
+                "PRODUCT_NAME": "$(TARGET_NAME)", "SWIFT_VERSION": "5.0", "GENERATE_INFOPLIST_FILE": "NO",
+                "INFOPLIST_FILE": "WidgetInfo.plist", "SKIP_INSTALL": "YES", "APPLICATION_EXTENSION_API_ONLY": "YES",
+                "CODE_SIGN_ENTITLEMENTS": entitlement + ".entitlements", "CODE_SIGN_STYLE": "Automatic", "DEVELOPMENT_TEAM": "W5F66P2G2K",
+                "CURRENT_PROJECT_VERSION": "16", "MARKETING_VERSION": "2.0",
+                "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks"],
+                "SDKROOT": isWatch ? "watchos" : "iphoneos", "SUPPORTED_PLATFORMS": isWatch ? "watchos watchsimulator" : "iphoneos iphonesimulator",
+                "PRODUCT_BUNDLE_IDENTIFIER": isWatch ? "com.matthew.SportiliApp.watchkitapp.widgets" : "com.matthew.SportiliApp.widgets",
+                "TARGETED_DEVICE_FAMILY": isWatch ? "4" : "1,2"
+            ]
+            settings[isWatch ? "WATCHOS_DEPLOYMENT_TARGET" : "IPHONEOS_DEPLOYMENT_TARGET"] = isWatch ? "10.0" : "17.0"
+            let c = XCBuildConfiguration(name: name, buildSettings: settings); pbx.add(object: c); return c
+        }
+        let list = XCConfigurationList(buildConfigurations: configs, defaultConfigurationName: "Release"); pbx.add(object: list)
+        let product = PBXFileReference(sourceTree: .buildProductsDir, explicitFileType: "wrapper.app-extension", path: name + ".appex", includeInIndex: false)
+        pbx.add(object: product); root.productsGroup?.children.append(product)
+        let phases: [PBXBuildPhase] = [PBXSourcesBuildPhase(), PBXFrameworksBuildPhase(), PBXResourcesBuildPhase()]
+        phases.forEach { pbx.add(object: $0) }
+        let target = PBXNativeTarget(name: name, buildConfigurationList: list, buildPhases: phases, productName: name, product: product, productType: .appExtension)
+        pbx.add(object: target); root.targets.append(target); target.fileSystemSynchronizedGroups = [shared, widget]
+        _ = try host.addDependency(target: target)
+        let file = PBXBuildFile(file: product, settings: ["ATTRIBUTES": ["RemoveHeadersOnCopy"]]); pbx.add(object: file)
+        let copy = PBXCopyFilesBuildPhase(dstSubfolderSpec: .plugins, name: "Embed " + name, files: [file]); pbx.add(object: copy); host.buildPhases.append(copy)
+    }
+    try pbx.write(path: path + "project.pbxproj", override: true)
+    exit(0)
+}
 if CommandLine.arguments.contains("--refresh-settings") {
     for config in phone.buildConfigurationList?.buildConfigurations ?? [] {
         var flags = config.buildSettings["OTHER_LDFLAGS"] as? [String]

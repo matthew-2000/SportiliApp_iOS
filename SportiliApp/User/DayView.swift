@@ -40,6 +40,9 @@ struct DayView: View {
             }
             .listStyle(.automatic)
         }
+        .onAppear {
+            WorkoutSurface.save(id: day.id, name: day.name, count: day.gruppiMuscolari.reduce(0) { $0 + $1.esercizi.count })
+        }
         .navigationTitle(Text("\(day.name)"))
         .navigationBarTitleDisplayMode(.large)
     }
