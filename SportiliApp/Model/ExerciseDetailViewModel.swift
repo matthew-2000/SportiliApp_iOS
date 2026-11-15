@@ -33,6 +33,10 @@ final class ExerciseDetailViewModel: ObservableObject {
     @Published private(set) var exerciseData: [String: UserExerciseData]
     @Published private(set) var weightSessions: [String: [WorkoutWeightSession]] = [:]
     @Published private(set) var weightSessionsError: String?
+    @Published private(set) var exerciseDataError: String?
+    // Companion snapshots wait for initial history hydration instead of replacing cached weights with empties.
+    private(set) var hasLoadedExerciseData = false
+    private(set) var hasLoadedWeightSessions = false
 
     let userCode: String
 
@@ -109,6 +113,7 @@ final class ExerciseDetailViewModel: ObservableObject {
     }
 
     private func observeWeightSessions() {
+        hasLoadedWeightSessions = false
         sessionsGeneration += 1
         let generation = sessionsGeneration
         if let sessionsHandle { sessionsReference?.removeObserver(withHandle: sessionsHandle) }
@@ -126,12 +131,14 @@ final class ExerciseDetailViewModel: ObservableObject {
             }
             DispatchQueue.main.async {
                 guard let self, self.sessionsGeneration == generation else { return }
+                self.hasLoadedWeightSessions = true
                 self.weightSessions = result
                 self.weightSessionsError = nil
             }
         }, withCancel: { [weak self] _ in
             DispatchQueue.main.async {
                 guard let self, self.sessionsGeneration == generation else { return }
+                self.hasLoadedWeightSessions = true
                 self.weightSessionsError = "Impossibile aggiornare gli allenamenti con serie. Riprova."
             }
         })
@@ -329,7 +336,14 @@ final class ExerciseDetailViewModel: ObservableObject {
                 }
             }
             DispatchQueue.main.async {
+                self.hasLoadedExerciseData = true
+                self.exerciseDataError = nil
                 self.exerciseData = result
+            }
+        }, withCancel: { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.hasLoadedExerciseData = true
+                self?.exerciseDataError = "Impossibile aggiornare i carichi singoli. Riapri l’app."
             }
         })
     }

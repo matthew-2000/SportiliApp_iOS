@@ -111,11 +111,6 @@ private struct AlertsEmptyState: View {
             Text("Nessun avviso")
                 .font(SportiliTypography.titleLarge)
                 .foregroundStyle(SportiliPalette.onSurface)
-
-            Text("Quando il tuo trainer pubblicherà un avviso lo troverai qui.")
-                .foregroundStyle(SportiliPalette.onSurfaceMuted)
-                .multilineTextAlignment(.center)
-                .font(SportiliTypography.body)
         }
         .padding(SportiliSpacing.standard)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

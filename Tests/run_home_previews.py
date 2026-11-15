@@ -8,6 +8,7 @@ Screenshots require visual review and are not automated UI assertions.
 import argparse
 import json
 from pathlib import Path
+from companion_test_support import prepare_phone_fixture_project
 import shutil
 import subprocess
 import tempfile
@@ -41,6 +42,7 @@ def main():
         shutil.copytree(root / "SportiliApp", work / "SportiliApp")
         shutil.copytree(root / "SportiliApp.xcodeproj", work / "SportiliApp.xcodeproj",
                         ignore=shutil.ignore_patterns("xcuserdata"))
+        prepare_phone_fixture_project(root, work)
         entry = work / "SportiliApp/SportiliAppApp.swift"
         original = entry.read_text()
         before, marker, remaining = original.partition("@main\nstruct SportiliAppApp: App {")

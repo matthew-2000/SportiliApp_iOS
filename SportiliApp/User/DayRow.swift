@@ -27,7 +27,8 @@ struct DayRow: View {
                         .foregroundStyle(SportiliPalette.onSurfaceMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                Text("Apri allenamento")
+                let count = day.gruppiMuscolari.reduce(0) { $0 + $1.esercizi.count }
+                Text(count == 1 ? "1 esercizio" : "\(count) esercizi")
                     .font(SportiliTypography.labelSmall)
                     .foregroundStyle(SportiliPalette.primary)
             }

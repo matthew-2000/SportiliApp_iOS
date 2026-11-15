@@ -87,7 +87,7 @@ struct SettingsView: View {
                 Button(role: .destructive) {
                     isLogoutConfirmationPresented = true
                 } label: {
-                    SettingsActionLabel(title: "Esci dall’account", icon: "rectangle.portrait.and.arrow.right")
+                    SettingsActionLabel(title: "Esci", icon: "rectangle.portrait.and.arrow.right")
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                         .foregroundStyle(SportiliPalette.onCriticalContainer)
@@ -117,7 +117,7 @@ struct SettingsView: View {
         .navigationTitle("Impostazioni")
         .navigationBarTitleDisplayMode(.large)
         .confirmationDialog(
-            "Vuoi uscire dall’account?",
+            "Vuoi uscire da SportiliApp?",
             isPresented: $isLogoutConfirmationPresented,
             titleVisibility: .visible
         ) {

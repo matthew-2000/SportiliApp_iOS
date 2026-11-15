@@ -179,7 +179,7 @@ struct HomeView: View {
                     requestWasSent = true
                     schedaViewModel.fetchScheda()
                 } else {
-                    requestErrorMessage = "Non riusciamo a inviare la richiesta. Controlla la connessione e riprova."
+                    requestErrorMessage = "Richiesta non inviata. Controlla la connessione e riprova."
                 }
             }
         }
@@ -370,10 +370,10 @@ private struct HomeRefreshErrorBanner: View {
                 VStack(alignment: .leading, spacing: SportiliSpacing.compact) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .accessibilityHidden(true)
-                    Text("Aggiornamento non riuscito. Mostriamo gli ultimi dati disponibili.")
+                    Text("Scheda non aggiornata. Stai vedendo l’ultima versione ricevuta.")
                 }
             } else {
-                Label("Aggiornamento non riuscito. Mostriamo gli ultimi dati disponibili.", systemImage: "exclamationmark.triangle.fill")
+                Label("Scheda non aggiornata. Stai vedendo l’ultima versione ricevuta.", systemImage: "exclamationmark.triangle.fill")
             }
         }
         .font(SportiliTypography.bodySmall)
@@ -441,7 +441,7 @@ private struct HomeEmptyState: View {
         HomeUnavailableState(
             icon: "list.bullet.clipboard",
             title: "Nessuna scheda disponibile",
-            message: "Quando il trainer ne assegnerà una, la troverai qui.",
+            message: "Non c’è una scheda per il tuo codice. Contatta il trainer per verificarla.",
             actionTitle: "Riprova",
             action: onRetry
         )

@@ -2,6 +2,7 @@
 import argparse
 import json
 from pathlib import Path
+from companion_test_support import prepare_phone_fixture_project
 import shutil
 import subprocess
 import tempfile
@@ -29,6 +30,7 @@ def main():
         work = Path(directory)
         shutil.copytree(root / "SportiliApp", work / "SportiliApp")
         shutil.copytree(root / "SportiliApp.xcodeproj", work / "SportiliApp.xcodeproj", ignore=shutil.ignore_patterns("xcuserdata"))
+        prepare_phone_fixture_project(root, work)
         original = (work / "SportiliApp/SportiliAppApp.swift").read_text()
         _, marker, modifiers = original.partition("struct MontserratFontModifier:")
         if not marker:

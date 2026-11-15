@@ -1,5 +1,8 @@
 # Verifiche iOS
 
+Per il companion Apple Watch, architettura, test di sincronizzazione, emulatori e
+limiti della verifica su Simulator: [WatchCompanion.md](WatchCompanion.md).
+
 ## Regressioni della scadenza
 
 Dalla root della repository:

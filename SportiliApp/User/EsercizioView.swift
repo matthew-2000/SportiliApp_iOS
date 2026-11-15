@@ -205,7 +205,7 @@ struct EsercizioView: View {
                     Label("Superset · \(parts.count) parti", systemImage: "link")
                         .font(SportiliTypography.label)
                         .foregroundStyle(SportiliPalette.primary)
-                    Text("Esegui tutte le parti in combinazione.")
+                    Text("Seleziona una parte per vedere i suoi pesi e le sue note.")
                         .font(SportiliTypography.bodySmall)
                         .foregroundStyle(SportiliPalette.onSurfaceMuted)
                     ExerciseVariationPicker(parts: parts, selectedIndex: $selectedPartIndex)
@@ -249,7 +249,7 @@ struct EsercizioView: View {
                 .id(currentKey)
             }
 
-            Section(header: Text("Pesi e progressi").font(SportiliTypography.label)) {
+            Section(header: Text("Pesi registrati").font(SportiliTypography.label)) {
                 if let latest = sortedLogs.last {
                     WeightLogRow(date: Self.summaryDateFormatter.string(from: latest.date),
                                  weight: "\(sessions.isEmpty ? "Ultimo peso" : "Ultimo peso singolo"): \(formattedWeight(latest.weight)) kg")
@@ -287,12 +287,12 @@ struct EsercizioView: View {
                 if history.isEmpty {
                     EmptyStateRow(
                         title: "Nessun peso registrato",
-                        message: "Registra il primo peso per iniziare a vedere i progressi.",
+                        message: "Aggiungi il peso usato oggi con i pulsanti qui sopra.",
                         systemImage: "scalemass"
                     )
                     .padding(.vertical, 6)
                 } else if !recentLogs.isEmpty {
-                    Text("Progressi dei pesi singoli")
+                    Text("Pesi singoli")
                         .font(SportiliTypography.label)
                     let chartData = recentLogs.enumerated().map { idx, log in
                         UniformLog(id: idx, index: idx, date: log.date, weight: log.weight)
@@ -530,7 +530,7 @@ struct EsercizioView: View {
     private func handleWeightConfirm() {
         guard !isWeightSaving else { return }
         guard let weightValue = parsedWeightInput(weightInput) else {
-            weightError = "Inserisci un peso maggiore di zero, con virgola o punto."
+            weightError = "Inserisci un numero maggiore di zero."
             return
         }
         weightError = nil
@@ -772,7 +772,7 @@ private struct PrescriptionCard: View {
                     HStack(alignment: .top, spacing: SportiliSpacing.compact) {
                         Image(systemName: "play.circle.fill")
                             .accessibilityHidden(true)
-                        Text("Avvia timer di recupero")
+                        Text("Apri timer di recupero")
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .font(SportiliTypography.label)
@@ -857,7 +857,7 @@ struct WeightProgressCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: SportiliSpacing.small) {
-            Label("Ultime 10 registrazioni", systemImage: "chart.line.uptrend.xyaxis")
+            Label(samples.count == 1 ? "1 registrazione" : "\(samples.count) registrazioni", systemImage: "chart.line.uptrend.xyaxis")
                 .font(SportiliTypography.label)
 
             if let summary {
@@ -865,7 +865,7 @@ struct WeightProgressCard: View {
                     Text("Ultimo peso: \(format(summary.latest)) kg")
                         .font(SportiliTypography.title)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("Variazione tra primo e ultimo campione: \(signed(summary.delta)) kg · Minimo \(format(summary.minimum)) kg · Massimo \(format(summary.maximum)) kg")
+                    Text("Differenza tra prima e ultima registrazione: \(signed(summary.delta)) kg · Minimo \(format(summary.minimum)) kg · Massimo \(format(summary.maximum)) kg")
                         .font(SportiliTypography.bodySmall)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -876,13 +876,13 @@ struct WeightProgressCard: View {
             WeightChartView(data: samples.enumerated().map { UniformLog(id: $0.offset, index: $0.offset + 1, date: $0.element.date, weight: $0.element.weight) }, dateFormatter: dateFormatter)
                 .frame(height: 220)
                 .accessibilityHidden(true)
-            Text("Campioni in ordine di registrazione. Gli intervalli tra le date possono variare.")
+            Text("Ogni punto è una registrazione. Le distanze tra i punti non rappresentano i giorni trascorsi.")
                 .font(SportiliTypography.bodySmall)
                 .foregroundStyle(SportiliPalette.onSurfaceMuted)
-            DisclosureGroup("Valori e date dei campioni") {
+            DisclosureGroup("Pesi e date") {
                 ForEach(Array(samples.enumerated()), id: \.offset) { index, log in
                     WeightLogRow(date: dateFormatter.string(from: log.date),
-                                 weight: "Campione \(index + 1): \(format(log.weight)) kg")
+                                 weight: "Registrazione \(index + 1): \(format(log.weight)) kg")
                 }
             }
             .font(SportiliTypography.bodySmall)
@@ -1080,7 +1080,7 @@ struct WeightEntrySheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Peso (kg)").font(SportiliTypography.label), footer: Text("Usa la virgola o il punto, ad esempio 47,5.").font(SportiliTypography.bodySmall)) {
+                Section(header: Text("Peso (kg)").font(SportiliTypography.label), footer: Text("Inserisci i kg, ad esempio 47,5.").font(SportiliTypography.bodySmall)) {
                     if record == nil, let lastWeight {
                         Button("Usa l'ultimo peso (\(lastWeight.formatted()) kg)") {
                             weightInput = String(lastWeight)
@@ -1100,7 +1100,7 @@ struct WeightEntrySheet: View {
                 if let errorMessage { Section { Label(errorMessage, systemImage: "exclamationmark.triangle")
                     .font(SportiliTypography.bodySmall).foregroundStyle(SportiliPalette.onCriticalContainer) } }
                 else if !weightInput.isEmpty && !hasValidWeight {
-                    Text("Inserisci un peso maggiore di zero, con virgola o punto.")
+                    Text("Inserisci un numero maggiore di zero.")
                         .font(SportiliTypography.bodySmall).foregroundStyle(SportiliPalette.onCriticalContainer)
                 }
                 Section(header: Text("Dettagli").font(SportiliTypography.label)) {
@@ -1281,7 +1281,7 @@ struct TimerSheet: View {
                             .multilineTextAlignment(.center)
 
                         if showsFallbackWarning {
-                            Label("Formato non riconosciuto: timer impostato a 1 minuto.", systemImage: "info.circle")
+                            Label("Recupero non riconosciuto: il timer partirà da 1 minuto.", systemImage: "info.circle")
                                 .font(SportiliTypography.bodySmall)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -1328,7 +1328,7 @@ struct TimerSheet: View {
             }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Chiudi", action: dismiss.callAsFunction)
+                    Button(timerIsActive || timerPaused ? "Interrompi" : "Chiudi", action: dismiss.callAsFunction)
                         .font(SportiliTypography.body)
                 }
             }
@@ -1343,15 +1343,15 @@ struct TimerSheet: View {
     private var timerButtons: some View {
         if timerIsActive {
             timerButton(title: "Pausa", systemImage: "pause.circle.fill", prominent: true, action: pauseTimer)
-            timerButton(title: "Azzera", systemImage: "gobackward", prominent: false, action: resetTimer)
+            timerButton(title: "Reimposta", systemImage: "gobackward", prominent: false, action: resetTimer)
         } else {
             timerButton(
-                title: timerPaused ? "Riprendi" : "Inizia",
+                title: timerPaused ? "Riprendi" : "Avvia",
                 systemImage: "play.circle.fill",
                 prominent: true,
                 action: startTimer
             )
-            timerButton(title: "Azzera", systemImage: "gobackward", prominent: false, action: resetTimer)
+            timerButton(title: "Reimposta", systemImage: "gobackward", prominent: false, action: resetTimer)
                 .disabled(timeRemaining == totalTime)
         }
     }
@@ -1359,8 +1359,8 @@ struct TimerSheet: View {
     private var timerStatus: String {
         if timerIsActive { return "Timer in corso" }
         if timerPaused { return "Timer in pausa" }
-        if timeRemaining == totalTime { return "Pronto per iniziare" }
-        return "Timer completato"
+        if timeRemaining == totalTime { return "Tocca Avvia per iniziare il recupero" }
+        return "Recupero terminato"
     }
 
     @ViewBuilder
@@ -1605,18 +1605,18 @@ private struct WeightSessionEditor: View {
             Form {
                 Section {
                     Text(context.name).font(SportiliTypography.headline)
-                    Text("Inserisci ripetizioni e kg per ogni serie. Tutte le serie vengono salvate insieme.")
+                    Text("Inserisci il peso usato in ogni serie. Correggi le ripetizioni se sono diverse da quelle previste.")
                         .font(SportiliTypography.bodySmall)
                     if context.session == nil {
                         if let previous = lastCompatible {
-                            Button("Usa gli ultimi pesi") {
+                            Button("Usa ultimi pesi") {
                                 for index in rows.indices { rows[index].weight = String(previous.sets[index].weight) }
                                 error = nil
                             }
-                            Text("Ultimo allenamento con le stesse ripetizioni: \(EsercizioView.summaryDateFormatter.string(from: previous.date))")
+                            Text("Ultimi pesi con queste ripetizioni: \(EsercizioView.summaryDateFormatter.string(from: previous.date))")
                                 .font(SportiliTypography.bodySmall)
                         } else {
-                            Text("Nessun allenamento precedente con queste ripetizioni. I vecchi pesi singoli restano nello storico.")
+                            Text("Nessun peso da riutilizzare con queste ripetizioni. Inserisci i kg di ogni serie.")
                                 .font(SportiliTypography.bodySmall)
                         }
                     }
@@ -1649,12 +1649,12 @@ private struct WeightSessionEditor: View {
                 if rows.count < 20 {
                     Button("Aggiungi serie") { rows.append(WeightSetDraft(reps: "", weight: "")) }.disabled(isSaving)
                 }
-                Text("Pesi maggiori di zero; usa la virgola o il punto. Ripetizioni da 1 a 1000.")
+                Text("Compila tutte le serie prima di salvare. Per i decimali puoi usare la virgola o il punto.")
                     .font(SportiliTypography.bodySmall)
                 if let error { Text(error).foregroundStyle(SportiliPalette.onCriticalContainer) }
-                if isSaving { ProgressView("Salvataggio allenamento…") }
+                if isSaving { ProgressView("Salvataggio pesi…") }
             }
-            .navigationTitle(context.session == nil ? "Registra pesi per serie" : "Modifica allenamento")
+            .navigationTitle(context.session == nil ? "Registra pesi per serie" : "Modifica pesi")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -1663,11 +1663,11 @@ private struct WeightSessionEditor: View {
                     }.disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Salva allenamento") {
+                    Button("Salva pesi") {
                         guard !isSaving else { return }
                         let sets = rows.compactMap(\.value)
                         guard sets.count == rows.count else {
-                            error = "Controlla ripetizioni e pesi di tutte le serie."; return
+                            error = "Controlla ogni serie: ripetizioni da 1 a 1000 e peso maggiore di zero."; return
                         }
                         error = nil
                         isSaving = true
@@ -1711,8 +1711,8 @@ private struct WeightSessionHistoryRow: View {
                     }
                 }
             }
-            Button("Modifica allenamento", action: onEdit).disabled(deleting)
-            Button("Elimina allenamento", role: .destructive) { confirmsDelete = true }.disabled(deleting)
+            Button("Modifica pesi", action: onEdit).disabled(deleting)
+            Button("Elimina pesi", role: .destructive) { confirmsDelete = true }.disabled(deleting)
             if deleting { ProgressView("Eliminazione…") }
             if let error { Text(error).foregroundStyle(SportiliPalette.onCriticalContainer) }
         } label: {
@@ -1722,8 +1722,8 @@ private struct WeightSessionHistoryRow: View {
                     .font(SportiliTypography.bodySmall)
             }
         }
-        .confirmationDialog("Eliminare tutte le serie di questo allenamento?", isPresented: $confirmsDelete, titleVisibility: .visible) {
-            Button("Elimina allenamento", role: .destructive) {
+        .confirmationDialog("Eliminare questa registrazione di pesi?", isPresented: $confirmsDelete, titleVisibility: .visible) {
+            Button("Elimina pesi", role: .destructive) {
                 guard !deleting else { return }
                 deleting = true
                 error = nil

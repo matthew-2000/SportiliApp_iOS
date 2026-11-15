@@ -14,6 +14,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
+    // UI fixture launches never connect the companion bridge to production.
+    if !ProcessInfo.processInfo.arguments.contains(where: { $0.hasPrefix("--qa-") }) {
+        PhoneWatchBridge.shared.start()
+    }
     return true
   }
 }

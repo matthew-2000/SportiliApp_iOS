@@ -80,10 +80,6 @@ struct LoginView: View {
                 brandIcon(size: 88)
                 Text("SportiliApp")
                     .font(SportiliTypography.headline)
-                Text("Il tuo allenamento, sempre con te.")
-                    .font(SportiliTypography.bodySmall)
-                    .foregroundStyle(SportiliPalette.onSurfaceMuted)
-                    .multilineTextAlignment(.center)
             }
         }
     }

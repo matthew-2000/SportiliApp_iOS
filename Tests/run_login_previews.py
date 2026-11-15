@@ -7,6 +7,7 @@ installs a distinct app, and removes it after capturing the screenshots.
 import argparse
 import json
 from pathlib import Path
+from companion_test_support import prepare_phone_fixture_project
 import shutil
 import subprocess
 import tempfile
@@ -43,6 +44,7 @@ def main():
             work / "SportiliApp.xcodeproj",
             ignore=shutil.ignore_patterns("xcuserdata"),
         )
+        prepare_phone_fixture_project(root, work)
         entry = work / "SportiliApp/SportiliAppApp.swift"
         original = entry.read_text()
         before, marker, remaining = original.partition("@main\nstruct SportiliAppApp: App {")
