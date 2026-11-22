@@ -5,7 +5,11 @@ import ActivityKit
 
 @available(iOS 16.2, *)
 struct RestAttributes: ActivityAttributes {
-    struct ContentState: Codable, Hashable { var deadline: Date }
+    struct ContentState: Codable, Hashable {
+        var deadline: Date
+        var startedAt: Date? = nil
+    }
+    var exerciseName: String? = nil
 }
 #endif
 

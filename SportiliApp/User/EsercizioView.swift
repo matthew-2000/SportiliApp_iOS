@@ -374,7 +374,7 @@ struct EsercizioView: View {
             WeightSessionEditor(context: context, model: viewModel)
         }
         .sheet(isPresented: $showTimerSheet) {
-            TimerSheet(riposo: esercizio.riposo ?? "")
+            TimerSheet(riposo: esercizio.riposo ?? "", exerciseName: esercizio.name)
         }
         .sheet(isPresented: $showNotesSheet) {
             NotesEditorSheet(
@@ -1244,6 +1244,7 @@ struct FullScreenImageView: View {
 // MARK: - Timer Sheet
 
 struct TimerSheet: View {
+    @State private var exerciseName: String?
     private static let fallbackDuration = 60
 
     private struct ParseResult {
@@ -1262,7 +1263,8 @@ struct TimerSheet: View {
     @State private var timerPaused = false
     @State private var timer: Timer?
 
-    init(riposo: String) {
+    init(riposo: String, exerciseName: String? = nil) {
+        _exerciseName = State(initialValue: exerciseName)
         let parsed = TimerSheet.parseRiposoResult(riposo)
         _timeRemaining = State(initialValue: parsed.seconds)
         _totalTime = State(initialValue: parsed.seconds)
@@ -1277,6 +1279,13 @@ struct TimerSheet: View {
                         Text("Tempo di recupero")
                             .font(SportiliTypography.headline)
                             .multilineTextAlignment(.center)
+
+                        if let name = exerciseName {
+                            Text(name)
+                                .font(SportiliTypography.body)
+                                .foregroundStyle(SportiliPalette.onSurfaceMuted)
+                                .multilineTextAlignment(.center)
+                        }
 
                         if showsFallbackWarning {
                             Label("Recupero non riconosciuto: il timer partirà da 1 minuto.", systemImage: "info.circle")
@@ -1333,13 +1342,35 @@ struct TimerSheet: View {
                 }
             }
             .onAppear {
+                rest.isTimerPresented = true
                 rest.refreshAuthorization()
+                rest.reconcile()
                 if rest.remaining > 0 {
-                    timeRemaining = rest.remaining; totalTime = rest.duration
-                    timerIsActive = true; observeDeadline()
+                    exerciseName = rest.exerciseName ?? exerciseName
+                    timeRemaining = rest.remaining
+                    totalTime = rest.duration
+                    showsFallbackWarning = false
+                    timerIsActive = true
+                    observeDeadline()
+                } else if rest.completedAt != nil, exerciseName == nil {
+                    exerciseName = rest.exerciseName
+                    totalTime = max(rest.duration, 1)
+                    timeRemaining = 0
+                    showsFallbackWarning = false
                 }
             }
+            .onChange(of: rest.deadline) { deadline in
+                guard deadline != nil, rest.remaining > 0 else { return }
+                exerciseName = rest.exerciseName ?? exerciseName
+                timeRemaining = rest.remaining
+                totalTime = rest.duration
+                showsFallbackWarning = false
+                timerIsActive = true
+                timerPaused = false
+                observeDeadline()
+            }
             .onDisappear {
+                rest.isTimerPresented = false
                 timer?.invalidate()
                 timer = nil
             }
@@ -1393,7 +1424,7 @@ struct TimerSheet: View {
     func startTimer() {
         guard !timerIsActive else { return }
         if timeRemaining == 0 { timeRemaining = totalTime }
-        rest.start(seconds: timeRemaining, total: totalTime)
+        rest.start(seconds: timeRemaining, total: totalTime, exerciseName: exerciseName)
         timerIsActive = true; timerPaused = false
         observeDeadline()
     }

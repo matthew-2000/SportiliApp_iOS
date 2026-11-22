@@ -11,7 +11,6 @@ import FirebaseAuth
 struct HomeView: View {
     @State private var linkedDay: Giorno?
     @State private var linkUnavailable = false
-    @State private var showRest = false
     @State private var nomeUtente: String?
     @StateObject private var schedaViewModel: SchedaViewModel
     @State private var isRequesting = false
@@ -47,7 +46,6 @@ struct HomeView: View {
         .onAppear(perform: updateUserName)
         .onReceive(SurfaceRoute.shared.$url) { url in openSurfaceURL(url) }
         .onChange(of: schedaViewModel.isLoading) { _ in openSurfaceURL(SurfaceRoute.shared.url) }
-        .sheet(isPresented: $showRest) { TimerSheet(riposo: "") }
         .navigationDestination(isPresented: Binding(get: { linkedDay != nil }, set: { if !$0 { linkedDay = nil } })) {
             if let day = linkedDay { DayView(day: day) }
         }
@@ -62,7 +60,7 @@ struct HomeView: View {
 
     private func openSurfaceURL(_ url: URL?) {
         guard let url, url.scheme == "sportiliapp" else { return }
-        if url.host == "rest" { PhoneRestTimer.shared.reconcile(); showRest = true; SurfaceRoute.shared.url = nil; return }
+        guard url.host == "day" else { return }
         guard schedaViewModel.hasLoadedOnce, !schedaViewModel.isLoading else { return }
         SurfaceRoute.shared.url = nil
         let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []

@@ -3,6 +3,9 @@
 ## Implementazione e uso
 
 - Aprire un esercizio, aprire il timer e toccare Avvia. La durata viene dal parser esistente dell’esercizio. La scadenza e la durata vengono salvate sul telefono; chiudere la schermata non interrompe il recupero. Pausa e Reimposta cancellano l’avviso e terminano la Live Activity; Riprendi programma una nuova scadenza.
+- La barra recupero resta visibile in Scheda, Avvisi, Impostazioni e nelle relative schermate di navigazione. Mostra esercizio, countdown e avanzamento; un tocco riapre il timer e la X lo interrompe. Alla scadenza mostra «Recupero terminato» per 8 secondi, con chiusura manuale. Si aggiorna dalla stessa scadenza persistente, senza un secondo timer in background.
+- La notifica finale include l’esercizio e le azioni «Apri timer» e «Altri 30 secondi». Entrambe aprono l’app; la seconda programma altri 30 secondi mantenendo la durata prevista dall’esercizio come riferimento. Le azioni di richieste sostituite o di una sessione precedente vengono ignorate. In primo piano la barra mostra la fine del recupero e il sistema gestisce soltanto il suono, senza aggiungere un secondo banner sopra quello dell’app.
+- La Dynamic Island espansa mostra esercizio, countdown e avanzamento. I nuovi campi locali ActivityKit sono opzionali per mantenere la lettura delle attività avviate prima dell’aggiornamento.
 - ActivityKit mostra il countdown sulla schermata bloccata e nella Dynamic Island compatibile. La notifica locale di fine recupero è separata e richiede il consenso. Nessun audio continuo, HealthKit, workout o servizio remoto.
 - Aprire un giorno della scheda lo sceglie per il widget. Aggiungere «Scheda» dalla galleria Home o schermata bloccata. Il riepilogo contiene solo identificativo del giorno, nome, numero di esercizi e identificativo casuale della sessione. Non contiene codice d’accesso, UID o token Firebase.
 - Sul Watch aprire un giorno e aggiungere «Scheda» alle complicazioni compatibili. Il Watch usa esclusivamente il proprio snapshot già ricevuto da WatchConnectivity. Un collegamento non più valido mostra «Giorno non disponibile» e consente di tornare alla scheda.
@@ -38,3 +41,12 @@ Le richieste hanno identificativi univoci per evitare che una risposta tardiva d
 - [Notifiche locali](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/SchedulingandHandlingLocalNotifications.html)
 - [Inoltro iPhone/Watch](https://developer.apple.com/documentation/watchos-apps/taking-advantage-of-notification-forwarding)
 - [WidgetKit](https://developer.apple.com/documentation/widgetkit/)
+
+## Verifica release 2.1.0 (17)
+
+- Test locali passati: `run_lifecycle_tests.py`, `run_watch_sync_tests.py`, `run_watch_transport_tests.py`, `run_s05_tests.py`. Il runner S05 è stato aggiornato per estrarre il parser senza dipendere dalla vecchia funzione audio rimossa.
+- I controlli `--qa-screen=active --qa-native-checks` verificano pubblicazione e persistenza della scadenza/esercizio, categorie e azioni notifiche, cancellazione durante richieste asincrone, rigetto di azioni obsolete/duplicate, aggiunta di 30 secondi, singolo avviso programmato con permesso concesso, ripristino, scadenza, completamento e invalidazione snapshot/sessione.
+- Sul simulatore iPhone 18 Pro Max / iOS 27 verificati barra sopra i pannelli senza sovrapposizioni ai titoli, navigazione Scheda → Avvisi, riapertura e chiusura del timer senza azzerare il countdown, e comparsa di «Recupero terminato» alla scadenza.
+- La fixture Debug `--qa-screen=recovery` usa il vero ContentView e mantiene Firebase Database offline. Il timer della fixture è disponibile solo con questo argomento nella build Debug; la build Release mantiene il controllo della sessione autenticata.
+- Build Debug simulatore e archive Release per dispositivi passati per app, companion Watch ed entrambe le estensioni. Nell’archive i quattro bundle riportano 2.1.0 (17). Archive locale non firmato: firma ed eventuale distribuzione restano al workflow Xcode Cloud esistente.
+- Restano da verificare su dispositivi fisici la presentazione delle azioni a processo chiuso, l’inoltro iPhone/Watch, suono/vibrazione e impostazioni di sistema; i controlli locali sulle azioni verificano il gestore condiviso con il delegate, non simulano un tap del sistema su hardware.

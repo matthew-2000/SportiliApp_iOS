@@ -29,5 +29,5 @@ sources=['import Foundation\nimport Combine',(root/'Tests/FirebaseDoubles.swift'
  'enum WeightDialogMode:'+mode, 'struct UniformLog:'+uniform,helpers,
  'struct SampleCard { let data: [UniformLog]; var samples:'+samples+'}',
  fixture+handlers+'}',
- 'enum TimerParsing { private static let fallbackDuration = 60; private struct ParseResult { let seconds: Int; let usedFallback: Bool };'+view.split('    static func parseRiposo(',1)[1].split('    func playSound()',1)[0].join(['    static func parseRiposo(', '}']),(root/'Tests/S05Tests.swift').read_text()]
+ 'enum TimerParsing { private static let fallbackDuration = 60; private struct ParseResult { let seconds: Int; let usedFallback: Bool };'+view.split('    static func parseRiposo(',1)[1].split('\n}\n',1)[0].join(['    static func parseRiposo(', '}']),(root/'Tests/S05Tests.swift').read_text()]
 raise SystemExit(subprocess.run(['xcrun','swift','-'],input='\n'.join(sources),text=True).returncode)

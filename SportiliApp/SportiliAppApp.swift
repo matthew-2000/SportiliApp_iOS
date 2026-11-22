@@ -9,11 +9,17 @@ import SwiftUI
 import UIKit
 import FirebaseCore
 import FirebaseAuth
+import FirebaseDatabase
 
 class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
+#if DEBUG
+    if ProcessInfo.processInfo.arguments.contains("--qa-screen=recovery") {
+        Database.database().goOffline()
+    }
+#endif
     SurfaceSession.shared.start()
 #if DEBUG
     if ProcessInfo.processInfo.arguments.contains("--qa-native-checks") { Task { await runNativeSurfaceChecks() } }
@@ -37,7 +43,7 @@ struct SportiliAppApp: App {
             .sportiliTheme()
             .onOpenURL { SurfaceRoute.shared.url = $0 }
             .onChange(of: scenePhase) { phase in
-                if phase == .active { SurfaceSession.shared.refresh(); PhoneRestTimer.shared.reconcile(); PhoneRestTimer.shared.refreshAuthorization() }
+                if phase == .active { SurfaceSession.shared.refresh(); PhoneRestTimer.shared.reconcile(); PhoneRestTimer.shared.refreshAuthorization(); PhoneRestTimer.shared.startDeferredLiveActivity() }
             }
         }
     }
@@ -67,6 +73,7 @@ private enum QA01Preview: String {
     case active
     case expired
     case requested
+    case recovery
 
     static var current: QA01Preview? {
         let prefix = "--qa-screen="
@@ -78,20 +85,24 @@ private enum QA01Preview: String {
 
     @ViewBuilder
     var view: some View {
-        NavigationStack {
-            HomeView(
-                schedaViewModel: SchedaViewModel(
-                    autoFetchOnInit: false,
-                    scheda: workout
-                ),
-                previewUserName: "Matteo"
-            )
+        if self == .recovery {
+            ContentView(previewWorkout: workout)
+                .task { @MainActor in
+                    PhoneRestTimer.shared.start(seconds: 90, total: 90, exerciseName: "Panca piana")
+                }
+        } else {
+            NavigationStack {
+                HomeView(
+                    schedaViewModel: SchedaViewModel(autoFetchOnInit: false, scheda: workout),
+                    previewUserName: "Matteo"
+                )
+            }
         }
     }
 
     private var workout: Scheda {
         switch self {
-        case .active:
+        case .active, .recovery:
             PreviewData.activeScheda
         case .expired:
             PreviewData.expiredScheda

@@ -8,9 +8,29 @@ let project = try XcodeProj(path: path)
 let pbx = project.pbxproj
 let root = try pbx.rootProject()!
 let phone = pbx.nativeTargets.first { $0.name == "SportiliApp" }!
+if let index = CommandLine.arguments.firstIndex(of: "--release-version") {
+    let arguments = CommandLine.arguments
+    guard arguments.count > index + 2,
+          arguments[index + 1].range(of: #"^\d+\.\d+\.\d+$"#, options: .regularExpression) != nil,
+          let build = Int(arguments[index + 2]), build > 0 else {
+        fatalError("Usage: --release-version <major.minor.patch> <positive-build>")
+    }
+    for target in pbx.nativeTargets {
+        for config in target.buildConfigurationList?.buildConfigurations ?? [] {
+            config.buildSettings["MARKETING_VERSION"] = arguments[index + 1]
+            config.buildSettings["CURRENT_PROJECT_VERSION"] = String(build)
+        }
+        print("\(target.name): \(arguments[index + 1]) (\(build))")
+    }
+    try pbx.write(path: path + "project.pbxproj", override: true)
+    exit(0)
+}
+let phoneSettings = phone.buildConfigurationList?.buildConfigurations.first?.buildSettings ?? [:]
+let marketingVersion = phoneSettings["MARKETING_VERSION"] as? String ?? "2.0"
+let buildVersion = phoneSettings["CURRENT_PROJECT_VERSION"] as? String ?? "16"
 if CommandLine.arguments.contains("--surfaces") {
     func group(_ name: String) -> PBXFileSystemSynchronizedRootGroup {
-        if let found = root.mainGroup?.children.compactMap { $0 as? PBXFileSystemSynchronizedRootGroup }.first(where: { $0.path == name }) { return found }
+        if let found = root.mainGroup?.children.compactMap({ $0 as? PBXFileSystemSynchronizedRootGroup }).first(where: { $0.path == name }) { return found }
         let g = PBXFileSystemSynchronizedRootGroup(sourceTree: .group, path: name)
         pbx.add(object: g); root.mainGroup?.children.append(g); return g
     }
@@ -28,7 +48,7 @@ if CommandLine.arguments.contains("--surfaces") {
                 "PRODUCT_NAME": "$(TARGET_NAME)", "SWIFT_VERSION": "5.0", "GENERATE_INFOPLIST_FILE": "NO",
                 "INFOPLIST_FILE": "WidgetInfo.plist", "SKIP_INSTALL": "YES", "APPLICATION_EXTENSION_API_ONLY": "YES",
                 "CODE_SIGN_ENTITLEMENTS": entitlement + ".entitlements", "CODE_SIGN_STYLE": "Automatic", "DEVELOPMENT_TEAM": "W5F66P2G2K",
-                "CURRENT_PROJECT_VERSION": "16", "MARKETING_VERSION": "2.0",
+                "CURRENT_PROJECT_VERSION": buildVersion, "MARKETING_VERSION": marketingVersion,
                 "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks"],
                 "SDKROOT": isWatch ? "watchos" : "iphoneos", "SUPPORTED_PLATFORMS": isWatch ? "watchos watchsimulator" : "iphoneos iphonesimulator",
                 "PRODUCT_BUNDLE_IDENTIFIER": isWatch ? "com.matthew.SportiliApp.watchkitapp.widgets" : "com.matthew.SportiliApp.widgets",
@@ -116,7 +136,7 @@ let configs = ["Debug", "Release"].map { name -> XCBuildConfiguration in
         "INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp": "NO",
         "INFOPLIST_KEY_CFBundleDisplayName": "SportiliApp",
         "DEVELOPMENT_TEAM": "W5F66P2G2K", "CODE_SIGN_STYLE": "Automatic",
-        "CURRENT_PROJECT_VERSION": "16", "MARKETING_VERSION": "2.0", "SKIP_INSTALL": "YES",
+        "CURRENT_PROJECT_VERSION": buildVersion, "MARKETING_VERSION": marketingVersion, "SKIP_INSTALL": "YES",
         "SWIFT_EMIT_LOC_STRINGS": "YES", "ENABLE_PREVIEWS": "YES",
         "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/Frameworks"]
     ])
