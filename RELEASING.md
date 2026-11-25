@@ -3,7 +3,8 @@
 ## Flusso
 
 GitHub coordina la procedura; **compilazione e firma restano su Xcode Cloud**.
-Avviare `iOS - Produzione App Store` da `main`: archive Apple, attesa elaborazione,
+Pubblicare un tag `vX.Y.Z` sul commit corrente di `main` (oppure avviare
+manualmente `iOS - Produzione App Store` da `main`): archive Apple, attesa elaborazione,
 riepilogo con commit/versione/build/note, **una approvazione** nell'environment
 `app-store-production`, invio della stessa build ad App Review.
 La versione usa `releaseType=AFTER_APPROVAL`: Apple rilascia dopo la propria
@@ -30,7 +31,7 @@ Nessuna modifica a Firebase, dati, accessi o flussi delle app installate.
    `GET /v1/ciProducts/{id}/workflows`, relazione `repository` del workflow,
    `GET /v1/scmRepositories/{id}/gitReferences`. Scegliere il riferimento con
    `canonicalName=refs/heads/main`.
-7. Creare l'environment `app-store-production`, limitato a `main`, con Matteo
+7. Creare l'environment `app-store-production`, limitato al branch `main` e ai tag `v*`, con Matteo
    come **required reviewer**. Consentire l'approvazione della propria
    esecuzione se Matteo avvia il workflow; disabilitare il bypass delle regole.
    Il solo campo `environment:` nel YAML NON crea la regola di approvazione.
@@ -98,3 +99,20 @@ Fonti: [Cloud API](https://developer.apple.com/documentation/appstoreconnectapi/
 [versioni](https://developer.apple.com/help/app-store-connect/update-your-app/create-a-new-version),
 [review](https://developer.apple.com/documentation/appstoreconnectapi/review-submissions),
 [rilascio graduale](https://developer.apple.com/help/app-store-connect/update-your-app/release-a-version-update-in-phases).
+
+## Avvio da tag
+
+Prima del tag fare commit su main delle versioni commerciali Xcode e delle
+note in `release-notes/X.Y.Z.json`, con la mappa delle lingue già descritta.
+Pubblicare il tag `vX.Y.Z` su quel commit: avvia automaticamente Cloud, poi
+richiede l'approvazione. I tag usano il rilascio graduale Apple di sette giorni;
+per scegliere il rilascio completo usare l'avvio manuale.
+
+Il tag deve indicare il commit corrente di main e corrispondere alla versione
+di tutti i target. Cloud continua a prelevare main: se il branch avanza prima
+del checkout Apple, lo SHA differisce e l'invio viene bloccato. Evitare push
+successivi durante la preparazione della release. Non spostare tag pubblicati.
+
+Nell'environment app-store-production consentire branch main e tag v*.
+Un push normale avvia solo i controlli. Non abilitare in parallelo un ulteriore
+trigger automatico per tag su Xcode Cloud: è GitHub ad avviare l'archive via API.
