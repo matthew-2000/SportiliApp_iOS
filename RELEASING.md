@@ -1,63 +1,100 @@
-# Rilasci con Xcode Cloud
+# Produzione iOS: Xcode Cloud e App Store Connect API
 
-## Stato
+## Flusso
 
-Il repository contiene il post-clone hook che esegue otto runner di regressione
-prima della build. Non contiene credenziali o procedure di pubblicazione della
-produzione. Collegamento e workflow Xcode Cloud vanno verificati nell'account Apple.
+GitHub coordina la procedura; **compilazione e firma restano su Xcode Cloud**.
+Avviare `iOS - Produzione App Store` da `main`: archive Apple, attesa elaborazione,
+riepilogo con commit/versione/build/note, **una approvazione** nell'environment
+`app-store-production`, invio della stessa build ad App Review.
+La versione usa `releaseType=AFTER_APPROVAL`: Apple rilascia dopo la propria
+approvazione. Nessun passaggio obbligatorio su TestFlight.
+Nessuna modifica a Firebase, dati, accessi o flussi delle app installate.
 
-## Configurazione iniziale, una sola volta
+## Setup una sola volta
 
-1. Pubblicare su GitHub questi file insieme alla revisione dell'app da provare.
-2. Controllare prima i workflow esistenti in App Store Connect, senza duplicarli.
-   In Xcode aprire `SportiliApp.xcodeproj`, selezionare lo schema condiviso
-   `SportiliApp` e usare Product > Xcode Cloud > Create Workflow. Collegare
-   il repository esistente ad App Store Connect.
-3. Scegliere una versione Xcode compatibile con il progetto (sviluppato con
-   Xcode 27.2) e con gli SDK iOS/watchOS necessari. Se non disponibile nel cloud,
-   fermare il setup e verificare la compatibilità, senza abbassare i requisiti
-   o cambiare il progetto automaticamente.
-4. Creare il workflow `Verifica`: avvio sui push e sulle pull request verso il branch
-   principale, azione Build. Il post-clone esegue già i runner; lo schema non
-   ha un target XCTest e non va presentato come una suite `xcodebuild test`.
-   Eseguire `ci_scripts/ci_post_clone.sh` anche localmente per verificare gli
-   stessi otto runner; lo script deve restare eseguibile nel repository.
-5. Creare il workflow `Beta`: avvio manuale sul branch principale, azione
-   Archive per distribuzione TestFlight e post-action per il gruppo di tester
-   interni desiderato. Non aggiungere invii automatici alla produzione.
-6. Confermare la firma di app, widget iOS, app Watch e widget Watch, con tutti
-   gli identificativi e gli entitlement esistenti. Verificare che l'archivio
-   includa gli stessi componenti della distribuzione locale.
-7. Confrontare il massimo numero di build già caricato su App Store Connect
-   con il contatore Xcode Cloud; impostare il prossimo numero sopra il massimo.
-   Verificare sul primo archivio i numeri di app e componenti incorporati.
-8. Eseguire una Beta, verificare log dei runner, archivio firmato, disponibilità
-   TestFlight e funzionamento su iPhone/Watch. Abilitare notifiche native Apple.
+1. Unire la PR. Controllare i workflow Apple esistenti prima di crearne altri.
+2. Mantenere `Verifica` su push/PR verso `main`, azione Build.
+   `ci_scripts/ci_post_clone.sh` esegue gli otto runner; non sono target XCTest.
+3. Configurare un workflow Xcode Cloud `Produzione`, avviabile tramite API,
+   schema `SportiliApp`, Archive per **App Store Connect**, Xcode compatibile
+   con il progetto (27.2 nel checkout). Nessun gruppo tester obbligatorio.
+   Non usare `Internal Only`. Confermare l'upload dell'archive ad App Store
+   Connect e la firma di app, Watch ed entrambi i widget.
+4. Impostare il contatore Cloud sopra il massimo numero di build già caricato.
+   Conservare gli identificativi e gli entitlement esistenti.
+5. In App Store Connect > Users and Access > Integrations creare una chiave
+   API di team App Manager con l'accesso necessario all'app e a Xcode Cloud.
+   Conservare Issuer ID, Key ID e file P8. Non sostituisce i certificati Cloud.
+6. Impostare variabili e segreti della tabella. Per trovare gli ID via API:
+   `GET /v1/apps?filter[bundleId]=com.matthew.SportiliApp`, relazione `ciProduct`,
+   `GET /v1/ciProducts/{id}/workflows`, relazione `repository` del workflow,
+   `GET /v1/scmRepositories/{id}/gitReferences`. Scegliere il riferimento con
+   `canonicalName=refs/heads/main`.
+7. Creare l'environment `app-store-production`, limitato a `main`, con Matteo
+   come **required reviewer**. Consentire l'approvazione della propria
+   esecuzione se Matteo avvia il workflow; disabilitare il bypass delle regole.
+   Il solo campo `environment:` nel YAML NON crea la regola di approvazione.
+8. Verificare contratti, privacy, contatti e requisiti App Review nello store.
+   Completare l'export compliance reale della build: lo script non inventa
+   dichiarazioni e non imposta `usesNonExemptEncryption=false` automaticamente.
+9. Solo dopo il setup impostare `APP_STORE_PRODUCTION_ENABLED=true`.
 
-## Ogni aggiornamento
+| Variabile di repository | Contenuto |
+| --- | --- |
+| `APP_STORE_PRODUCTION_ENABLED` | true solo con account e reviewer pronti |
+| `ASC_APP_ID` | ID numerico della scheda SportiliApp |
+| `XCODE_CLOUD_WORKFLOW_ID` | UUID del workflow Apple Produzione |
+| `XCODE_CLOUD_MAIN_REF_ID` | ID del riferimento Git Apple per main |
 
-- Aggiornare la versione commerciale quando necessario, coerente tra tutti i
-  target. Xcode Cloud gestisce il numero progressivo delle build: non usare il
-  numero locale come prova del numero effettivamente distribuito.
-- Avviare `Beta`, provare la build ricevuta e conservare il riferimento al commit.
-- Se approvata dal proprietario, selezionare quella stessa build in App Store
-  Connect, completare novità/dichiarazioni e inviare alla revisione.
-- Per i primi rilasci mantenere l'uscita manuale dopo la revisione e attivare
-  il rilascio graduale ufficiale di sette giorni quando appropriato.
+| Secret di repository | Contenuto |
+| --- | --- |
+| `ASC_ISSUER_ID` | Issuer ID della chiave API di team |
+| `ASC_KEY_ID` | Key ID |
+| `ASC_PRIVATE_KEY_P8` | Intero contenuto della chiave privata P8 |
 
-La selezione della build e l'invio alla revisione restano manuali in questa
-prima configurazione. L'automazione della produzione viene dopo una Beta
-riuscita, con una scelta esplicita sul momento di pubblicazione.
+La chiave di repository serve anche al primo job per avviare Cloud prima
+che sia richiesta l'approvazione. Il job di invio è protetto dall'environment.
+Proteggere `main` e revisionare workflow/script: chi può modificarli può
+cambiare l'uso della chiave API. Non mettere il P8 in Git, chat o artifact.
+JWT firmati tramite OpenSSL, senza fastlane o dipendenze Python aggiuntive.
 
-## Limiti dei controlli
+## Ogni rilascio
 
-Il hook verifica logica e boundary doubles, non networking Firebase, StoreKit,
-firma, UI completa o trasporto reale su Watch. Una build cloud verde non prova
-la compatibilità di ogni versione installata. Per cambi a Firebase/admin usare
-anche la suite `firebase-compatibility` del repository Android e le verifiche
-native pertinenti, annotando gli SHA di entrambi i repository. Nessuno di questi
-workflow deve pubblicare regole Firebase o modificare dati di produzione.
+1. Impostare la versione commerciale in tutti i target Xcode e fare commit
+   su `main` con un JSON di note sotto `release-notes/`, per tutte le lingue
+   già configurate nello store.
+2. Actions > `iOS - Produzione App Store`, su `main`: versione, percorso JSON
+   e rilascio graduale Apple (predefinito) oppure completo.
+3. Il workflow avvia Cloud e attende fino a due ore. Controlla successo, SHA,
+   workflow, riferimento main, versione, bundle ID, elaborazione valida ed
+   eleggibilità App Store della build.
+4. Leggere il riepilogo e approvare una volta.
+5. La procedura ricontrolla i dati Apple, crea la versione se manca (Apple
+   trasferisce i metadati correnti), aggiorna note/build/rilascio e invia ad
+   App Review. Eventuali metadati o dichiarazioni mancanti producono un errore
+   Apple da risolvere; nessuna risposta viene inventata.
 
-Fonti: [script Xcode Cloud](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts),
-[avvio Xcode Cloud](https://developer.apple.com/xcode-cloud/get-started/),
+Il rilascio graduale Apple progredisce automaticamente in sette giorni dopo
+l'approvazione; gli utenti possono comunque aggiornare manualmente.
+La ricevuta prova l'invio, non l'approvazione o la disponibilità pubblica.
+
+Non modificare la stessa release contemporaneamente nella console. Le review
+pendenti non vengono cancellate o riutilizzate. Un errore dopo la creazione
+può lasciare una review in bozza: verificare e risolvere quella bozza prima
+di ripetere la procedura. Nessun retry automatico delle scritture.
+Se l'attesa Cloud scade, controllare il run nel log prima di avviare una nuova
+build. Se main cambia prima che Cloud prelevi il codice, lo SHA blocca l'invio.
+
+## Verifica e limiti
+
+`python3 -m unittest discover -s ci_scripts -p 'test_*.py' -v`
+
+Test con API simulate e verifica di una firma JWT reale tramite OpenSSL.
+Non sono una prova di firma dell'app o di invio allo store. Setup degli
+account e prima esecuzione reale restano necessari. Versioni commerciali e
+dichiarazioni legali non vengono cambiate automaticamente.
+
+Fonti: [Cloud API](https://developer.apple.com/documentation/appstoreconnectapi/post-v1-cibuildruns),
+[versioni](https://developer.apple.com/help/app-store-connect/update-your-app/create-a-new-version),
+[review](https://developer.apple.com/documentation/appstoreconnectapi/review-submissions),
 [rilascio graduale](https://developer.apple.com/help/app-store-connect/update-your-app/release-a-version-update-in-phases).
